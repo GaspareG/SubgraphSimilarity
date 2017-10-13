@@ -1,4 +1,4 @@
-CXXFLAGS += -Wall -pedantic -g -DMAKE_VALGRIND_HAPPY -fopenmp
+CXXFLAGS += --std=c++11 -Wall -pedantic -g -DMAKE_VALGRIND_HAPPY -fopenmp
 
 graph-gen: graph_generator
 
