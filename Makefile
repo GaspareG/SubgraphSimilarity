@@ -27,12 +27,23 @@ clean:
 	rm k-path-color-coding-parallel
 	rm k-path-divide-color
 	rm slash-burn
+	rm -R input/*.txt | true
+	rm -R input/snap/*.txt | true
 
-test: all
-	k=2
-	r=2
-	while [ "$r" -ne 124 ]; do
-		timeout 5m ./k-path-naive $k < input/graph.1.txt
-		retval=$?
-		k = $k + 1
-	done
+download:
+	mkdir -p input
+	mkdir -p input/snap
+	wget -P input/snap https://snap.stanford.edu/data/web-BerkStan.txt.gz
+	wget -P input/snap https://snap.stanford.edu/data/web-Google.txt.gz
+	wget -P input/snap https://snap.stanford.edu/data/web-NotreDame.txt.gz
+	wget -P input/snap https://snap.stanford.edu/data/web-Stanford.txt.gz
+	wget -P input/snap https://snap.stanford.edu/data/facebook_combined.txt.gz
+	wget -P input/snap https://snap.stanford.edu/data/twitter_combined.txt.gz
+	gunzip input/snap/*.gz
+	sed -i '/^[[:blank:]]*#/d;s/#.*//' input/snap/*.txt
+	sed -i '1s/^/685231 7600595\n/' input/snap/web-BerkStan.txt
+	sed -i '1s/^/875714 5105039\n/' input/snap/web-Google.txt
+	sed -i '1s/^/325729 1497134\n/' input/snap/web-NotreDame.txt
+	sed -i '1s/^/281903 2312497\n/' input/snap/web-Stanford.txt
+	sed -i '1s/^/4040 88234\n/' input/snap/facebook_combined.txt
+	sed -i '1s/^/81307 1768149\n/' input/snap/twitter_combined.txt
