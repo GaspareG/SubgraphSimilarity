@@ -31,15 +31,22 @@ bool connected() {
 }
 
 set<set<int>> components() {
+//  printf("COMPONENT\n");
+
   set<set<int>> ret;
 
+//  printf("COMPONENT\n");
   set<int> key;
   for (auto i : G) key.insert(i.first);
-
+//  printf("COMPONENT 2\n");
   while (key.size()) {
+  //  printf("COMPONENT 3\n");
     set<int> cc = component(*key.begin(), NULL);
-    key.erase(cc.begin(), cc.end());
-    ret.insert(cc);
+  //    printf("COMPONENT 4\n");
+      for( int ccc : cc ){ key.erase(ccc);
+  //    printf("COMPONENT 5\n");
+    ret.insert(cc); }
+  //    printf("COMPONENT 6\n");
   }
 
   return ret;
@@ -49,21 +56,25 @@ void slashBurn() {
   int iteration = 0;
   int removedHubs = 0;
 
+  printf("OK\n");
   vector<int> hubs;
   map<int, set<int>> replications;
 
+    printf("OK\n");
   vector<set<int>> coms;
 
+    printf("OK\n");
   vector<int> degOrd;
   for (int i = 0; i < N; i++) degOrd.push_back(i);
   sort(degOrd.begin(), degOrd.end(),
        [](int x, int y) { return G[x].size() < G[y].size(); });
 
+         printf("OK\n");
   bool lastCommunity = false;
 
   while (degOrd.size()) {
     iteration++;
-    printf("IT = %d\n", iteration);
+    printf("IT = %d || %d\n", iteration, degOrd.size());
 
     while (connected()) {
       if (degOrd.size() <= 2) {
@@ -89,18 +100,24 @@ void slashBurn() {
       sort(degOrd.begin(), degOrd.end(),
            [](int x, int y) { return G[x].size() < G[y].size(); });
     }
-
+//    printf("DISCO\n");
     set<set<int>> ccs = components();
+//    printf("OK\n");
     size_t maxSize = 0;
+//    printf("OK\n");
     set<int> maxc;
+//    printf("OK\n");
     for (auto cc : ccs) {
       if (cc.size() > maxSize) {
         maxSize = cc.size();
         maxc = cc;
       }
     }
+//    printf("OK\n");
     ccs.erase(maxc);
 
+
+//      printf("CCS OK\n");
     if (lastCommunity) {
       maxc.insert(hubs.begin(), hubs.end());
       coms.push_back(maxc);

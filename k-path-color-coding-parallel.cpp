@@ -4,6 +4,7 @@
   con la tecnica del color-coding
 */
 #include <bits/stdc++.h>
+#include <omp.h>
 
 using namespace std;
 typedef long long ll;
@@ -46,15 +47,15 @@ struct PairHash {
 };
 
 // Link
-unordered_map<pair<int, ll>, vector<int>, PairHash> link;
-inline void addLink(int x, ll C, int j) {
+unordered_map<pair<int, ll>, vector<int>, PairHash> linkGlobal;
+inline void addLink(unordered_map<pair<int, ll>, vector<int>, PairHash> link, int x, ll C, int j) {
   auto key = make_pair(x, C);
   if (link.find(key) == link.end()) link[key] = vector<int>();
   link[key].push_back(j);
 }
 
 // Oracolo
-vector<int> H(int x, ll C) { return link[make_pair(x, C)]; }
+vector<int> H(int x, ll C) { return linkGlobal[make_pair(x, C)]; }
 
 ll cont = 0;
 
@@ -87,7 +88,9 @@ void list_k_path_c(vector<int> ps, ll cs, int x, int kp) {
   if (kp + 2ull == k)
     cont += N.size();
   else
+  {
     for (int v : N) list_k_path_c(ps, setBit(cs, color[v]), v, kp + 1);
+  }
 }
 
 #define MAXK 16
@@ -97,30 +100,44 @@ unordered_set<ll> DP[MAXK][MAXN];
 void processDP() {
   DP[1][N].insert(setBit(0ll, color[N]));
   for (unsigned int i = 2; i <= k; i++)
-    for (unsigned int j = 0; j <= N; j++)
-      for (int x : G[j])
-        for (ll C : DP[i - 1][x])
-          if (!getBit(C, color[j])) DP[i][j].insert(setBit(C, color[j]));
+  {
+    // Parallelizzare    
+    #pragma omp parallel
+    {
+      #pragma omp for
+      for (unsigned int j = 0; j <= N; j++)
+        for (int x : G[j])
+          for (ll C : DP[i - 1][x])
+            if (!getBit(C, color[j])) DP[i][j].insert(setBit(C, color[j]));
+    }
+  }
 }
 
 void backProp() {
-  vector<ll> toDel;
   for (int i = k - 1; i >= 0; i--) {
-    for (unsigned int x = 0; x <= N; x++) {
-      toDel.clear();
-      for (ll C : DP[i][x]) {
-        bool find = false;
-        for (int j : G[x]) {
-          if (getBit(C, color[j])) continue;
+    // Parallelizzare
+    //#pragma omp parallel
+    {
+      //#pragma omp for
+       #pragma omp parallel for shared(linkGlobal)
+      for (unsigned int x = 0; x <= N; x++) {
+       // printf("%d %u\n", i, x);
+       vector<ll> toDel;
+        for (ll C : DP[i][x]) {
+          bool find = false;
+          
+          for (int j : G[x]) {
+            if (getBit(C, color[j])) continue;
 
-          if (DP[i + 1][j].find(setBit(C, color[j])) != DP[i + 1][j].end()) {
-            find = true;
-            addLink(x, C, j);
+            if (DP[i + 1][j].find(setBit(C, color[j])) != DP[i + 1][j].end()) {
+              find = true;
+              addLink(linkGlobal, x, C, j);
+            }
           }
+          if (!find) toDel.push_back(C);
         }
-        if (!find) toDel.push_back(C);
+        for (ll C : toDel) DP[i][x].erase(C);
       }
-      for (ll C : toDel) DP[i][x].erase(C);
     }
   }
 }
@@ -161,10 +178,14 @@ int main(int argc, char **argv) {
   k++;
 
   // Riempie la tabella di programmazione dinamica
+  printf("DP\n");
   processDP();
+  printf("OK DP\n");
 
   // Backward-propagation della tabella di programmazione dinamica
+  printf("PROP\n");
   backProp();
+  printf("OK PROP\n");
 
   // Conto i k-path colorful
   // list_k_path_c(vector<int>(), setBit(0ll, color[N]), N, 0);

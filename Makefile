@@ -1,4 +1,4 @@
-CXXFLAGS += -Wall -pedantic -g -DMAKE_VALGRIND_HAPPY
+CXXFLAGS += -Wall -pedantic -g -DMAKE_VALGRIND_HAPPY -fopenmp
 
 graph-gen: graph_generator
 
@@ -10,11 +10,13 @@ path-naive: k-path-naive
 
 path-color: k-path-color-coding
 
+path-color-parallel: k-path-color-coding-parallel
+
 path-divide: k-path-divide-color
 
 slashburn: slash-burn
 
-all: graph-gen induced-naive induced-color path-naive path-color path-divide slashburn
+all: graph-gen induced-naive induced-color path-naive path-color path-color-parallel path-divide slashburn
 
 clean:
 	rm graph_generator
@@ -22,6 +24,7 @@ clean:
 	rm k-induced-path-color-coding
 	rm k-path-naive
 	rm k-path-color-coding
+	rm k-path-color-coding-parallel
 	rm k-path-divide-color
 	rm slash-burn
 
