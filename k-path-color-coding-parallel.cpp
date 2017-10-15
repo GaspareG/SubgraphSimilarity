@@ -6,6 +6,8 @@
 #include <bits/stdc++.h>
 #include <sys/stat.h>
 #include <omp.h>
+#include <getopt.h>
+#include "graph_read.hpp"
 
 #ifndef MAXK
   #define MAXK 32
@@ -31,7 +33,7 @@ typedef long long ll;
   k = lunghezza dei path da cercare
   kp = numero di colori da usare (>= k)
 */
-unsigned int N, M, k, kp;
+unsigned int N, M, k = 0, kp = 0, thread_count = 0;
 int *color;
 vector<int> *G;
 
@@ -152,13 +154,139 @@ void backProp() {
   }
 }
 
-int main(int argc, char **argv) {
-  if (argc < 3) {
-    printf("Usage: %s k kp", argv[0]);
-    return 1;
+void print_usage(char *filename)
+{
+  printf("Usage: ./%s arguments\n",filename);
+  printf("Valid arguments:\n");
+
+  printf("-k, --path length\n");
+  printf("\tLength of the path.\n");
+
+  printf("-K, --color number\n");
+  printf("\tNumber of colors to use (default path length).\n");
+
+  printf("-g, --input filename\n");
+  printf("\tInput file of graph (default stdin)\n");
+
+  printf("-f, --format formatname\n");
+  printf("\tFormat of input file (snap, nde, gasp)\n");
+
+  printf("-t, --tableout filename\n");
+  printf("\tOutput DP table (default stdout)\n");
+
+  printf("-T, --tablein filename\n");
+  printf("\tImport DP table (default stdin)\n");
+
+  printf("-l, --list filename\n");
+  printf("\tList k-path (default stdout)\n");
+
+  printf("-p, --parallel threadcount\n");
+  printf("\tNumber of threads to use (default maximum thread avaiable)\n");
+
+  printf("-h, --help\n");
+  printf("\tDisplay help text and exit.\n");
+
+  printf("-v, --verbose\n");
+  printf("\tDisplay help text and exit.\n");
+
+  
+}
+
+static int verbose_flag, help_flag;
+
+char *input_graph = NULL;
+char *table_in = NULL;
+char *table_out = NULL;
+char *list_path = NULL;
+char *format_name = NULL;
+
+int main(int argc, char **argv)
+{
+
+  static struct option long_options[] =
+  {
+    {"path",    required_argument,             0, 'k'},
+    {"color",   required_argument,             0, 'K'},
+    {"input",   required_argument,             0, 'g'},
+    {"format",  required_argument,             0, 'f'},
+    {"tableout",required_argument,             0, 't'},
+    {"tablein", required_argument,             0, 'T'},
+    {"list",    required_argument,             0, 'l'},
+    {"parallel",required_argument,             0, 'p'},
+    {"help",          no_argument, &   help_flag,  1 },
+    {"verbose",       no_argument, &verbose_flag,  1 },
+    {0, 0, 0, 0}
+  };
+
+  int option_index = 0;
+  int c;
+  while(1)
+  {
+    c = getopt_long (argc, argv, "k:K:g:f:t:T:l:hv", long_options, &option_index);
+    
+    if( c == -1 )
+      break;
+
+    switch( c )
+    {
+      case 'k':
+        if( optarg != NULL ) k = atoi(optarg);
+      break;
+      case 'K':
+        if( optarg != NULL ) kp = atoi(optarg);
+      break;
+      case 'g':
+        if( optarg != NULL ) input_graph = optarg;
+      break;
+      case 'f':
+        if( optarg != NULL ) format_name = optarg;
+      break;
+      case 't':
+        if( optarg != NULL ) table_in = optarg;
+      break;
+      case 'T':
+        if( optarg != NULL ) table_out = optarg;
+      break;
+      case 'l':
+        if( optarg != NULL ) list_path = optarg;
+      break;
+      case 'p':
+        if( optarg != NULL ) thread_count = atoi(optarg);
+      break;
+    }
   }
 
-  srand(42);
+
+  char *input_graph = NULL;
+  char *table_in = NULL;
+  char *table_out = NULL;
+  char *list_path = NULL;
+  char *format_name = NULL;
+
+  if( k == 0 )
+    printf("Invalid or missing path length value.\n");
+
+  if( help_flag || k == 0 )
+  {
+    print_usage(argv[0]);
+    return 0;
+  }
+
+  if( kp == 0 ) kp = k;
+
+  if( verbose_flag )
+  {
+    printf("Options:\n");
+    printf("k = %d\n", k);
+    printf("kp = %d\n", kp);
+    printf("thread = %d\n", thread_count);
+
+    printf("input_graph = %s\n", input_graph != NULL ? input_graph : "stdin");
+    printf("format_name = %s\n", format_name != NULL ? format_name : "stdin");
+    printf("table_in    = %s\n", table_in    != NULL ? table_in    : "stdin");
+    printf("table_out   = %s\n", table_out   != NULL ? table_out   : "stdin");
+    printf("list_path   = %s\n", list_path   != NULL ? list_path   : "stdin");
+  }
 
   N = nextInt();
   M = nextInt();
@@ -208,3 +336,5 @@ int main(int argc, char **argv) {
   printf("%llu\n", cont);
   return 0;
 }
+
+

@@ -1,7 +1,7 @@
 /*
-  Autore: Gaspare Ferraro
-  Conta i k-path in un grafo non orientato
-  con la tecnica del divide and color
+  Author: Gaspare Ferraro
+  Count simple k-path in a graph using
+  the divide-and-color technique
 */
 #include <bits/stdc++.h>
 
@@ -18,7 +18,7 @@ inline int nextInt() {
 }
 
 set<pair<int, int> > list_k_path(unordered_set<int> Gp, int k) {
-  printf("%d [%d]\n", k, Gp.size());
+  printf("%d [%zu]\n", k, Gp.size());
   set<pair<int, int> > ret;
 
   // Caso base
@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
 
   auto result = list_k_path(Gp, k);
 
-  printf("%d\n", result.size());
+  printf("%zu\n", result.size());
   //    for(auto r : result)
   //      printf("%d - %d\n", r.first, r.second);
 }
