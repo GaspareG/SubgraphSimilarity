@@ -32,7 +32,9 @@ clean-dataset:
 	-rm input/*
 	-rm input/snap/*
 	-rm input/gen/*
+	-rm input/label/*
 	-rmdir input/gen
+	-rmdir input/label
 	-rmdir input/snap
 	-rmdir input
 
@@ -60,14 +62,28 @@ dataset-gen: graph-gen
 	./graph_generator   100000   1000000 input/gen/graph-100k-1M.nme.bin
 	./graph_generator  1000000   5000000 input/gen/graph-1M-5M.nme.bin
 	./graph_generator  1000000  10000000 input/gen/graph-1M-10M.nme.bin
-	./graph_generator 10000000  50000000 input/gen/graph-10M-50M.nme.bin
-	./graph_generator 10000000 100000000 input/gen/graph-10M-100M.nme.bin
+	#./graph_generator 10000000  50000000 input/gen/graph-10M-50M.nme.bin
+	#./graph_generator 10000000 100000000 input/gen/graph-10M-100M.nme.bin
 
-dataset: dataset-snap dataset-gen
+dataset-label: graph-gen
+	mkdir -p input | true
+	mkdir -p input/label | true
+	./graph_generator     1000      5000 input/label/graph-label-1k-5k.nme.bin     127
+	./graph_generator     1000     10000 input/label/graph-label-1k-10k.nme.bin    127
+	./graph_generator    10000     50000 input/label/graph-label-10k-50k.nme.bin   127
+	./graph_generator    10000    100000 input/label/graph-label-10k-100k.nme.bin  127
+	./graph_generator   100000    500000 input/label/graph-label-100k-500k.nme.bin 127
+	./graph_generator   100000   1000000 input/label/graph-label-100k-1M.nme.bin   127
+	./graph_generator  1000000   5000000 input/label/graph-label-1M-5M.nme.bin     127
+	./graph_generator  1000000  10000000 input/label/graph-label-1M-10M.nme.bin    127
+	#./graph_generator 10000000  50000000 input/gen/graph-10M-50M.nme.bin
+	#./graph_generator 10000000 100000000 input/gen/graph-10M-100M.nme.bin
+
+dataset: dataset-snap dataset-gen dataset-label
 
 test-gen: path-color-parallel
 	./k-path-color-coding-parallel -k 6 -g input/gen/graph-1k-5k.nme.bin     -f nme --verbose
 	./k-path-color-coding-parallel -k 6 -g input/gen/graph-10k-50k.nme.bin   -f nme --verbose
 	./k-path-color-coding-parallel -k 6 -g input/gen/graph-100k-500k.nme.bin -f nme --verbose
 	./k-path-color-coding-parallel -k 6 -g input/gen/graph-1M-5M.nme.bin     -f nme --verbose
-	./k-path-color-coding-parallel -k 6 -g input/gen/graph-10M-50M.nme.bin   -f nme --verbose
+	#./k-path-color-coding-parallel -k 6 -g input/gen/graph-10M-50M.nme.bin   -f nme --verbose
