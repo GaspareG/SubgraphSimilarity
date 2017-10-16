@@ -130,9 +130,9 @@ void backProp() {
           if (DP[i + 1][j].find(setBit(C, color[j])) != DP[i + 1][j].end()) {
             find = true;
             // addLink(&linkGlobal, x, C, j);
-            auto key = make_pair(x, C);
+/*            auto key = make_pair(x, C);
             if (linkGlobal.find(key) == linkGlobal.end()) linkGlobal[key] = vector<int>();
-            linkGlobal[key].push_back(j);
+            linkGlobal[key].push_back(j);*/
           }
         }
         if (!find) toDel.push_back(C);
