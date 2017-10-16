@@ -35,6 +35,8 @@ typedef long long ll;
 unsigned int N, M;
 unsigned k = 0, kp = 0;
 unsigned thread_count = 0;
+static int verbose_flag, help_flag;
+
 
 int *color;
 vector<int> *G;
@@ -67,15 +69,16 @@ struct PairHash {
 };
 
 // Link
-unordered_map<pair<int, COLORSET>, vector<int>, PairHash> linkGlobal;
-inline void addLink(unordered_map<pair<int, COLORSET>, vector<int>, PairHash> *link, int x, COLORSET C, int j) {
+unordered_map< pair<int, COLORSET>, vector<int>, PairHash> links;
+
+inline void addLink(int x, COLORSET C, int j) {
   auto key = make_pair(x, C);
-  if (link->find(key) == link->end()) (*link)[key] = vector<int>();
-  (*link)[key].push_back(j);
+  if (links.find(key) == links.end()) links[key] = vector<int>();
+  links[key].push_back(j);
 }
 
 // Oracolo
-vector<int> H(int x, COLORSET C) { return linkGlobal[make_pair(x, C)]; }
+vector<int> H(int x, COLORSET C) { return links[make_pair(x, C)]; }
 ll cont = 0;
 
 void list_k_path(FILE *out, vector<int> ps, COLORSET cs, int x)
@@ -104,6 +107,7 @@ void processDP() {
 
   for (unsigned int l = 2; l <= k; l++)
   {
+      if( verbose_flag ) printf("K = %d\n", l);
       #pragma omp parallel for
       for (unsigned int j = 0; j <= N; j++)
       {
@@ -115,11 +119,10 @@ void processDP() {
 }
 
 void backProp() {
-  for (int i = k - 1; i >= 0; i--) {
-    printf("K = %d\n", i);
-    #pragma omp parallel for shared(linkGlobal)
+  for (int i = k - 1; i > 0; i--) {
+    if( verbose_flag ) printf("K = %d\n", i);
+    #pragma omp parallel for
     for (unsigned int x = 0; x <= N; x++) {
-     // printf("%d %u\n", i, x);
       vector<ll> toDel;
       for (COLORSET C : DP[i][x]) {
         bool find = false;
@@ -129,10 +132,10 @@ void backProp() {
 
           if (DP[i + 1][j].find(setBit(C, color[j])) != DP[i + 1][j].end()) {
             find = true;
-            // addLink(&linkGlobal, x, C, j);
-/*            auto key = make_pair(x, C);
-            if (linkGlobal.find(key) == linkGlobal.end()) linkGlobal[key] = vector<int>();
-            linkGlobal[key].push_back(j);*/
+            #pragma omp critical
+            {
+              addLink(x, C, j);
+            }
           }
         }
         if (!find) toDel.push_back(C);
@@ -144,7 +147,8 @@ void backProp() {
 
 void print_usage(char *filename)
 {
-  printf("Usage: ./%s -k length -K number -g filename -f format -t filename -T filename -p threadcount -h -v\n",filename);
+//  printf("Usage: ./%s -k length -K number -g filename -f format -t filename -T filename -p threadcount -h -v\n",filename);
+  printf("Usage: ./%s -k length -K number -g filename -f format -p threadcount --help --verbose\n",filename);
   printf("Valid arguments:\n");
 
   printf("-k, --path length\n");
@@ -158,37 +162,35 @@ void print_usage(char *filename)
 
   printf("-f, --format format\n");
   printf("\tFormat of input file (snap, nde, nme)\n");
-
+/*
   printf("-t, --tableout filename\n");
   printf("\tOutput DP table (default stdout)\n");
 
   printf("-T, --tablein filename\n");
   printf("\tImport DP table (default stdin)\n");
-
+*/
   printf("-l, --list filename\n");
   printf("\tList k-path (default stdout)\n");
 
   printf("-p, --parallel threadcount\n");
   printf("\tNumber of threads to use (default maximum thread avaiable)\n");
 
-  printf("-h, --help\n");
+  printf("--help\n");
   printf("\tDisplay help text and exit.\n");
 
-  printf("-v, --verbose\n");
+  printf("--verbose\n");
   printf("\tDisplay help text and exit.\n");
 }
 
-static int verbose_flag, help_flag;
-
 bool input_graph_flag = false;
 char *input_graph = NULL;
-
+/*
 bool table_in_flag = false;
 char *table_in = NULL;
 
 bool table_out_flag = false;
 char *table_out = NULL;
-
+*/
 bool list_path_flag = false;
 char *list_path = NULL;
 
@@ -204,8 +206,8 @@ int main(int argc, char **argv)
     {"color",   required_argument,             0, 'K'},
     {"input",   required_argument,             0, 'g'},
     {"format",  required_argument,             0, 'f'},
-    {"tableout",required_argument,             0, 't'},
-    {"tablein", required_argument,             0, 'T'},
+    // {"tableout",required_argument,             0, 't'},
+    // {"tablein", required_argument,             0, 'T'},
     {"list",    required_argument,             0, 'l'},
     {"parallel",required_argument,             0, 'p'},
     {"help",          no_argument, &   help_flag,  1 },
@@ -217,7 +219,8 @@ int main(int argc, char **argv)
   int c;
   while(1)
   {
-    c = getopt_long (argc, argv, "k:K:g:f:t:T:l:p:hv", long_options, &option_index);
+    // c = getopt_long (argc, argv, "k:K:g:f:t:T:l:p:", long_options, &option_index);
+    c = getopt_long (argc, argv, "k:K:g:f:l:p:", long_options, &option_index);
 
     if( c == -1 )
       break;
@@ -238,14 +241,14 @@ int main(int argc, char **argv)
         format_name_flag = true;
         if( optarg != NULL ) format_name = optarg;
       break;
-      case 't':
+/*      case 't':
         table_in_flag = true;
         if( optarg != NULL ) table_in = optarg;
       break;
       case 'T':
         table_out_flag = true;
         if( optarg != NULL ) table_out = optarg;
-      break;
+      break;*/
       case 'l':
         list_path_flag = true;
         if( optarg != NULL ) list_path = optarg;
@@ -290,8 +293,8 @@ int main(int argc, char **argv)
     printf("thread = %d\n", thread_count);
     printf("input_graph = %s\n", input_graph != NULL ? input_graph : "stdin");
     printf("format_name = %s\n", format_name != NULL ? format_name : "stdin");
-    printf("table_in    = %s\n", table_in    != NULL ? table_in    : "stdin");
-    printf("table_out   = %s\n", table_out   != NULL ? table_out   : "stdin");
+    // printf("table_in    = %s\n", table_in    != NULL ? table_in    : "stdin");
+    // printf("table_out   = %s\n", table_out   != NULL ? table_out   : "stdin");
     printf("list_path   = %s\n", list_path   != NULL ? list_path   : "stdin");
   }
   if( verbose_flag ) printf("Reading graph...\n");
@@ -322,6 +325,9 @@ int main(int argc, char **argv)
       int ab[2];
       N = 0;
       do {
+        free(buffer);
+        buffer = NULL;
+        n = 0;
         int line_length = ::getline(&buffer, &n, input_fd);
         if( line_length == 0 ) continue;
         if( buffer[0] == '#' ) continue;
@@ -343,6 +349,58 @@ int main(int argc, char **argv)
     }
     else if( strcmp(format_name, "nde") == 0 )
     {
+      FILE *input_fd = fopen(input_graph, "r");
+      if( input_fd == NULL )
+      {
+        perror("Error opening input file");
+        return 1;
+      }
+      char *buffer;
+      size_t n;
+
+      do {      
+        free(buffer);
+        buffer = NULL;
+        n = 0;
+        int line_length = ::getline(&buffer, &n, input_fd);
+        if( line_length == 0 ) continue;
+        if( buffer[0] == '#' ) continue;
+        break;
+      }
+      while( !feof(input_fd) );
+      sscanf(buffer, "%u",&N);
+      int Nrim = N;
+
+      M = 0;
+      int ab[2];
+      while( Nrim > 0 && !feof(input_fd) ) {
+        free(buffer);
+        buffer = NULL;
+        n = 0;
+        int line_length = ::getline(&buffer, &n, input_fd);
+        if( line_length == 0 ) continue;
+        if( buffer[0] == '#' ) continue;
+        sscanf(buffer, "%d %d", ab, ab+1);
+        Nrim--; 
+        M += ab[1];
+        N = (unsigned) ab[0] > N ? (unsigned) ab[0] : N;
+      }
+      
+      color = new int[N + 1];
+      G = new vector<int>[N + 1];
+
+      int Mrim = M;
+      while( Mrim > 0 && !feof(input_fd) ) {
+        free(buffer);
+        buffer = NULL;
+        n = 0;
+        int line_length = ::getline(&buffer, &n, input_fd);
+        if( line_length == 0 ) continue;
+        if( buffer[0] == '#' ) continue;
+        sscanf(buffer, "%d %d", ab, ab+1);
+        G[ ab[0] ].push_back( ab[1] );
+        G[ ab[1] ].push_back( ab[0] );
+      }
 
     }
     else if( strcmp(format_name, "nme") == 0)
@@ -389,6 +447,8 @@ int main(int argc, char **argv)
     }
   }
 
+  if( verbose_flag ) printf("N = %d | M = %d\n", N, M);
+
   for (unsigned int i = 0; i < N; i++) {
     G[N].push_back(i);
     G[i].push_back(N);
@@ -407,18 +467,18 @@ int main(int argc, char **argv)
   // Fill dynamic programming table
   if( verbose_flag ) printf("Processing DP table...\n");
   processDP();
-  if( verbose_flag ) printf("Processing DP table...\n");
+  if( verbose_flag ) printf("End processing DP table...\n");
 
   // Backward-propagation of DP table
   if( verbose_flag ) printf("Backward propagation...\n");
   backProp();
-  if( verbose_flag ) printf("Backward propagation...\n");
+  if( verbose_flag ) printf("End backward propagation...\n");
 
   // Count ad list k-colorful path
   if( list_path_flag )
   {
     FILE *list_fd = stdout;
-    /*if( list_path != NULL )
+    if( list_path != NULL )
     {
       list_fd = fopen(list_path, "w");
       if( list_fd == NULL )
@@ -426,7 +486,7 @@ int main(int argc, char **argv)
         perror("Error opening list file");
         return 1;
       }
-    }*/
+    }
     if( verbose_flag ) printf("Listing k-path...\n");
     list_k_path(list_fd, vector<int>(), setBit(0, color[N]), N);
     if( verbose_flag ) printf("%llu k-path found!\n", cont);
@@ -437,7 +497,12 @@ int main(int argc, char **argv)
   for(unsigned int i= 0 ; i <= k ; i++ )
     for(unsigned int j = 0 ; j <= N; j++)
       cont += DP[i][j].size();
-
-  printf("%llu\n", cont);
+  if( verbose_flag ) printf("DP elements: %llu\n", cont);
+  
+  cont = 0;
+  for(auto l : links)
+    cont += l.second.size();
+  if( verbose_flag ) printf("Oracle links: %llu\n", cont);
+  
   return 0;
 }
