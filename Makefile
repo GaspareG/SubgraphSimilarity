@@ -64,3 +64,10 @@ dataset-gen: graph-gen
 	./graph_generator 10000000 100000000 input/gen/graph-10M-100M.nme.bin
 
 dataset: dataset-snap dataset-gen
+
+test-gen: path-color-parallel
+	./k-path-color-coding-parallel -k 6 -g input/gen/graph-1k-5k.nme.bin     -f nme --verbose
+	./k-path-color-coding-parallel -k 6 -g input/gen/graph-10k-50k.nme.bin   -f nme --verbose
+	./k-path-color-coding-parallel -k 6 -g input/gen/graph-100k-500k.nme.bin -f nme --verbose
+	./k-path-color-coding-parallel -k 6 -g input/gen/graph-1M-5M.nme.bin     -f nme --verbose
+	./k-path-color-coding-parallel -k 6 -g input/gen/graph-10M-50M.nme.bin   -f nme --verbose

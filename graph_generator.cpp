@@ -84,5 +84,7 @@ int main(int argc, char **argv) {
   else
     for(int i=0; i<Mc+1; i++)
       printf("%d %d\n",toWrite[2*i], toWrite[2*i+1]);
+
+  close(fd);
   return 0;
 }
