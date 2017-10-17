@@ -102,7 +102,7 @@ void processDP() {
 
   for (unsigned int l = 2; l <= k; l++) {
     if (verbose_flag) printf("K = %d\n", l);
-#pragma omp parallel for
+    #pragma omp parallel for
     for (unsigned int j = 0; j <= N; j++) {
       for (int x : G[j])
         for (COLORSET C : DP[l - 1][x])
@@ -114,7 +114,7 @@ void processDP() {
 void backProp() {
   for (int i = k - 1; i > 0; i--) {
     if (verbose_flag) printf("K = %d\n", i);
-#pragma omp parallel for
+    #pragma omp parallel for
     for (unsigned int x = 0; x <= N; x++) {
       vector<ll> toDel;
       for (COLORSET C : DP[i][x]) {
@@ -125,7 +125,7 @@ void backProp() {
 
           if (DP[i + 1][j].find(setBit(C, color[j])) != DP[i + 1][j].end()) {
             find = true;
-#pragma omp critical
+            #pragma omp critical
             { addLink(x, C, j); }
           }
         }
@@ -300,12 +300,12 @@ int main(int argc, char **argv) {
         return 1;
       }
       set<pair<int, int> > edge;
-      char *buffer;
+      char *buffer = NULL;
       size_t n;
       int ab[2];
       N = 0;
       do {
-        free(buffer);
+        if( buffer != NULL ) free(buffer);
         buffer = NULL;
         n = 0;
         int line_length = ::getline(&buffer, &n, input_fd);

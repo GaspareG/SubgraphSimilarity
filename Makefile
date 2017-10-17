@@ -1,32 +1,16 @@
 CXXFLAGS += --std=c++11 -Wall -pedantic -g -DMAKE_VALGRIND_HAPPY -fopenmp
+objects = graph_generator k-induced-path-color-coding \
+					k-induced-path-naive k-labeled-path-cc-conte \
+					k-path-color-coding-parallel k-path-color-coding \
+					k-path-divide-color k-path-naive slash-burn
 
-graph-gen: graph_generator
+$(objects): %: %.cpp
+#	$(CC) $(CXXFLAGS) -o $@ $<
 
-induced-naive: k-induced-path-naive
-
-induced-color: k-induced-path-color-coding
-
-path-naive: k-path-naive
-
-path-color: k-path-color-coding
-
-path-color-parallel: k-path-color-coding-parallel
-
-path-divide: k-path-divide-color
-
-slashburn: slash-burn
-
-all: graph-gen induced-naive induced-color path-naive path-color path-color-parallel path-divide slashburn
+all: $(objects)
 
 clean-bin:
-	-rm graph_generator
-	-rm k-induced-path-naive
-	-rm k-induced-path-color-coding
-	-rm k-path-naive
-	-rm k-path-color-coding
-	-rm k-path-color-coding-parallel
-	-rm k-path-divide-color
-	-rm slash-burn
+	rm $(objects)
 
 clean-dataset:
 	-rm input/*
@@ -40,7 +24,7 @@ clean-dataset:
 
 clean: clean-dataset clean-bin
 
-dataset-snap: graph-gen
+dataset-snap: graph_generator
 	mkdir -p input | true
 	mkdir -p input/snap | true
 	wget -P input/snap https://snap.stanford.edu/data/web-BerkStan.txt.gz
@@ -51,7 +35,7 @@ dataset-snap: graph-gen
 	wget -P input/snap https://snap.stanford.edu/data/twitter_combined.txt.gz
 	gunzip input/snap/*.gz
 
-dataset-gen: graph-gen
+dataset-gen: graph_generator
 	mkdir -p input | true
 	mkdir -p input/gen | true
 	./graph_generator     1000      5000 input/gen/graph-1k-5k.nme.bin
@@ -65,25 +49,39 @@ dataset-gen: graph-gen
 	#./graph_generator 10000000  50000000 input/gen/graph-10M-50M.nme.bin
 	#./graph_generator 10000000 100000000 input/gen/graph-10M-100M.nme.bin
 
-dataset-label: graph-gen
+dataset-label: graph_generator
 	mkdir -p input | true
 	mkdir -p input/label | true
-	./graph_generator     1000      5000 input/label/graph-label-1k-5k.nme.bin     127
-	./graph_generator     1000     10000 input/label/graph-label-1k-10k.nme.bin    127
-	./graph_generator    10000     50000 input/label/graph-label-10k-50k.nme.bin   127
-	./graph_generator    10000    100000 input/label/graph-label-10k-100k.nme.bin  127
-	./graph_generator   100000    500000 input/label/graph-label-100k-500k.nme.bin 127
-	./graph_generator   100000   1000000 input/label/graph-label-100k-1M.nme.bin   127
-	./graph_generator  1000000   5000000 input/label/graph-label-1M-5M.nme.bin     127
-	./graph_generator  1000000  10000000 input/label/graph-label-1M-10M.nme.bin    127
+	./graph_generator     1000      5000 input/label/graph-label-1k-5k.nme.bin     8
+	./graph_generator     1000     10000 input/label/graph-label-1k-10k.nme.bin    8
+	./graph_generator    10000     50000 input/label/graph-label-10k-50k.nme.bin   8
+	./graph_generator    10000    100000 input/label/graph-label-10k-100k.nme.bin  8
+	./graph_generator   100000    500000 input/label/graph-label-100k-500k.nme.bin 8
+	./graph_generator   100000   1000000 input/label/graph-label-100k-1M.nme.bin   8
+	./graph_generator  1000000   5000000 input/label/graph-label-1M-5M.nme.bin     8
+	./graph_generator  1000000  10000000 input/label/graph-label-1M-10M.nme.bin    8
 	#./graph_generator 10000000  50000000 input/gen/graph-10M-50M.nme.bin
 	#./graph_generator 10000000 100000000 input/gen/graph-10M-100M.nme.bin
 
 dataset: dataset-snap dataset-gen dataset-label
 
-test-gen: path-color-parallel
-	./k-path-color-coding-parallel -k 6 -g input/gen/graph-1k-5k.nme.bin     -f nme --verbose
-	./k-path-color-coding-parallel -k 6 -g input/gen/graph-10k-50k.nme.bin   -f nme --verbose
-	./k-path-color-coding-parallel -k 6 -g input/gen/graph-100k-500k.nme.bin -f nme --verbose
-	./k-path-color-coding-parallel -k 6 -g input/gen/graph-1M-5M.nme.bin     -f nme --verbose
+test-gen: k-path-color-coding-parallel
+	./k-path-color-coding-parallel -k 4 -g input/gen/graph-1k-5k.nme.bin     -f nme --verbose
+	./k-path-color-coding-parallel -k 4 -g input/gen/graph-10k-50k.nme.bin   -f nme --verbose
+	./k-path-color-coding-parallel -k 4 -g input/gen/graph-100k-500k.nme.bin -f nme --verbose
+	./k-path-color-coding-parallel -k 4 -g input/gen/graph-1M-5M.nme.bin     -f nme --verbose
 	#./k-path-color-coding-parallel -k 6 -g input/gen/graph-10M-50M.nme.bin   -f nme --verbose
+
+test-snap: k-path-color-coding-parallel
+	./k-path-color-coding-parallel -k 4 -g input/snap/facebook_combined.txt -f snap --verbose
+	./k-path-color-coding-parallel -k 4 -g input/snap/twitter_combined.txt  -f snap --verbose
+	./k-path-color-coding-parallel -k 4 -g input/snap/web-Google.txt        -f snap --verbose
+	./k-path-color-coding-parallel -k 4 -g input/snap/web-NotreDame.txt     -f snap --verbose
+	./k-path-color-coding-parallel -k 4 -g input/snap/web-Stanford.txt      -f snap --verbose
+	./k-path-color-coding-parallel -k 4 -g input/snap/web-BerkStan.txt      -f snap --verbose
+
+test-labeled-conte: k-labeled-path-cc-conte
+	./k-labeled-path-cc-conte -k 4 -g input/gen/graph-1k-5k.nme.bin     --verbose
+	./k-labeled-path-cc-conte -k 4 -g input/gen/graph-10k-50k.nme.bin   --verbose
+	./k-labeled-path-cc-conte -k 4 -g input/gen/graph-100k-500k.nme.bin --verbose
+	./k-labeled-path-cc-conte -k 4 -g input/gen/graph-1M-5M.nme.bin     --verbose

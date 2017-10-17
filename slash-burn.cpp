@@ -74,7 +74,7 @@ void slashBurn() {
 
   while (degOrd.size()) {
     iteration++;
-    printf("IT = %d || %d\n", iteration, degOrd.size());
+    printf("IT = %d || %zu\n", iteration, degOrd.size());
 
     while (connected()) {
       if (degOrd.size() <= 2) {
