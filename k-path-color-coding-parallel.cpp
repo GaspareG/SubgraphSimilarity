@@ -173,7 +173,7 @@ void print_usage(char *filename) {
   printf("\tDisplay help text and exit.\n");
 
   printf("--verbose\n");
-  printf("\tDisplay help text and exit.\n");
+  printf("\nPrint status messages.\n");
 }
 
 bool input_graph_flag = false;
