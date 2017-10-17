@@ -2,7 +2,8 @@ CXXFLAGS += --std=c++11 -Wall -pedantic -g -DMAKE_VALGRIND_HAPPY -fopenmp
 objects = graph_generator k-induced-path-color-coding \
 					k-induced-path-naive k-labeled-path-cc-conte \
 					k-path-color-coding-parallel k-path-color-coding \
-					k-path-divide-color k-path-naive slash-burn
+					k-path-divide-color k-path-naive slash-burn \
+					k-labeled-path-cc-marino
 
 $(objects): %: %.cpp
 #	$(CC) $(CXXFLAGS) -o $@ $<
@@ -81,7 +82,13 @@ test-snap: k-path-color-coding-parallel
 	./k-path-color-coding-parallel -k 4 -g input/snap/web-BerkStan.txt      -f snap --verbose
 
 test-labeled-conte: k-labeled-path-cc-conte
-	./k-labeled-path-cc-conte -k 4 -g input/gen/graph-1k-5k.nme.bin     --verbose
-	./k-labeled-path-cc-conte -k 4 -g input/gen/graph-10k-50k.nme.bin   --verbose
-	./k-labeled-path-cc-conte -k 4 -g input/gen/graph-100k-500k.nme.bin --verbose
-	./k-labeled-path-cc-conte -k 4 -g input/gen/graph-1M-5M.nme.bin     --verbose
+	./k-labeled-path-cc-conte -k 4 -g input/label/graph-label-1k-5k.nme.bin     --verbose
+	./k-labeled-path-cc-conte -k 4 -g input/label/graph-label-10k-50k.nme.bin   --verbose
+	./k-labeled-path-cc-conte -k 4 -g input/label/graph-label-100k-500k.nme.bin --verbose
+	./k-labeled-path-cc-conte -k 4 -g input/label/graph-label-1M-5M.nme.bin     --verbose
+
+test-labeled-marino: k-labeled-path-cc-marino
+	./k-labeled-path-cc-marino -k 4 -g input/label/graph-label-1k-5k.nme.bin     --verbose
+	./k-labeled-path-cc-marino -k 4 -g input/label/graph-label-10k-50k.nme.bin   --verbose
+	./k-labeled-path-cc-marino -k 4 -g input/label/graph-label-100k-500k.nme.bin --verbose
+	./k-labeled-path-cc-marino -k 4 -g input/label/graph-label-1M-5M.nme.bin     --verbose

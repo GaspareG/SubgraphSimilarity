@@ -1,7 +1,8 @@
 /*
   Author: Gaspare Ferraro
-  Count and find simple k colorful-path in a graph
-  using the color-coding technique (parallel version)
+  Count the frequency of labels sequency of length k
+  start/finish in every node using color-coding technique (parallel version)
+  (by Alessio Conte)
 */
 #include <vector>
 #include <set>
@@ -35,8 +36,9 @@ using namespace std;
 typedef long long ll;
 
 unsigned int N, M;
-unsigned k = 0, kp = 0;
-unsigned thread_count = 0;
+unsigned int k = 0, kp = 0;
+int x = -1;
+unsigned int thread_count = 0;
 static int verbose_flag, help_flag;
 
 ll cont = 0;
@@ -101,7 +103,7 @@ void print_usage(char *filename) {
   //  printf("Usage: ./%s -k length -K number -g filename -f format -t filename
   //  -T filename -p threadcount -h -v\n",filename);
   printf(
-      "Usage: ./%s -k length -K number -g filename -p threadcount "
+      "Usage: ./%s -k length -K number -g filename -p threadcount -n index"
       "--help --verbose\n",
       filename);
   printf("Valid arguments:\n");
@@ -129,6 +131,9 @@ void print_usage(char *filename) {
   */
   printf("-p, --parallel threadcount\n");
   printf("\tNumber of threads to use (default maximum thread avaiable)\n");
+
+  printf("-n, --node index\n");
+  printf("\tIndex of the node to print sequence and frequency\n");
 
   printf("--help\n");
   printf("\tDisplay help text and exit.\n");
@@ -163,6 +168,7 @@ int main(int argc, char **argv) {
       // {"tablein", required_argument,             0, 'T'},
       //{"list", required_argument, 0, 'l'},
       {"parallel", required_argument, 0, 'p'},
+      {"node", required_argument, 0, 'n'},
       {"help", no_argument, &help_flag, 1},
       {"verbose", no_argument, &verbose_flag, 1},
       {0, 0, 0, 0}};
@@ -173,7 +179,7 @@ int main(int argc, char **argv) {
     // c = getopt_long (argc, argv, "k:K:g:f:t:T:l:p:", long_options,
     // &option_index);
     //c = getopt_long(argc, argv, "k:K:g:f:l:p:", long_options, &option_index);
-    c = getopt_long(argc, argv, "k:K:g:p:", long_options, &option_index);
+    c = getopt_long(argc, argv, "k:K:g:p:n:", long_options, &option_index);
 
     if (c == -1) break;
 
@@ -183,6 +189,9 @@ int main(int argc, char **argv) {
         break;
       case 'K':
         if (optarg != NULL) kp = atoi(optarg);
+        break;
+      case 'n':
+        if (optarg != NULL) x = atoi(optarg);
         break;
       case 'g':
         input_graph_flag = true;
@@ -299,6 +308,12 @@ int main(int argc, char **argv) {
 
   if (verbose_flag) printf("N = %d | M = %d\n", N, M);
 
+  if( x >= N )
+  {
+    x = -1;
+    if( verbose_flag ) printf("Invalid node index, it will be ignored!\n");
+  }
+
   // Create DP Table
   for (unsigned int i = 0; i <= k; i++)
     DP[i] = new map< pair<COLORSET, string>, ll >[N];
@@ -324,5 +339,12 @@ int main(int argc, char **argv) {
     }
   }
 */
+  if( x != -1 )
+  {
+    for(auto v : DP[k][x] )
+    {
+      printf("S=%s F=%llu\n", v.first.second.c_str(), v.second );
+    }
+  }
   return 0;
 }
