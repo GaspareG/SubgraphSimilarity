@@ -113,9 +113,15 @@ vector<int> H(vector<int> X)
   return ret;
 }
 
+string L(vector<int> p)
+{
+  string ret = "";
+  for(int x : p) ret += labels[x];
+  return ret;
+}
 // Dynamic programming processing
 map< vector<int>, tuple<COLORSET, vector<int>, string> > *DP[MAXK+1];
-map< string, ll > *freq;
+map< vector<int>, ll > *freq;
 
 void processDP() {
   if( verbose_flag ) printf("K = %d\n", 0);
@@ -124,7 +130,7 @@ void processDP() {
     vector<int> vu;
     vu.push_back(u);
     DP[0][u][vu] = make_tuple( setBit(0, color[u]), H(vu), string(&labels[u],1));
-    freq[u][string(&labels[u],1)] = 1;
+    freq[u][vu] = 1;
   }
 
   for(unsigned int i=1; i<=k; i++)
@@ -154,9 +160,9 @@ void processDP() {
           string lu = string(l);
           lu += labels[u];
 
-          ll f = freq[v][l];
-          ll fp = freq[u][lu];
-          freq[u][lu] = f+fp;
+          ll f = freq[v][p];
+          ll fp = freq[u][pu];
+          freq[u][pu] = f+fp;
           DP[i][u][pu] = make_tuple(cu, hu, lu);
         }
       }
@@ -406,7 +412,7 @@ int main(int argc, char **argv) {
   for (unsigned int i = 0; i <= k; i++)
     DP[i] = new map< vector<int>, tuple<COLORSET, vector<int>, string> >[N];
 
-  freq = new map<string, ll>[N];
+  freq = new map<vector<int>, ll>[N];
 
   // Random color graph
   if (verbose_flag) printf("Random coloring graph...\n");
@@ -434,7 +440,7 @@ int main(int argc, char **argv) {
     printf("Pair<String, Frequency> from node %d:\n", x);
     for(auto v : freq[x])
     {
-      printf("\tS=%s F=%llu\n", v.first.c_str(), v.second);
+      printf("\tS=%s F=%llu\n", L(v.first).c_str(), v.second);
     }
   }
   return 0;
