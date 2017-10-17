@@ -12,6 +12,9 @@
 
   Create empty dictionaries dict[i][u] and freq[u]
 
+  freq[N] path -> freq
+  dict[k][N] path -> <colore, h, label>
+
   for u in V:
     dict[0][u].put(<u, color(u), H(u), label(u)>)
 
@@ -64,8 +67,9 @@ using namespace std;
 typedef long long ll;
 
 unsigned int N, M;
-unsigned k = 0, kp = 0;
-unsigned thread_count = 0;
+unsigned int k = 0, kp = 0;
+int x = -1;
+unsigned int thread_count = 0;
 static int verbose_flag, help_flag;
 
 ll cont = 0;
@@ -80,24 +84,80 @@ inline int nextInt() {
 }
 
 // Get pos-th bit in n
-bool getBit(COLORSET n, int pos) { return ((n >> pos) & 1) == 1; }
+inline bool getBit(COLORSET n, int pos) { return ((n >> pos) & 1) == 1; }
 
 // Set pos-th bit in n
-COLORSET setBit(COLORSET n, int pos) { return n |= 1 << pos; }
+inline COLORSET setBit(COLORSET n, int pos) { return n |= 1 << pos; }
 
 // Reset pos-th bit in n
-COLORSET clearBit(COLORSET n, int pos) { return n &= ~(1 << pos); }
+inline COLORSET clearBit(COLORSET n, int pos) { return n &= ~(1 << pos); }
 
 // Random coloring graph using kp color
 inline void randomColor() {
   for (unsigned int i = 0; i < N; i++) color[i] = rand() % kp;
 }
 
+// Hashing function
+int p1 = 23;
+int p2 = 29;
+inline int h(int x)
+{
+  return (p1*x+p2) % N;
+}
+
+vector<int> H(vector<int> X)
+{
+  vector<int> ret;
+  for(auto x : X) ret.push_back(h(x));
+  return ret;
+}
+
 // Dynamic programming processing
-map< pair<COLORSET, string>, ll > *DP[MAXK+1];
+map< vector<int>, tuple<COLORSET, vector<int>, string> > *DP[MAXK+1];
+map< string, ll > *freq;
 
 void processDP() {
-    // TODO
+  if( verbose_flag ) printf("K = %d\n", 0);
+  for(unsigned int u=0; u<N; u++)
+  {
+    vector<int> vu;
+    vu.push_back(u);
+    DP[0][u][vu] = make_tuple( setBit(0, color[u]), H(vu), string(&labels[u],1));
+    freq[u][string(&labels[u],1)] = 1;
+  }
+
+  for(unsigned int i=1; i<=k; i++)
+  {
+    if( verbose_flag ) printf("K = %d\n", i);
+    #pragma omp parallel for
+    for(unsigned int u=0; u<N; u++)
+    {
+      for(auto v : G[u])
+      {
+        for(auto e : DP[i-1][v])
+        {
+          vector<int> p = e.first;
+          COLORSET c = get<0>(e.second);
+          vector<int> h = get<1>(e.second);
+          string l = get<2>(e.second);
+
+          if( getBit(c, color[u]) ) continue;
+
+          vector<int> pu = vector<int>(p);
+          pu.push_back(u);
+          COLORSET cu = setBit(c, color[u]);
+          vector<int> hu = H(pu);
+          string lu = string(l);
+          lu += labels[u];
+
+          ll f = freq[v][l];
+          ll fp = freq[u][lu];
+          freq[u][lu] = f+fp;
+          DP[i][u][pu] = make_tuple(cu, hu, lu);
+        }
+      }
+    }
+  }
 }
 
 
@@ -105,7 +165,7 @@ void print_usage(char *filename) {
   //  printf("Usage: ./%s -k length -K number -g filename -f format -t filename
   //  -T filename -p threadcount -h -v\n",filename);
   printf(
-      "Usage: ./%s -k length -K number -g filename -p threadcount "
+      "Usage: ./%s -k length -K number -g filename -p threadcount -n index"
       "--help --verbose\n",
       filename);
   printf("Valid arguments:\n");
@@ -133,6 +193,9 @@ void print_usage(char *filename) {
   */
   printf("-p, --parallel threadcount\n");
   printf("\tNumber of threads to use (default maximum thread avaiable)\n");
+
+  printf("-n, --node index\n");
+  printf("\tIndex of the node to print sequence and frequency\n");
 
   printf("--help\n");
   printf("\tDisplay help text and exit.\n");
@@ -167,6 +230,7 @@ int main(int argc, char **argv) {
       // {"tablein", required_argument,             0, 'T'},
       //{"list", required_argument, 0, 'l'},
       {"parallel", required_argument, 0, 'p'},
+      {"node", required_argument, 0, 'n'},
       {"help", no_argument, &help_flag, 1},
       {"verbose", no_argument, &verbose_flag, 1},
       {0, 0, 0, 0}};
@@ -177,7 +241,7 @@ int main(int argc, char **argv) {
     // c = getopt_long (argc, argv, "k:K:g:f:t:T:l:p:", long_options,
     // &option_index);
     //c = getopt_long(argc, argv, "k:K:g:f:l:p:", long_options, &option_index);
-    c = getopt_long(argc, argv, "k:K:g:p:", long_options, &option_index);
+    c = getopt_long(argc, argv, "k:K:g:p:n:", long_options, &option_index);
 
     if (c == -1) break;
 
@@ -187,6 +251,9 @@ int main(int argc, char **argv) {
         break;
       case 'K':
         if (optarg != NULL) kp = atoi(optarg);
+        break;
+      case 'n':
+        if (optarg != NULL) x = atoi(optarg);
         break;
       case 'g':
         input_graph_flag = true;
@@ -303,9 +370,17 @@ int main(int argc, char **argv) {
 
   if (verbose_flag) printf("N = %d | M = %d\n", N, M);
 
+  if( x >= (int) N )
+  {
+    x = -1;
+    if( verbose_flag ) printf("Invalid node index, it will be ignored!\n");
+  }
+
   // Create DP Table
   for (unsigned int i = 0; i <= k; i++)
-    DP[i] = new map< pair<COLORSET, string>, ll >[N];
+    DP[i] = new map< vector<int>, tuple<COLORSET, vector<int>, string> >[N];
+
+  freq = new map<string, ll>[N];
 
   // Random color graph
   if (verbose_flag) printf("Random coloring graph...\n");
@@ -328,5 +403,13 @@ int main(int argc, char **argv) {
     }
   }
 */
+  if( x != -1 )
+  {
+    printf("Pair<String, Frequency> from node %d:\n", x);
+    for(auto v : freq[x])
+    {
+      printf("\tS=%s F=%llu\n", v.first.c_str(), v.second);
+    }
+  }
   return 0;
 }

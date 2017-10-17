@@ -310,7 +310,7 @@ int main(int argc, char **argv) {
 
   if (verbose_flag) printf("N = %d | M = %d\n", N, M);
 
-  if( x >= N )
+  if( x >= (int) N )
   {
     x = -1;
     if( verbose_flag ) printf("Invalid node index, it will be ignored!\n");
