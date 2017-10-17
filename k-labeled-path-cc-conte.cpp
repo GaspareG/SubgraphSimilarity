@@ -4,6 +4,7 @@
   start/finish in every node using color-coding technique (parallel version)
   (by Alessio Conte)
 */
+
 #include <vector>
 #include <set>
 #include <map>
@@ -71,6 +72,7 @@ map< pair<COLORSET, string>, ll > *DP[MAXK+1];
 
 void processDP() {
 
+    if( verbose_flag ) printf("K = %u\n", 1);
     for(unsigned int u=0; u<N; u++)
       DP[1][u][ make_pair( setBit(0, color[u] ), string(&labels[u], 1) ) ] = 1;
 
