@@ -98,6 +98,7 @@ inline void randomColor() {
 }
 
 // Hashing function
+vector<int> tau;
 int p1 = 23;
 int p2 = 29;
 inline int h(int x)
@@ -145,6 +146,9 @@ void processDP() {
 
           vector<int> pu = vector<int>(p);
           pu.push_back(u);
+
+          if( H(pu) > tau ) continue;
+
           COLORSET cu = setBit(c, color[u]);
           vector<int> hu = H(pu);
           string lu = string(l);
@@ -191,6 +195,9 @@ void print_usage(char *filename) {
   printf("-l, --list filename\n");
   printf("\tList k-path (default stdout)\n");
   */
+  printf("-t, --tau string\n");
+  printf("\tK integer value [0,N-1] joined by a '-' (e.g. 3-2-7-1)\n");
+
   printf("-p, --parallel threadcount\n");
   printf("\tNumber of threads to use (default maximum thread avaiable)\n");
 
@@ -229,6 +236,7 @@ int main(int argc, char **argv) {
       // {"tableout",required_argument,             0, 't'},
       // {"tablein", required_argument,             0, 'T'},
       //{"list", required_argument, 0, 'l'},
+      {"tau", required_argument, 0, 't'},
       {"parallel", required_argument, 0, 'p'},
       {"node", required_argument, 0, 'n'},
       {"help", no_argument, &help_flag, 1},
@@ -241,7 +249,7 @@ int main(int argc, char **argv) {
     // c = getopt_long (argc, argv, "k:K:g:f:t:T:l:p:", long_options,
     // &option_index);
     //c = getopt_long(argc, argv, "k:K:g:f:l:p:", long_options, &option_index);
-    c = getopt_long(argc, argv, "k:K:g:p:n:", long_options, &option_index);
+    c = getopt_long(argc, argv, "k:K:g:p:n:t:", long_options, &option_index);
 
     if (c == -1) break;
 
@@ -258,6 +266,18 @@ int main(int argc, char **argv) {
       case 'g':
         input_graph_flag = true;
         if (optarg != NULL) input_graph = optarg;
+        break;
+      case 't':
+        if (optarg != NULL)
+        {
+          char *pch;
+          pch = strtok (optarg,"-");
+          while (pch != NULL)
+          {
+            tau.push_back(atoi(pch));
+            pch = strtok (NULL, "-");
+          }
+        }
         break;
       /*case 'f':
         format_name_flag = true;
@@ -301,6 +321,12 @@ int main(int argc, char **argv) {
   if (thread_count > 0 && (int)thread_count < omp_get_max_threads()) {
     omp_set_dynamic(0);
     omp_set_num_threads(thread_count);
+  }
+
+  if( tau.size() != k )
+  {
+    printf("Invalid length of tau %zu instead of %d!\n", tau.size(), k);
+    return 1;
   }
 
   if (verbose_flag) {
