@@ -129,11 +129,11 @@ void processDP() {
   {
     vector<int> vu;
     vu.push_back(u);
-    DP[0][u][vu] = make_tuple( setBit(0, color[u]), H(vu), string(&labels[u],1));
+    DP[1][u][vu] = make_tuple( setBit(0, color[u]), H(vu), string(&labels[u],1));
     freq[u][vu] = 1;
   }
 
-  for(unsigned int i=1; i<=k; i++)
+  for(unsigned int i=2; i<=k; i++)
   {
     if( verbose_flag ) printf("K = %d\n", i);
     #pragma omp parallel for
