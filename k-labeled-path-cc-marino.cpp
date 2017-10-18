@@ -437,11 +437,15 @@ int main(int argc, char **argv) {
 */
   if( x != -1 )
   {
+    ll cont = 0 ;
     printf("Pair<String, Frequency> from node %d:\n", x);
     for(auto v : freq[x])
     {
+      if( v.first.size() != k ) continue;
+      cont += v.second;
       printf("\tS=%s F=%llu\n", L(v.first).c_str(), v.second);
     }
+    if( verbose_flag ) printf("%llu k-labeled colorful-path", cont);
   }
   return 0;
 }

@@ -93,7 +93,7 @@ void processDP() {
             string lu = string(l);
             lu += labels[u];
             ll fp = DP[i][u][ make_pair( setBit(s, color[u]), lu ) ];
-            DP[i][u][ make_pair( setBit(s, color[u]), lu ) ] = f +fp;
+            DP[i][u][ make_pair( setBit(s, color[u]), lu ) ] = f+fp;
           }
         }
       }
@@ -343,11 +343,14 @@ int main(int argc, char **argv) {
 */
   if( x != -1 )
   {
+    ll cont = 0;
     printf("Tuple<ColorSet, String, Frequency> from node %d:\n", x);
     for(auto v : DP[k][x] )
     {
+      cont += v.second;
       printf("\tC=%d S=%s F=%llu\n", v.first.first, v.first.second.c_str(), v.second );
     }
+    if( verbose_flag ) printf("%llu k-labeled colorful-path", cont);
   }
   return 0;
 }
