@@ -9,8 +9,6 @@
 #include <set>
 #include <map>
 #include <string>
-#include <unordered_set>
-#include <unordered_map>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <string.h>
@@ -46,6 +44,8 @@ ll cont = 0;
 char *labels;
 int *color;
 vector<int> *G;
+
+set<string> W;
 
 inline int nextInt() {
   int r;
@@ -90,10 +90,17 @@ void processDP() {
             string l = d.first.second;
             ll f = d.second;
             if( getBit(s, color[u]) ) continue;
+
+            COLORSET su = setBit(s, color[u]);
             string lu = string(l);
             lu += labels[u];
             ll fp = DP[i][u][ make_pair( setBit(s, color[u]), lu ) ];
-            DP[i][u][ make_pair( setBit(s, color[u]), lu ) ] = f+fp;
+
+            auto it = W.lower_bound(lu);
+            if( it == W.end() ) continue;
+            if( mismatch(lu.begin(), lu.end(), (*it).begin()).first != lu.end() ) continue;
+
+            DP[i][u][make_pair(su, lu)] = f+fp;
           }
         }
       }
@@ -102,13 +109,14 @@ void processDP() {
 
 
 void print_usage(char *filename) {
-  //  printf("Usage: ./%s -k length -K number -g filename -f format -t filename
-  //  -T filename -p threadcount -h -v\n",filename);
   printf(
-      "Usage: ./%s -k length -K number -g filename -p threadcount -n index"
+      "Usage: ./%s -w filename -k length -K number -g filename -p threadcount -n index"
       "--help --verbose\n",
       filename);
   printf("Valid arguments:\n");
+
+  printf("-w, --sample filename\n");
+  printf("\tInput file with sampled paths (default stdin)\n");
 
   printf("-k, --path length\n");
   printf("\tLength of the path.\n");
@@ -119,18 +127,6 @@ void print_usage(char *filename) {
   printf("-g, --input filename\n");
   printf("\tInput file of graph in .nme.bin format (default stdin)\n");
 
-  /*printf("-f, --format format\n");
-  printf("\tFormat of input file (snap, nde, nme)\n");
-
-    printf("-t, --tableout filename\n");
-    printf("\tOutput DP table (default stdout)\n");
-
-    printf("-T, --tablein filename\n");
-    printf("\tImport DP table (default stdin)\n");
-
-  printf("-l, --list filename\n");
-  printf("\tList k-path (default stdout)\n");
-  */
   printf("-p, --parallel threadcount\n");
   printf("\tNumber of threads to use (default maximum thread avaiable)\n");
 
@@ -146,30 +142,17 @@ void print_usage(char *filename) {
 
 bool input_graph_flag = false;
 char *input_graph = NULL;
-/*
-bool table_in_flag = false;
-char *table_in = NULL;
 
-bool table_out_flag = false;
-char *table_out = NULL;
-
-bool list_path_flag = false;
-char *list_path = NULL;
-
-bool format_name_flag = false;
-char *format_name = NULL;
-*/
+bool sampled_path_flag = false;
+char *sampled_path = NULL;
 
 int main(int argc, char **argv) {
   static struct option long_options[] = {
       {"path", required_argument, 0, 'k'},
       {"color", required_argument, 0, 'K'},
       {"input", required_argument, 0, 'g'},
-      //{"format", required_argument, 0, 'f'},
-      // {"tableout",required_argument,             0, 't'},
-      // {"tablein", required_argument,             0, 'T'},
-      //{"list", required_argument, 0, 'l'},
       {"parallel", required_argument, 0, 'p'},
+      {"sample", required_argument, 0, 'w'},
       {"node", required_argument, 0, 'n'},
       {"help", no_argument, &help_flag, 1},
       {"verbose", no_argument, &verbose_flag, 1},
@@ -178,14 +161,15 @@ int main(int argc, char **argv) {
   int option_index = 0;
   int c;
   while (1) {
-    // c = getopt_long (argc, argv, "k:K:g:f:t:T:l:p:", long_options,
-    // &option_index);
-    //c = getopt_long(argc, argv, "k:K:g:f:l:p:", long_options, &option_index);
-    c = getopt_long(argc, argv, "k:K:g:p:n:", long_options, &option_index);
+    c = getopt_long(argc, argv, "k:K:g:p:n:w:", long_options, &option_index);
 
     if (c == -1) break;
 
     switch (c) {
+      case 'w':
+        sampled_path_flag = true;
+        if (optarg != NULL) sampled_path = optarg;
+        break;
       case 'k':
         if (optarg != NULL) k = atoi(optarg);
         break;
@@ -199,22 +183,6 @@ int main(int argc, char **argv) {
         input_graph_flag = true;
         if (optarg != NULL) input_graph = optarg;
         break;
-      /*case 'f':
-        format_name_flag = true;
-        if (optarg != NULL) format_name = optarg;
-        break;
-           case 't':
-              table_in_flag = true;
-              if( optarg != NULL ) table_in = optarg;
-            break;
-            case 'T':
-              table_out_flag = true;
-              if( optarg != NULL ) table_out = optarg;
-            break;
-      case 'l':
-        list_path_flag = true;
-        if (optarg != NULL) list_path = optarg;
-        break;*/
       case 'p':
         if (optarg != NULL) thread_count = atoi(optarg);
         break;
@@ -249,12 +217,6 @@ int main(int argc, char **argv) {
     printf("kp = %d\n", kp);
     printf("thread = %d\n", thread_count);
     printf("input_graph = %s\n", input_graph != NULL ? input_graph : "stdin");
-    //printf("format_name = %s\n", format_name != NULL ? format_name : "stdin");
-    // printf("table_in    = %s\n", table_in    != NULL ? table_in    :
-    // "stdin");
-    // printf("table_out   = %s\n", table_out   != NULL ? table_out   :
-    // "stdin");
-    //printf("list_path   = %s\n", list_path != NULL ? list_path : "stdin");
   }
   if (verbose_flag) printf("Reading graph...\n");
 
@@ -310,6 +272,28 @@ int main(int argc, char **argv) {
 
   if (verbose_flag) printf("N = %d | M = %d\n", N, M);
 
+  if (verbose_flag) printf("Reading sampled paths (empty line to stop)\n");
+
+  FILE *fd_w = stdin;
+  if( sampled_path_flag && sampled_path != NULL )
+  {
+    if( (fd_w=fopen(sampled_path,"r")) == NULL)
+    {
+      perror("Error opening sampled paths file");
+      return 1;
+    }
+  }
+
+  char * line = NULL;
+  size_t len = 0;
+  ssize_t read;
+  while ( !feof(fd_w) && (read = getline(&line, &len, fd_w)) > 1 ) {
+    line[read-1] = '\0';
+    W.insert( string(line) );
+  }
+
+  if( verbose_flag ) printf("%zu string in W!\n", W.size());
+
   if( x >= (int) N )
   {
     x = -1;
@@ -329,18 +313,6 @@ int main(int argc, char **argv) {
   processDP();
   if (verbose_flag) printf("Finish processing DP table...\n");
 
-/*
-  if (verbose_flag)
-  {
-    for(unsigned int u = 0; u<N ; u++)
-    {
-      printf("[%u]: ", u);
-      for(auto v : DP[k][u])
-        printf("(%s, %llu) ", v.first.second.c_str(), v.second);
-      printf("\n");
-    }
-  }
-*/
   if( x != -1 )
   {
     ll cont = 0;

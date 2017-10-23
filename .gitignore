@@ -1,2 +1,17 @@
+# Dataset files
 output/*
 input/*
+
+# Executable files
+graph_generator 
+k-path-color-coding 
+k-path-color-coding-parallel 
+k-induced-path-color-coding
+k-path-divide-color 
+k-induced-path-naive 
+k-path-naive
+k-labeled-dpc 
+k-labeled-dpl
+k-labeled-dpl-tau
+k-labeled-dplw
+slash-burn 

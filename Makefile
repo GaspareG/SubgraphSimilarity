@@ -1,9 +1,6 @@
 CXXFLAGS += --std=c++11 -Wall -pedantic -g -DMAKE_VALGRIND_HAPPY -fopenmp
-objects = graph_generator k-induced-path-color-coding \
-					k-induced-path-naive k-labeled-path-cc-conte \
-					k-path-color-coding-parallel k-path-color-coding \
-					k-path-divide-color k-path-naive slash-burn \
-					k-labeled-path-cc-marino
+objects = graph_generator k-path-color-coding k-path-color-coding-parallel k-induced-path-color-coding k-path-divide-color slash-burn k-induced-path-naive k-path-naive k-labeled-dpc k-labeled-dpl k-labeled-dpl-tau k-labeled-dplw
+
 
 $(objects): %: %.cpp
 #	$(CC) $(CXXFLAGS) -o $@ $<
