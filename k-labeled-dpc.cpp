@@ -10,6 +10,9 @@
 #include <map>
 #include <string>
 #include <algorithm>
+#include <iterator>
+#include <random>
+#include <limits>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <string.h>
@@ -19,17 +22,17 @@
 #include <unistd.h>
 
 #ifdef K_8
-  #define MAXK 8
-  #define COLORSET uint8_t
+#define MAXK 8
+#define COLORSET uint8_t
 #elif K_16
-  #define MAXK 16
-  #define COLORSET uint16_t
+#define MAXK 16
+#define COLORSET uint16_t
 #elif K_64
-  #define MAXK 64
-  #define COLORSET uint64_t
+#define MAXK 64
+#define COLORSET uint64_t
 #else
-  #define MAXK 32
-  #define COLORSET uint32_t
+#define MAXK 32
+#define COLORSET uint32_t
 #endif
 
 using namespace std;
@@ -51,6 +54,11 @@ inline int nextInt() {
   return r;
 }
 
+// Random generator
+random_device rd;
+mt19937_64 eng(rd());
+uniform_int_distribution<unsigned long long> distr;
+
 // Get pos-th bit in n
 bool getBit(COLORSET n, int pos) { return ((n >> pos) & 1) == 1; }
 
@@ -61,9 +69,7 @@ COLORSET setBit(COLORSET n, int pos) { return n |= 1 << pos; }
 COLORSET clearBit(COLORSET n, int pos) { return n &= ~(1 << pos); }
 
 // Complementary set of a COLORSET
-COLORSET getCompl(COLORSET n){
-  return ((1<<kp)-1) & (~n) ;
-}
+COLORSET getCompl(COLORSET n) { return ((1 << kp) - 1) & (~n); }
 
 // Random coloring graph using kp color
 inline void randomColor() {
@@ -71,81 +77,83 @@ inline void randomColor() {
 }
 
 // Dynamic programming processing
-map< COLORSET , ll > *DP[MAXK+1];
+map<COLORSET, ll> *DP[MAXK + 1];
 
 void processDP() {
+  if (verbose_flag) printf("K = %u\n", 1);
+  for (unsigned int u = 0; u < N; u++) DP[1][u][setBit(0, color[u])] = 1;
 
-    if( verbose_flag ) printf("K = %u\n", 1);
-    for(unsigned int u=0; u<N; u++)
-      DP[1][u][setBit(0, color[u])] = 1;
+  for (unsigned int i = 2; i <= k; i++) {
+    if (verbose_flag) printf("K = %u\n", i);
+#pragma omp parallel for
+    for (unsigned int u = 0; u < N; u++) {
+      for (int v : G[u]) {
+        for (auto d : DP[i - 1][v]) {
+          COLORSET s = d.first;
+          ll f = d.second;
 
-    for(unsigned int i=2; i <= k; i++)
-    {
-      if( verbose_flag ) printf("K = %u\n", i);
-      #pragma omp parallel for
-      for(unsigned int u=0; u<N; u++)
-      {
-        for(int v : G[u])
-        {
-          for(auto d : DP[i-1][v])
-          {
-            COLORSET s = d.first;
-            ll f = d.second;
+          if (getBit(s, color[u])) continue;
 
-            if( getBit(s, color[u]) ) continue;
-
-            ll fp = DP[i][u][setBit(s, color[u])];
-            DP[i][u][setBit(s, color[u])] = f+fp;
-          }
+          ll fp = DP[i][u][setBit(s, color[u])];
+          DP[i][u][setBit(s, color[u])] = f + fp;
         }
       }
     }
+  }
 }
 
 // Sample r(*2) path from DP matrix
-set<string> sample()
-{
+set<string> sample() {
   set<string> out;
-  while( r )
-  {
+  while (r) {
     string pi;
     COLORSET D = 0;
     COLORSET kD = getCompl(D);
     int u = N;
-    
-    for(unsigned int i=k; i>0; i--)
-    {
-      vector<int> A;
-      for(int v : G[u])
-        if( DP[i][v].find(kD) != DP[i][v].end() )
-          A.push_back(v);
-          
-      if( A.size() == 0 ) break;
 
-      int v = A[ rand()%A.size() ];
-		  // v = random vertex in A s.t. the probability of extracting any u is M[i][u].freq([k]\D)/(sum_{z\in A} M[i][z].freq([k]\D)) 
-      //Gaspare riesci a renderla efficiente? Magari usando le somme prefisse e ricerca binaria      
+    for (unsigned int i = k; i > 0; i--) {
+      vector<int> A;
+      vector<ll> freqA;
+      ll last = 0ll;
+      ll sum = 0ll;
+      for (int v : G[u]) {
+        auto it = DP[i][v].find(kD);
+        if (it != DP[i][v].end()) {
+          A.push_back(v);
+          freqA.push_back(last);
+          last = (*it).second;
+          sum += last;
+        }
+      }
+
+      if (A.size() == 0) break;
+      ll rndIdx = distr(eng) % sum;
+      int v = A[distance(freqA.begin(),
+                         upper_bound(freqA.begin(), freqA.end(), rndIdx) - 1)];
+
       u = v;
       pi += labels[v];
       D = setBit(D, color[v]);
       kD = getCompl(D);
     }
 
-    if( pi.size() < k ) continue;
+    if (pi.size() < k) continue;
 
-    if( out.find(pi) == out.end() )
-    {
+    if (out.find(pi) == out.end()) {
       out.insert(pi);
       reverse(pi.begin(), pi.end());
       out.insert(pi);
-      r--; 
+      r--;
     }
   }
   return out;
 }
 
 void print_usage(char *filename) {
-  printf("Usage: ./%s -k length -K number -g filename -p threadcount -r number -R filename --help --verbose\n", filename);
+  printf(
+      "Usage: ./%s -k length -K number -g filename -p threadcount -r number -R "
+      "filename --help --verbose\n",
+      filename);
   printf("Valid arguments:\n");
 
   printf("-k, --path length\n");
@@ -269,12 +277,11 @@ int main(int argc, char **argv) {
 
     color = new int[N];
     labels = new char[N];
-    G = new vector<int>[N+1];
+    G = new vector<int>[N + 1];
 
-    read(input_fd, labels, N*sizeof(char));
+    read(input_fd, labels, N * sizeof(char));
 
-    for(unsigned int i=0; i<N; i++)
-      labels[i] += 'A';
+    for (unsigned int i = 0; i < N; i++) labels[i] += 'A';
 
     int ab[2];
     for (unsigned int i = 0; i < M; i++) {
@@ -290,10 +297,9 @@ int main(int argc, char **argv) {
 
     color = new int[N];
     labels = new char[N];
-    G = new vector<int>[N+1];
+    G = new vector<int>[N + 1];
 
-    for(unsigned int i = 0; i<N; i++)
-      labels[i] = 'A'+nextInt();
+    for (unsigned int i = 0; i < N; i++) labels[i] = 'A' + nextInt();
 
     for (unsigned int i = 0; i < M; i++) {
       int a = nextInt();
@@ -303,13 +309,12 @@ int main(int argc, char **argv) {
     }
   }
 
-  for(unsigned i = 0; i<N; i++) G[N].push_back(i);
+  for (unsigned i = 0; i < N; i++) G[N].push_back(i);
 
   if (verbose_flag) printf("N = %d | M = %d\n", N, M);
 
   // Create DP Table
-  for (unsigned int i = 0; i <= k; i++)
-    DP[i] = new map<COLORSET, ll>[N];
+  for (unsigned int i = 0; i <= k; i++) DP[i] = new map<COLORSET, ll>[N];
 
   // Random color graph
   if (verbose_flag) printf("Random coloring graph...\n");
@@ -320,26 +325,20 @@ int main(int argc, char **argv) {
   processDP();
   if (verbose_flag) printf("Finish processing DP table...\n");
 
-  if( r > 0 )
-  {
+  if (r > 0) {
     if (verbose_flag) printf("Sampling paths...\n");
     set<string> sampledPath = sample();
     if (verbose_flag) printf("Finish sampling path...\n");
 
-    if( output_sample_flag && output_sample != NULL )
-    {
+    if (output_sample_flag && output_sample != NULL) {
       FILE *fdout;
-      if( (fdout=fopen(output_sample, "w")) == NULL )
-      {
+      if ((fdout = fopen(output_sample, "w")) == NULL) {
         perror("Error opening output sample file");
         return 1;
       }
-      for(string s : sampledPath)
-        fprintf(fdout, "%s\n",s.c_str());      
-    }
-    else 
-      for(string s : sampledPath)
-        printf("%s\n",s.c_str());
+      for (string s : sampledPath) fprintf(fdout, "%s\n", s.c_str());
+    } else
+      for (string s : sampledPath) printf("%s\n", s.c_str());
   }
   return 0;
 }

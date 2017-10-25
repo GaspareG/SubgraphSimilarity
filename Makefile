@@ -20,7 +20,10 @@ clean-dataset:
 	-rmdir input/snap
 	-rmdir input
 
-clean: clean-dataset clean-bin
+clean-output:
+	-rm output/*
+	-rmdir output
+clean: clean-dataset clean-bin clean-output
 
 dataset-snap: graph_generator
 	mkdir -p input | true
@@ -69,6 +72,7 @@ test-gen: k-path-color-coding-parallel
 	./k-path-color-coding-parallel -k 4 -g input/gen/graph-100k-500k.nme.bin -f nme --verbose
 	./k-path-color-coding-parallel -k 4 -g input/gen/graph-1M-5M.nme.bin     -f nme --verbose
 	#./k-path-color-coding-parallel -k 6 -g input/gen/graph-10M-50M.nme.bin   -f nme --verbose
+	#./k-path-color-coding-parallel -k 6 -g input/gen/graph-10M-100M.nme.bin   -f nme --verbose
 
 test-snap: k-path-color-coding-parallel
 	./k-path-color-coding-parallel -k 4 -g input/snap/facebook_combined.txt -f snap --verbose
@@ -78,14 +82,3 @@ test-snap: k-path-color-coding-parallel
 	./k-path-color-coding-parallel -k 4 -g input/snap/web-Stanford.txt      -f snap --verbose
 	./k-path-color-coding-parallel -k 4 -g input/snap/web-BerkStan.txt      -f snap --verbose
 
-test-labeled-conte: k-labeled-path-cc-conte
-	./k-labeled-path-cc-conte -k 4 -g input/label/graph-label-1k-5k.nme.bin     --verbose
-	./k-labeled-path-cc-conte -k 4 -g input/label/graph-label-10k-50k.nme.bin   --verbose
-	./k-labeled-path-cc-conte -k 4 -g input/label/graph-label-100k-500k.nme.bin --verbose
-	./k-labeled-path-cc-conte -k 4 -g input/label/graph-label-1M-5M.nme.bin     --verbose
-
-test-labeled-marino: k-labeled-path-cc-marino
-	./k-labeled-path-cc-marino -k 4 -g input/label/graph-label-1k-5k.nme.bin     --verbose
-	./k-labeled-path-cc-marino -k 4 -g input/label/graph-label-10k-50k.nme.bin   --verbose
-	./k-labeled-path-cc-marino -k 4 -g input/label/graph-label-100k-500k.nme.bin --verbose
-	./k-labeled-path-cc-marino -k 4 -g input/label/graph-label-1M-5M.nme.bin     --verbose
