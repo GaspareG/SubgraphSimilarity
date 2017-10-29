@@ -45,6 +45,8 @@ ll cont = 0;
 int *color;
 char *label;
 vector<int> *G;
+int Sa, Sb;
+int *A, *B;
 
 inline int nextInt() {
   int r;
@@ -54,7 +56,7 @@ inline int nextInt() {
 
 // Random generator
 random_device rd;
-mt19937_64 eng(rd());
+mt19937_64 eng = mt19937_64(rd());
 uniform_int_distribution<unsigned long long> distr;
 
 // Get pos-th bit in n
@@ -71,15 +73,14 @@ COLORSET getCompl(COLORSET n) { return ((1 << kp) - 1) & (~n); }
 
 // Random coloring graph using kp color
 inline void randomColor() {
-  for (unsigned int i = 0; i < N; i++) color[i] = rand() % kp;
+  for (unsigned int i = 0; i < N; i++) color[i] = eng() % kp;
 }
 
 // Path label
 string L(vector<int> P)
 {
-    string l;
-    l.reserve(P.size());
-    for(size_t i=0; i<P.size(); i++) l[i] = label[P[i]];
+    string l = "";
+    for(size_t i=0; i<P.size(); i++) l += label[P[i]];
     return l;
 }
 
@@ -115,19 +116,18 @@ map<COLORSET, ll> *DP[MAXK + 1];
 
 void processDP() {
   if (verbose_flag) printf("K = %u\n", 1);
-  for (unsigned int u = 0; u < N; u++) DP[1][u][setBit(0, color[u])] = 1;
-
+  // Base case
+  for (unsigned int u = 0; u < N; u++) DP[1][u][setBit(0, color[u])] = 1ll;
+  // Induction
   for (unsigned int i = 2; i <= k; i++) {
     if (verbose_flag) printf("K = %u\n", i);
-#pragma omp parallel for
+    #pragma omp parallel for
     for (unsigned int u = 0; u < N; u++) {
       for (int v : G[u]) {
         for (auto d : DP[i - 1][v]) {
           COLORSET s = d.first;
           ll f = d.second;
-
           if (getBit(s, color[u])) continue;
-
           ll fp = DP[i][u][setBit(s, color[u])];
           DP[i][u][setBit(s, color[u])] = f + fp;
         }
@@ -136,34 +136,74 @@ void processDP() {
   }
 }
 
+void backProp() {
+  for (int i = k - 2; i >= 0; i--) {
+    if (verbose_flag) printf("K = %d\n", i);
+    #pragma omp parallel for
+    for (unsigned int x = 0; x <= N; x++) {
+      vector<ll> toDel;
+      for (auto cf : DP[i][x]) {
+        COLORSET C = cf.first;
+        bool find = false;
+
+        for (int j : G[x]) {
+          if (getBit(C, color[j])) continue;
+
+          if (DP[i + 1][j].find(setBit(C, color[j])) != DP[i + 1][j].end()) {
+            find = true;
+            #pragma omp critical
+            { addLink(x, C, j); }
+          }
+        }
+        if (!find) toDel.push_back(C);
+      }
+      for (COLORSET tod : toDel){
+        // printf("\t\tCANCELLO %llu da [%d][%d]\n",tod,i,x);
+         DP[i][x].erase(tod);
+       }
+    }
+  }
+}
+
 // Random sampling
-vector<int> randomColorfulSample(vector<int> X)
+vector<int> randomPathFrom(int u)
+{
+  vector<int> P;
+  P.push_back(u);
+  COLORSET D = color[u];
+  for(int i=k-1; i>0; i--)
+  {
+    vector<ll> freq;
+    for(int v : G[u]) freq.push_back( DP[i][v][getCompl(D)] );
+    discrete_distribution<int> distribution(freq.begin(), freq.end());
+    u = G[u][ distribution(eng) ];
+    P.push_back(u);
+    D = setBit(D, color[u]);
+  }
+  return P;
+}
+
+// Random sampling
+set<string> randomColorfulSample(vector<int> X, int r)
 {
   set<string> W;
   set< vector<int> > R;
-  vector<int> AB;
-  vector<ll> freqAB;
-  for(int a : A) AB.push_back(a);
-  for(int b : B) AB.push_back(b);
-  sort(AB.begin(), AB.end() );
-  AB.erase( unique( AB.begin(), AB.end() ), AB.end() );
+  vector<ll> freqX;
+
   ll last = 0ll;
   ll sum = 0ll;
-  for(int x : AB)
+  for(int x : X)
   {
-    ll freq = DP[k][x][getCompl(0)];
-    ll alpha = 0;
-    if( A.find(x) != A.end() ) alpha++;
-    if( B.find(x) != B.end() ) alpha++;
-    freqAB.push_back(last);
-    last = freq*alpha;
+    ll freq = DP[k-1][x][getCompl(0)];
+    freqX.push_back(last);
+    last = freq;
     sum += last;
   }
 
   while( r )
   {
     ll rndIdx = distr(eng) % sum;
-    int u = AB[distance(freqAB.begin(), upper_bound(freqAB.begin(), freqAB.end(), rndIdx) - 1)];
+    int u = X[distance(freqX.begin(), upper_bound(freqX.begin(), freqX.end(), rndIdx) - 1)];
 
     vector<int> P = randomPathFrom(u);
     if( R.find(P) == R.end() )
@@ -177,36 +217,34 @@ vector<int> randomColorfulSample(vector<int> X)
 
   return W;
 }
-
 
 set<string> BCSampler(set<int> A, set<int> B, int r)
 {
   set<string> W;
-  set< vector<int> > R;
+  set<vector<int>> R;
+
   vector<int> AB;
   vector<ll> freqAB;
   for(int a : A) AB.push_back(a);
   for(int b : B) AB.push_back(b);
-  sort(AB.begin(), AB.end() );
-  AB.erase( unique( AB.begin(), AB.end() ), AB.end() );
-  ll last = 0ll;
-  ll sum = 0ll;
-  for(int x : AB)
+  sort(AB.begin(), AB.end());
+  AB.erase( unique(AB.begin(), AB.end()), AB.end());
+  for(int v : AB)
   {
-    ll freq = DP[k][x][getCompl(0)];
-    ll alpha = 0;
-    if( A.find(x) != A.end() ) alpha++;
-    if( B.find(x) != B.end() ) alpha++;
-    freqAB.push_back(last);
-    last = freq*alpha;
-    sum += last;
+    ll freq = DP[k][v][getCompl(0ll)];
+    ll alpha = 0ll;
+    if( A.find(v) != A.end() ) alpha++;
+    if( B.find(v) != B.end() ) alpha++;
+    freqAB.push_back(alpha*freq);
+    // printf("FREQ[%6d] = [%6lld][%6lld][%6lld]\n",v,freq, alpha, alpha*freq);
   }
 
-  while( r )
-  {
-    ll rndIdx = distr(eng) % sum;
-    int u = AB[distance(freqAB.begin(), upper_bound(freqAB.begin(), freqAB.end(), rndIdx) - 1)];
+  discrete_distribution<int> distribution(freqAB.begin(), freqAB.end());
 
+  while(r)
+  {
+    int u = AB[distribution(eng)];
+    printf("\t R = %d U = %d\n", r, u);
     vector<int> P = randomPathFrom(u);
     if( R.find(P) == R.end() )
     {
@@ -215,16 +253,68 @@ set<string> BCSampler(set<int> A, set<int> B, int r)
     }
   }
 
-  for(vector<int> r : R)  W.insert( L(r) );
-
+  for(auto r : R) W.insert(L(r));
   return W;
 }
 
+// set<string> BCSampler(set<int> A, set<int> B, int r)
+// {
+//   set<string> W;
+//   set< vector<int> > R;
+//   vector<int> AB;
+//   vector<ll> freqAB;
+//   for(int a : A) AB.push_back(a);
+//   for(int b : B) AB.push_back(b);
+//   sort(AB.begin(), AB.end() );
+//   AB.erase( unique( AB.begin(), AB.end() ), AB.end() );
+//   ll last = 0ll;
+//   ll sum = 0ll;
+//   for(int x : AB)
+//   {
+// //    printf("for[%d]\n", x);
+//     ll freq = DP[k-1][x].begin()->second;
+// //    for(auto y : DP[k-1][x] )
+// //      printf("[%d][%d] = [%u][%lld]\n",k,x,y.first, y.second);
+//     ll alpha = 0;
+//     if( A.find(x) != A.end() ) alpha++;
+//     if( B.find(x) != B.end() ) alpha++;
+//     freqAB.push_back(sum);
+//     // printf("[%6d] [%6lld] [%6lld] [%6lld] [%6lld]\n", x, freq, alpha, last, sum);
+//     last = freq*alpha;
+//     sum += last;
+//   }
+//   // printf("\tBCSampler (%lld) [%zu][%zu]\n", sum, AB.size(), freqAB.size());
+//
+//   for(size_t i=0; i<AB.size(); i++)
+//   {
+//     // printf("TB[%d][%lld]\n", AB[i], freqAB[i]);
+//   }
+//
+//   while( r )
+//   {
+//     // printf("OK %d\n", r);
+//     ll rndIdx = distr(eng) % sum;
+//     // printf("\trndIdx %lld\n", rndIdx);
+//     int u = AB[distance(freqAB.begin(), upper_bound(freqAB.begin(), freqAB.end(), rndIdx) - 1)];
+//     // printf("\tu= %d\n", u);
+//     vector<int> P = randomPathFrom(u);
+//     // printf("FIND: [%zu] [%s]\n", P.size(), L(P).c_str() );
+//     // TODO ??
+//     if( R.find(P) == R.end() )
+//     {
+//       R.insert(P);
+//       r--;
+//     }
+//   }
+//   // printf("|R| = %zu\n", R.size());
+//   for(vector<int> r : R)  W.insert( L(r) );
+//   // printf("|W| = %zu\n", W.size());
+//   return W;
+// }
+
 void print_usage(char *filename) {
-  //  printf("Usage: ./%s -k length -K number -g filename -f format -t filename
-  //  -T filename -p threadcount -h -v\n",filename);
   printf(
-      "Usage: ./%s -k length -K number -g filename -p threadcount "
+      "Usage: ./%s -k length -K number -g filename -p threadcount -s filename"
       "--help --verbose\n",
       filename);
   printf("Valid arguments:\n");
@@ -236,7 +326,7 @@ void print_usage(char *filename) {
   printf("\tNumber of colors to use (default path length).\n");
 
   printf("-g, --input filename\n");
-  printf("\tInput file of graph (default stdin)\n");
+  printf("\tInput file of labeled graph in nmle format (default stdin)\n");
 
   printf("-p, --parallel threadcount\n");
   printf("\tNumber of threads to use (default maximum thread avaiable)\n");
@@ -251,19 +341,11 @@ void print_usage(char *filename) {
 bool input_graph_flag = false;
 char *input_graph = NULL;
 
-bool list_path_flag = false;
-char *list_path = NULL;
-
-bool format_name_flag = false;
-char *format_name = NULL;
-
 int main(int argc, char **argv) {
   static struct option long_options[] = {
       {"path", required_argument, 0, 'k'},
       {"color", required_argument, 0, 'K'},
       {"input", required_argument, 0, 'g'},
-      {"format", required_argument, 0, 'f'},
-      {"list", required_argument, 0, 'l'},
       {"parallel", required_argument, 0, 'p'},
       {"help", no_argument, &help_flag, 1},
       {"verbose", no_argument, &verbose_flag, 1},
@@ -272,7 +354,9 @@ int main(int argc, char **argv) {
   int option_index = 0;
   int c;
   while (1) {
-    c = getopt_long(argc, argv, "k:K:g:f:l:p:", long_options, &option_index);
+    // c = getopt_long (argc, argv, "k:K:g:f:t:T:l:p:", long_options,
+    // &option_index);
+    c = getopt_long(argc, argv, "k:K:g:p:", long_options, &option_index);
 
     if (c == -1) break;
 
@@ -286,14 +370,6 @@ int main(int argc, char **argv) {
       case 'g':
         input_graph_flag = true;
         if (optarg != NULL) input_graph = optarg;
-        break;
-      case 'f':
-        format_name_flag = true;
-        if (optarg != NULL) format_name = optarg;
-        break;
-      case 'l':
-        list_path_flag = true;
-        if (optarg != NULL) list_path = optarg;
         break;
       case 'p':
         if (optarg != NULL) thread_count = atoi(optarg);
@@ -329,9 +405,8 @@ int main(int argc, char **argv) {
     printf("kp = %d\n", kp);
     printf("thread = %d\n", thread_count);
     printf("input_graph = %s\n", input_graph != NULL ? input_graph : "stdin");
-    printf("format_name = %s\n", format_name != NULL ? format_name : "stdin");
-    printf("list_path   = %s\n", list_path != NULL ? list_path : "stdin");
   }
+
   if (verbose_flag) printf("Reading graph...\n");
 
   if (input_graph_flag) {
@@ -339,121 +414,52 @@ int main(int argc, char **argv) {
       printf("Input file name missing!\n");
       return 1;
     }
-    if (!format_name_flag || format_name == NULL) {
-      printf("Input format missing!\n");
+
+    int input_fd = open(input_graph, O_RDONLY, 0);
+    if (input_fd == -1) {
+      perror("Error opening input file");
       return 1;
     }
-    if (strcmp(format_name, "snap") == 0) {
-      FILE *input_fd = fopen(input_graph, "r");
-      if (input_fd == NULL) {
-        perror("Error opening input file");
-        return 1;
-      }
-      set<pair<int, int> > edge;
-      char *buffer = NULL;
-      size_t n;
-      int ab[2];
-      N = 0;
-      do {
-        if( buffer != NULL ) free(buffer);
-        buffer = NULL;
-        n = 0;
-        int line_length = ::getline(&buffer, &n, input_fd);
-        if (line_length == 0) continue;
-        if (buffer[0] == '#') continue;
-        sscanf(buffer, "%d %d", ab, ab + 1);
-        edge.insert(make_pair(ab[0], ab[1]));
-        N = (unsigned)ab[0] > N ? ab[0] : N;
-        N = (unsigned)ab[1] > N ? ab[1] : N;
-      } while (!feof(input_fd));
+    read(input_fd, &N, sizeof(int));
+    read(input_fd, &M, sizeof(int));
 
-      M = edge.size();
-      color = new int[N + 1];
-      G = new vector<int>[N + 1];
-      for (auto e : edge) {
-        G[e.first].push_back(e.second);
-        G[e.second].push_back(e.first);
-      }
-    } else if (strcmp(format_name, "nde") == 0) {
-      FILE *input_fd = fopen(input_graph, "r");
-      if (input_fd == NULL) {
-        perror("Error opening input file");
-        return 1;
-      }
-      char *buffer;
-      size_t n;
+    label = new char[N+1];
+    color = new int[N + 1];
+    int *intLabel = new int[N+1];
 
-      do {
-        free(buffer);
-        buffer = NULL;
-        n = 0;
-        int line_length = ::getline(&buffer, &n, input_fd);
-        if (line_length == 0) continue;
-        if (buffer[0] == '#') continue;
-        break;
-      } while (!feof(input_fd));
-      sscanf(buffer, "%u", &N);
-      int Nrim = N;
+    read(input_fd, intLabel, N*sizeof(int));
+    for(unsigned int i=0; i<N; i++)
+      label[i] = 'A' + intLabel[i];
 
-      M = 0;
-      int ab[2];
-      while (Nrim > 0 && !feof(input_fd)) {
-        free(buffer);
-        buffer = NULL;
-        n = 0;
-        int line_length = ::getline(&buffer, &n, input_fd);
-        if (line_length == 0) continue;
-        if (buffer[0] == '#') continue;
-        sscanf(buffer, "%d %d", ab, ab + 1);
-        Nrim--;
-        M += ab[1];
-        N = (unsigned)ab[0] > N ? (unsigned)ab[0] : N;
-      }
-
-      color = new int[N + 1];
-      G = new vector<int>[N + 1];
-
-      int Mrim = M;
-      while (Mrim > 0 && !feof(input_fd)) {
-        free(buffer);
-        buffer = NULL;
-        n = 0;
-        int line_length = ::getline(&buffer, &n, input_fd);
-        if (line_length == 0) continue;
-        if (buffer[0] == '#') continue;
-        sscanf(buffer, "%d %d", ab, ab + 1);
-        G[ab[0]].push_back(ab[1]);
-        G[ab[1]].push_back(ab[0]);
-      }
-
-    } else if (strcmp(format_name, "nme") == 0) {
-      int input_fd = open(input_graph, O_RDONLY, 0);
-      if (input_fd == -1) {
-        perror("Error opening input file");
-        return 1;
-      }
-      read(input_fd, &N, sizeof(int));
-      read(input_fd, &M, sizeof(int));
-
-      color = new int[N + 1];
-      G = new vector<int>[N + 1];
-      int ab[2];
-      for (unsigned int i = 0; i < M; i++) {
-        read(input_fd, ab, 2 * sizeof(int));
-        G[ab[0]].push_back(ab[1]);
-        G[ab[1]].push_back(ab[0]);
-      }
-    } else {
-      printf("Wrong input format (only 'snap', 'nde' or 'nme'\n");
-      return 1;
+    G = new vector<int>[N + 1];
+    int ab[2];
+    for (unsigned int i = 0; i < M; i++) {
+      read(input_fd, ab, 2 * sizeof(int));
+      G[ab[0]].push_back(ab[1]);
+      G[ab[1]].push_back(ab[0]);
     }
+
+    read(input_fd, ab, 2 * sizeof(int));
+    Sa = ab[0];
+    Sb = ab[1];
+    A = new int[Sa];
+    B = new int[Sb];
+
+    read(input_fd, A, Sa * sizeof(int));
+    read(input_fd, B, Sb * sizeof(int));
+
   } else {
+
     // Read from stdin, nme format
     N = nextInt();
     M = nextInt();
 
+    label = new char[N + 1];
     color = new int[N + 1];
     G = new vector<int>[N + 1];
+
+    for(unsigned int i=0; i<N; i++)
+      label[i] = 'A' + nextInt();
 
     for (unsigned int i = 0; i < M; i++) {
       int a = nextInt();
@@ -461,14 +467,23 @@ int main(int argc, char **argv) {
       G[a].push_back(b);
       G[b].push_back(a);
     }
+
+    Sa = nextInt();
+    Sb = nextInt();
+
+    for(int i=0; i<Sa; i++) A[i] = nextInt();
+    for(int i=0; i<Sb; i++) B[i] = nextInt();
+
   }
 
   if (verbose_flag) printf("N = %d | M = %d\n", N, M);
 
-  for (unsigned int i = 0; i < N; i++) {
-    G[N].push_back(i);
-    G[i].push_back(N);
-  }
+  if (verbose_flag) printf("|A| = %d | |B| = %d\n", Sa, Sb);
+
+  // for (unsigned int i = 0; i < N; i++) {
+  //   G[N].push_back(i);
+  //   G[i].push_back(N);
+  // }
 
   // Create DP Table
   for (unsigned int i = 0; i <= k + 1; i++)
@@ -477,14 +492,29 @@ int main(int argc, char **argv) {
   // Random color graph
   if (verbose_flag) printf("Random coloring graph...\n");
   randomColor();
-  color[N] = kp;
-  k++;
+  // color[N] = kp;
+  // label[N] = 'Z';
+  // k++;
 
   // Fill dynamic programming table
   if (verbose_flag) printf("Processing DP table...\n");
   processDP();
   if (verbose_flag) printf("End processing DP table...\n");
 
+
+  // Fill dynamic programming table
+  // if (verbose_flag) printf("Backward-propagation...\n");
+  // backProp();
+  // if (verbose_flag) printf("End Backward-propagation...\n");
+
+  set<int> vA = set<int>(A, A+Sa);
+  set<int> vB = set<int>(B, B+Sb);
+
+  if (verbose_flag) printf("Sampling strings...\n");
+  set<string> W = BCSampler(vA, vB, 10);
+
+  if (verbose_flag) printf("Sampled strings:\n");
+  for(string w : W) printf("%s\n", w.c_str());
 
   // Count ad list k-colorful path
   // if (list_path_flag) {
