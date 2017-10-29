@@ -43,6 +43,7 @@ static int verbose_flag, help_flag;
 
 ll cont = 0;
 int *color;
+char *label;
 vector<int> *G;
 
 inline int nextInt() {
@@ -71,6 +72,15 @@ COLORSET getCompl(COLORSET n) { return ((1 << kp) - 1) & (~n); }
 // Random coloring graph using kp color
 inline void randomColor() {
   for (unsigned int i = 0; i < N; i++) color[i] = rand() % kp;
+}
+
+// Path label
+string L(vector<int> P)
+{
+    string l;
+    l.reserve(P.size());
+    for(size_t i=0; i<P.size(); i++) l[i] = label[P[i]];
+    return l;
 }
 
 // Link
@@ -127,47 +137,87 @@ void processDP() {
 }
 
 // Random sampling
-vector<int> randomPathTo(int x)
+vector<int> randomColorfulSample(vector<int> X)
 {
-  vector<int> P;
-  P.reserve(k);
-  COLORSET D = color[x];
-  COLORSET kD = getCompl(D);
-  int u = x;
-  for(int i=k-1; i>0; i--)
+  set<string> W;
+  set< vector<int> > R;
+  vector<int> AB;
+  vector<ll> freqAB;
+  for(int a : A) AB.push_back(a);
+  for(int b : B) AB.push_back(b);
+  sort(AB.begin(), AB.end() );
+  AB.erase( unique( AB.begin(), AB.end() ), AB.end() );
+  ll last = 0ll;
+  ll sum = 0ll;
+  for(int x : AB)
   {
-    vector<int> A;
-    vector<ll> freqA;
-    ll last = 0ll;
-    ll sum = 0ll;
-    for (int v : G[u]) {
-      auto it = DP[i][v].find(kD);
-      if (it != DP[i][v].end()) {
-        A.push_back(v);
-        freqA.push_back(last);
-        last = (*it).second;
-        sum += last;
-      }
-    }
-
-    if (A.size() == 0) break;
-    ll rndIdx = distr(eng) % sum;
-    int v = A[distance(freqA.begin(), upper_bound(freqA.begin(), freqA.end(), rndIdx) - 1)];
-
-    u = v;
-
-    P.push_back(u);
-    D = setBit(D, color[u]);
-    kD = getCompl(D);
+    ll freq = DP[k][x][getCompl(0)];
+    ll alpha = 0;
+    if( A.find(x) != A.end() ) alpha++;
+    if( B.find(x) != B.end() ) alpha++;
+    freqAB.push_back(last);
+    last = freq*alpha;
+    sum += last;
   }
-  return P;
+
+  while( r )
+  {
+    ll rndIdx = distr(eng) % sum;
+    int u = AB[distance(freqAB.begin(), upper_bound(freqAB.begin(), freqAB.end(), rndIdx) - 1)];
+
+    vector<int> P = randomPathFrom(u);
+    if( R.find(P) == R.end() )
+    {
+      R.insert(P);
+      r--;
+    }
+  }
+
+  for(vector<int> r : R)  W.insert( L(r) );
+
+  return W;
 }
 
-set<string> randomColorfulSample(set<int> A, set<int> B, int r)
+
+set<string> BCSampler(set<int> A, set<int> B, int r)
 {
-  set<string> ret;
-  // TODO
-  return ret;
+  set<string> W;
+  set< vector<int> > R;
+  vector<int> AB;
+  vector<ll> freqAB;
+  for(int a : A) AB.push_back(a);
+  for(int b : B) AB.push_back(b);
+  sort(AB.begin(), AB.end() );
+  AB.erase( unique( AB.begin(), AB.end() ), AB.end() );
+  ll last = 0ll;
+  ll sum = 0ll;
+  for(int x : AB)
+  {
+    ll freq = DP[k][x][getCompl(0)];
+    ll alpha = 0;
+    if( A.find(x) != A.end() ) alpha++;
+    if( B.find(x) != B.end() ) alpha++;
+    freqAB.push_back(last);
+    last = freq*alpha;
+    sum += last;
+  }
+
+  while( r )
+  {
+    ll rndIdx = distr(eng) % sum;
+    int u = AB[distance(freqAB.begin(), upper_bound(freqAB.begin(), freqAB.end(), rndIdx) - 1)];
+
+    vector<int> P = randomPathFrom(u);
+    if( R.find(P) == R.end() )
+    {
+      R.insert(P);
+      r--;
+    }
+  }
+
+  for(vector<int> r : R)  W.insert( L(r) );
+
+  return W;
 }
 
 void print_usage(char *filename) {
