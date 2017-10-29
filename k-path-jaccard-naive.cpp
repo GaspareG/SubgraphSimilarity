@@ -55,6 +55,7 @@ map<string,ll> freq[2];
 vector<bool> in;
 string s;
 
+ll count = 0 ;
 void dfs(int idx, int u)
 {
   if( in[u] ) return;
@@ -64,7 +65,8 @@ void dfs(int idx, int u)
   if( s.size() == k )
   {
     dict.insert(s);
-    freq[idx][s]++;
+    count++;
+    freq[idx][s] = freq[idx][s]+1;
   }
   else
     for(int v : G[u]) dfs(idx, v);
@@ -77,14 +79,15 @@ void dfs(int idx, int u)
 double jaccardIndex()
 {
   ll numerator = 0;
-  ll denominator = 0;
+  ll denominator = dict.size();
   for(string s : dict)
   {
     ll fa = freq[0][s];
     ll fb = freq[1][s];
-    numerator += min(fa, fb);
-    denominator += max(fa, fb);
+    if( fa > 0 && fb > 0 )
+      numerator++;
   }
+  printf("%lld %lld\n", numerator, denominator);
   return (double) numerator / (double) denominator;
 }
 
@@ -101,6 +104,7 @@ double BrayCurtisIndex()
     denominator += fa+fb;
   }
   numerator *= 2;
+  printf("%lld %lld\n", numerator, denominator);
   return (double) numerator / (double) denominator;
 }
 
@@ -262,7 +266,7 @@ int main(int argc, char **argv) {
     Sb = nextInt();
 
     for(int i=0; i<Sa; i++) A[i] = nextInt();
-    for(int i=0; i<Sa; i++) B[i] = nextInt();
+    for(int i=0; i<Sb; i++) B[i] = nextInt();
 
   }
 
@@ -276,6 +280,8 @@ int main(int argc, char **argv) {
   for(int a=0; a<Sa; a++) dfs(0, A[a]);
   for(int b=0; b<Sb; b++) dfs(1, B[b]);
 
+  if (verbose_flag) printf("Count: %lld\n", count);
+
   if (verbose_flag) printf("Calculating Jaccard index...\n");
   double jaccard = jaccardIndex();
   printf("Jaccard index: %f\n", jaccard);
@@ -284,4 +290,5 @@ int main(int argc, char **argv) {
   double brayCurtis = BrayCurtisIndex();
   printf("Bray-Curtis index: %f\n", brayCurtis);
   return 0;
+
 }

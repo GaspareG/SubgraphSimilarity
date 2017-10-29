@@ -128,8 +128,7 @@ set<string> sample() {
 
       if (A.size() == 0) break;
       ll rndIdx = distr(eng) % sum;
-      int v = A[distance(freqA.begin(),
-                         upper_bound(freqA.begin(), freqA.end(), rndIdx) - 1)];
+      int v = A[distance(freqA.begin(), upper_bound(freqA.begin(), freqA.end(), rndIdx) - 1)];
 
       u = v;
       pi += labels[v];
