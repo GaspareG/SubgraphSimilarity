@@ -138,67 +138,71 @@ void processDP() {
   }
 }
 
-void processDPLW(set<string> W, set<int> X)
-{
-  if( verbose_flag ) printf("K = %u\n", 1);
-  for(unsigned int u=0; u<N; u++)
-    DPLW[1][u][ make_pair( setBit(0, color[u] ), string(&label[u], 1) ) ] = 1;
-
-  for(unsigned int i=2; i <= k; i++)
-  {
-    if( verbose_flag ) printf("K = %u\n", i);
-    #pragma omp parallel for
-    for(unsigned int u=0; u<N; u++)
-    {
-      for(int v : G[u])
-      {
-        // Only v \in (G[u] /\ X)
-        if( X.find(v) == X.end() ) continue;
-        for(auto d : DPLW[i-1][v])
-        {
-          COLORSET s = d.first.first;
-          string l = d.first.second;
-          ll f = d.second;
-          if( getBit(s, color[u]) ) continue;
-
-          COLORSET su = setBit(s, color[u]);
-          string lu = string(l);
-          lu += label[u];
-          ll fp = DPLW[i][u][ make_pair( setBit(s, color[u]), lu ) ];
-
-          auto it = W.lower_bound(lu);
-          if( it == W.end() ) continue;
-          if( mismatch(lu.begin(), lu.end(), (*it).begin()).first != lu.end() ) continue;
-
-          DPLW[i][u][make_pair(su, lu)] = f+fp;
-        }
-      }
-    }
-  }
-}
+// TODO CHECK
+// map<string, ll> processDPLW(set<string> W, set<int> X)
+// {
+//   if( verbose_flag ) printf("K = %u\n", 1);
+//   for(unsigned int u=0; u<N; u++)
+//     DPLW[1][u][ make_pair( setBit(0, color[u] ), string(&label[u], 1) ) ] = 1;
+//
+//   for(unsigned int i=2; i <= k; i++)
+//   {
+//     if( verbose_flag ) printf("K = %u\n", i);
+//     #pragma omp parallel for
+//     for(unsigned int u=0; u<N; u++)
+//     {
+//       for(int v : G[u])
+//       {
+//         // Only v \in (G[u] /\ X)
+//         if( X.find(v) == X.end() ) continue;
+//         for(auto d : DPLW[i-1][v])
+//         {
+//           COLORSET s = d.first.first;
+//           string l = d.first.second;
+//           ll f = d.second;
+//           if( getBit(s, color[u]) ) continue;
+//
+//           COLORSET su = setBit(s, color[u]);
+//           string lu = string(l);
+//           lu += label[u];
+//           ll fp = DPLW[i][u][ make_pair( setBit(s, color[u]), lu ) ];
+//
+//           auto it = W.lower_bound(lu);
+//           if( it == W.end() ) continue;
+//           if( mismatch(lu.begin(), lu.end(), (*it).begin()).first != lu.end() ) continue;
+//
+//           DPLW[i][u][make_pair(su, lu)] = f+fp;
+//         }
+//       }
+//     }
+//   }
+//   map<string, ll> freq;
+//
+//   return freq;
+// }
 
 void backProp() {
-  for (int i = k - 1; i > 0; i--) {
-    if (verbose_flag) printf("K = %d\n", i);
-    #pragma omp parallel for
-    for (unsigned int x = 0; x < N; x++) {
-      vector<COLORSET> toDelete;
-      for (pair<COLORSET, ll> CF : DP[i][x]) {
-        bool find = false;
-        COLORSET C = CF.first;
-        for (int j : G[x]) {
-          if (color[j] == color[x]) continue;
-          if (DP[i + 1][j].find(setBit(C, color[j])) != DP[i + 1][j].end()) {
-            find = true;
-            break;  // Don't stop if we need to construct the oracle H
-            // addLink(x, C, j);
-          }
-        }
-        if (!find) toDelete.push_back(C);
-      }
-      for (COLORSET C : toDelete) DP[i][x].erase(C);
-    }
-  }
+  // for (int i = k - 1; i > 0; i--) {
+  //   if (verbose_flag) printf("K = %d\n", i);
+  //   #pragma omp parallel for
+  //   for (unsigned int x = 0; x < N; x++) {
+  //     vector<COLORSET> toDelete;
+  //     for (pair<COLORSET, ll> CF : DP[i][x]) {
+  //       bool find = false;
+  //       COLORSET C = CF.first;
+  //       for (int j : G[x]) {
+  //         if (color[j] == color[x]) continue;
+  //         if (DP[i + 1][j].find(setBit(C, color[j])) != DP[i + 1][j].end()) {
+  //           find = true;
+  //           break;  // Don't stop if we need to construct the oracle H
+  //           // addLink(x, C, j);
+  //         }
+  //       }
+  //       if (!find) toDelete.push_back(C);
+  //     }
+  //     for (COLORSET C : toDelete) DP[i][x].erase(C);
+  //   }
+  // }
 }
 
 vector<int> randomPathTo(int u) {
@@ -489,7 +493,10 @@ int main(int argc, char **argv) {
 
   // Create DP Table
   for (unsigned int i = 0; i <= k + 1; i++)
+  {
     DP[i] = new map<COLORSET, ll>[N + 1];
+    DPLW[i] = new map<pair<COLORSET, string>, ll>[N + 1];
+  }
 
   // Random color graph
   if (verbose_flag) printf("Random coloring graph...\n");
