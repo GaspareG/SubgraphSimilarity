@@ -162,31 +162,26 @@ void backProp()
         }
         if( !find ) toDelete.push_back(C);
       }
-      for(COLORSET C : toDelete){
-        printf("DP[%d][%d] REMOVE[%d]\n",i,x,C);
-        DP[i][x].erase(C);
-      }
+      for(COLORSET C : toDelete) DP[i][x].erase(C);
     }
   }
 }
 
-// Random sampling
-vector<int> randomPathFrom(int u)
+vector<int> randomPathTo(int u)
 {
   vector<int> P;
   P.push_back(u);
-  COLORSET D = color[u];
+  COLORSET D = getCompl( setBit(0l, color[u]));
   for(int i=k-1; i>0; i--)
   {
     vector<ll> freq;
-    for(int v : G[u]){
-       freq.push_back( DP[i][v][getCompl(D)] );
-    }
+    for(int v : G[u]) freq.push_back( DP[i][v][D] );
     discrete_distribution<int> distribution(freq.begin(), freq.end());
     u = G[u][ distribution(eng) ];
     P.push_back(u);
-    D = setBit(D, color[u]);
+    D = clearBit(D, color[u]);
   }
+  reverse(P.begin(), P.end());
   return P;
 }
 
@@ -200,7 +195,7 @@ set<string> randomColorfulSample(vector<int> X, int r)
   while( R.size() < (size_t) r )
   {
     int u = X[distribution(eng)];
-    vector<int> P = randomPathFrom(u);
+    vector<int> P = randomPathTo(u);
     if( R.find(P) == R.end() ) R.insert(P);
   }
   for(auto r : R) W.insert(L(r));
@@ -229,7 +224,7 @@ set<string> BCSampler(set<int> A, set<int> B, int r)
   while( R.size() < (size_t) r )
   {
     int u = AB[distribution(eng)];
-    vector<int> P = randomPathFrom(u);
+    vector<int> P = randomPathTo(u);
 
     if( R.find(P) == R.end() ){
       for(int p : P) printf("[%6d] ", p);
