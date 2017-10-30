@@ -114,6 +114,7 @@ void list_k_path(vector<int> ps, COLORSET cs, int x) {
 
 // Dynamic programming processing
 map<COLORSET, ll> *DP[MAXK + 1];
+map< pair<COLORSET, string>, ll > *DPLW[MAXK+1];
 
 void processDP() {
   if (verbose_flag) printf("K = %u\n", 1);
@@ -131,6 +132,45 @@ void processDP() {
           if (getBit(s, color[u])) continue;
           ll fp = DP[i][u][setBit(s, color[u])];
           DP[i][u][setBit(s, color[u])] = f + fp;
+        }
+      }
+    }
+  }
+}
+
+void processDPLW(set<string> W, set<int> X)
+{
+  if( verbose_flag ) printf("K = %u\n", 1);
+  for(unsigned int u=0; u<N; u++)
+    DPLW[1][u][ make_pair( setBit(0, color[u] ), string(&label[u], 1) ) ] = 1;
+
+  for(unsigned int i=2; i <= k; i++)
+  {
+    if( verbose_flag ) printf("K = %u\n", i);
+    #pragma omp parallel for
+    for(unsigned int u=0; u<N; u++)
+    {
+      for(int v : G[u])
+      {
+        // Only v \in (G[u] /\ X)
+        if( X.find(v) == X.end() ) continue;
+        for(auto d : DPLW[i-1][v])
+        {
+          COLORSET s = d.first.first;
+          string l = d.first.second;
+          ll f = d.second;
+          if( getBit(s, color[u]) ) continue;
+
+          COLORSET su = setBit(s, color[u]);
+          string lu = string(l);
+          lu += label[u];
+          ll fp = DPLW[i][u][ make_pair( setBit(s, color[u]), lu ) ];
+
+          auto it = W.lower_bound(lu);
+          if( it == W.end() ) continue;
+          if( mismatch(lu.begin(), lu.end(), (*it).begin()).first != lu.end() ) continue;
+
+          DPLW[i][u][make_pair(su, lu)] = f+fp;
         }
       }
     }
@@ -208,7 +248,6 @@ set<string> BCSampler(set<int> A, set<int> B, int r) {
 // Find f_{A}[X]
 long long frequency(set<int> A, string X)
 {
-  // TODO
 
   return 0ll;
 }
