@@ -77,11 +77,10 @@ inline void randomColor() {
 }
 
 // Path label
-string L(vector<int> P)
-{
-    string l = "";
-    for(size_t i=0; i<P.size(); i++) l += label[P[i]];
-    return l;
+string L(vector<int> P) {
+  string l = "";
+  for (size_t i = 0; i < P.size(); i++) l += label[P[i]];
+  return l;
 }
 
 // Link
@@ -98,12 +97,11 @@ vector<int> H(int x, COLORSET C) { return links[make_pair(x, C)]; }
 
 void list_k_path(vector<int> ps, COLORSET cs, int x) {
   vector<int> oracle = H(x, cs);
-//  printf("list_k_path() %u %d\n", ps.size(), x);
-  if (ps.size()+1 == k) {
+  if (ps.size() + 1 == k) {
     cont++;
-    // for (int j : ps) printf("[%6d] ", j);
-    // printf("\n");
-    // for (int j : ps) printf("[%6llu] ", color[j]);
+    for (int j : ps) printf("[%6d] ", j);
+    printf("\n");
+    for (int j : ps) printf("[%6d] ", color[j]);
     printf("\n");
   } else
     for (int v : oracle) {
@@ -124,7 +122,7 @@ void processDP() {
   // Induction
   for (unsigned int i = 2; i <= k; i++) {
     if (verbose_flag) printf("K = %u\n", i);
-    #pragma omp parallel for
+#pragma omp parallel for
     for (unsigned int u = 0; u < N; u++) {
       for (int v : G[u]) {
         for (auto d : DP[i - 1][v]) {
@@ -139,45 +137,39 @@ void processDP() {
   }
 }
 
-void backProp()
-{
-  for(int i=k-1; i>0; i--)
-  {
+void backProp() {
+  for (int i = k - 1; i > 0; i--) {
     if (verbose_flag) printf("K = %d\n", i);
-    for(unsigned int x=0; x<N; x++)
-    {
+#pragma omp parallel for
+    for (unsigned int x = 0; x < N; x++) {
       vector<COLORSET> toDelete;
-      for(pair<COLORSET, ll> CF : DP[i][x])
-      {
+      for (pair<COLORSET, ll> CF : DP[i][x]) {
         bool find = false;
         COLORSET C = CF.first;
-        for(int j : G[x])
-        {
-          if( color[j] == color[x] ) continue;
-          if( DP[i+1][j].find( setBit(C, color[j]) ) != DP[i+1][j].end() )
-          {
+        for (int j : G[x]) {
+          if (color[j] == color[x]) continue;
+          if (DP[i + 1][j].find(setBit(C, color[j])) != DP[i + 1][j].end()) {
             find = true;
-            addLink(x, C, j);
+            break;  // Don't stop if we need to construct the oracle H
+            // addLink(x, C, j);
           }
         }
-        if( !find ) toDelete.push_back(C);
+        if (!find) toDelete.push_back(C);
       }
-      for(COLORSET C : toDelete) DP[i][x].erase(C);
+      for (COLORSET C : toDelete) DP[i][x].erase(C);
     }
   }
 }
 
-vector<int> randomPathTo(int u)
-{
+vector<int> randomPathTo(int u) {
   vector<int> P;
   P.push_back(u);
-  COLORSET D = getCompl( setBit(0l, color[u]));
-  for(int i=k-1; i>0; i--)
-  {
+  COLORSET D = getCompl(setBit(0l, color[u]));
+  for (int i = k - 1; i > 0; i--) {
     vector<ll> freq;
-    for(int v : G[u]) freq.push_back( DP[i][v][D] );
+    for (int v : G[u]) freq.push_back(DP[i][v][D]);
     discrete_distribution<int> distribution(freq.begin(), freq.end());
-    u = G[u][ distribution(eng) ];
+    u = G[u][distribution(eng)];
     P.push_back(u);
     D = clearBit(D, color[u]);
   }
@@ -185,59 +177,74 @@ vector<int> randomPathTo(int u)
   return P;
 }
 
-set<string> randomColorfulSample(vector<int> X, int r)
-{
+set<string> randomColorfulSample(vector<int> X, int r) {
   set<string> W;
   set<vector<int>> R;
   vector<ll> freqX;
-  for(int x : X) freqX.push_back(DP[k][x][getCompl(0ll)]);
+  for (int x : X) freqX.push_back(DP[k][x][getCompl(0ll)]);
   discrete_distribution<int> distribution(freqX.begin(), freqX.end());
-  while( R.size() < (size_t) r )
-  {
+  while (R.size() < (size_t)r) {
     int u = X[distribution(eng)];
     vector<int> P = randomPathTo(u);
-    if( R.find(P) == R.end() ) R.insert(P);
-  }
-  for(auto r : R) W.insert(L(r));
-  return W;
-}
-
-set<string> BCSampler(set<int> A, set<int> B, int r)
-{
-  set<string> W;
-  set<vector<int>> R;
-  vector<int> AB;
-  vector<ll> freqAB;
-  for(int a : A) AB.push_back(a);
-  for(int b : B) AB.push_back(b);
-  sort(AB.begin(), AB.end());
-  AB.erase( unique(AB.begin(), AB.end()), AB.end());
-  for(int v : AB)
-  {
-    ll freq = DP[k][v][getCompl(0ll)];
-    ll alpha = 0ll;
-    if( A.find(v) != A.end() ) alpha++;
-    if( B.find(v) != B.end() ) alpha++;
-    freqAB.push_back(alpha*freq);
-  }
-  discrete_distribution<int> distribution(freqAB.begin(), freqAB.end());
-  while( R.size() < (size_t) r )
-  {
-    int u = AB[distribution(eng)];
-    vector<int> P = randomPathTo(u);
-
-    if( R.find(P) == R.end() ){
-      for(int p : P) printf("[%6d] ", p);
+    if (R.find(P) == R.end()) {
+      for (int p : P) printf("[%6d] ", p);
       printf("\n");
-      for(int p : P) printf("[%6d] ", color[p]);
+      for (int p : P) printf("[%6d] ", color[p]);
       printf("\n");
       R.insert(P);
     }
   }
-  for(auto r : R) W.insert(L(r));
+  for (auto r : R) W.insert(L(r));
   return W;
 }
 
+set<string> BCSampler(set<int> A, set<int> B, int r) {
+  vector<int> X;
+  for (int a : A) X.push_back(a);
+  for (int b : B) X.push_back(b);
+  return randomColorfulSample(X, r);
+}
+
+// set<string> BCSampler(set<int> A, set<int> B, int r)
+// {
+//   set<string> W;
+//   set<vector<int>> R;
+//   vector<int> AB;
+//   vector<ll> freqAB;
+//   // Create set AB = A u B
+//   for(int a : A) AB.push_back(a);
+//   for(int b : B) AB.push_back(b);
+//   sort(AB.begin(), AB.end());
+//   AB.erase( unique(AB.begin(), AB.end()), AB.end());
+//   // Find relative frequence per v \in AB and create distribution
+//   for(int v : AB)
+//   {
+//     ll freq = DP[k][v][getCompl(0ll)];
+//     // alpha = 2 if
+//     ll alpha = 0ll;
+//     if( A.find(v) != A.end() ) alpha++;
+//     if( B.find(v) != B.end() ) alpha++;
+//     freqAB.push_back(alpha*freq);
+//   }
+//   discrete_distribution<int> distribution(freqAB.begin(), freqAB.end());
+//   // Until not sampled r path
+//   while( R.size() < (size_t) r )
+//   {
+//     int u = AB[distribution(eng)];
+//     vector<int> P = randomPathTo(u);
+//     // If P \notin R insert P in R
+//     if( R.find(P) == R.end() ){
+//       // for(int p : P) printf("[%6d] ", p);
+//       // printf("\n");
+//       // for(int p : P) printf("[%6d] ", color[p]);
+//       // printf("\n");
+//       R.insert(P);
+//     }
+//   }
+//   // W = { l \in \sigma^{k} : \exist P \in R s.t L(P) = l }
+//   for(auto r : R) W.insert(L(r));
+//   return W;
+// }
 
 void print_usage(char *filename) {
   printf(
@@ -350,13 +357,12 @@ int main(int argc, char **argv) {
     read(input_fd, &N, sizeof(int));
     read(input_fd, &M, sizeof(int));
 
-    label = new char[N+1];
+    label = new char[N + 1];
     color = new int[N + 1];
-    int *intLabel = new int[N+1];
+    int *intLabel = new int[N + 1];
 
-    read(input_fd, intLabel, N*sizeof(int));
-    for(unsigned int i=0; i<N; i++)
-      label[i] = 'A' + intLabel[i];
+    read(input_fd, intLabel, N * sizeof(int));
+    for (unsigned int i = 0; i < N; i++) label[i] = 'A' + intLabel[i];
 
     G = new vector<int>[N + 1];
     int ab[2];
@@ -376,7 +382,6 @@ int main(int argc, char **argv) {
     read(input_fd, B, Sb * sizeof(int));
 
   } else {
-
     // Read from stdin, nme format
     N = nextInt();
     M = nextInt();
@@ -385,8 +390,7 @@ int main(int argc, char **argv) {
     color = new int[N + 1];
     G = new vector<int>[N + 1];
 
-    for(unsigned int i=0; i<N; i++)
-      label[i] = 'A' + nextInt();
+    for (unsigned int i = 0; i < N; i++) label[i] = 'A' + nextInt();
 
     for (unsigned int i = 0; i < M; i++) {
       int a = nextInt();
@@ -398,19 +402,13 @@ int main(int argc, char **argv) {
     Sa = nextInt();
     Sb = nextInt();
 
-    for(int i=0; i<Sa; i++) A[i] = nextInt();
-    for(int i=0; i<Sb; i++) B[i] = nextInt();
-
+    for (int i = 0; i < Sa; i++) A[i] = nextInt();
+    for (int i = 0; i < Sb; i++) B[i] = nextInt();
   }
 
   if (verbose_flag) printf("N = %d | M = %d\n", N, M);
 
   if (verbose_flag) printf("|A| = %d | |B| = %d\n", Sa, Sb);
-
-  for (unsigned int i = 0; i < N; i++) {
-     G[N].push_back(i);
-     G[i].push_back(N);
-  }
 
   // Create DP Table
   for (unsigned int i = 0; i <= k + 1; i++)
@@ -420,7 +418,11 @@ int main(int argc, char **argv) {
   if (verbose_flag) printf("Random coloring graph...\n");
   randomColor();
 
-  label[N] = 'Z';
+  // Add fake node N connected to all the nodes
+  for (unsigned int i = 0; i < N; i++) {
+    G[N].push_back(i);
+    G[i].push_back(N);
+  }
   color[N] = k;
   N++;
   k++;
@@ -435,19 +437,19 @@ int main(int argc, char **argv) {
   backProp();
   if (verbose_flag) printf("End Backward-propagation...\n");
 
-//  list_k_path(vector<int>(), setBit(0ll, color[N-1]), N-1);
+  // list_k_path(vector<int>(), setBit(0ll, color[N-1]), N-1);
   N--;
   k--;
-  for(unsigned int i=0; i<N; i++) G[i].pop_back();
+  for (unsigned int i = 0; i < N; i++) G[i].pop_back();
 
-  set<int> vA = set<int>(A, A+Sa);
-  set<int> vB = set<int>(B, B+Sb);
+  set<int> vA = set<int>(A, A + Sa);
+  set<int> vB = set<int>(B, B + Sb);
 
   if (verbose_flag) printf("Sampling strings...\n");
   set<string> W = BCSampler(vA, vB, 10);
 
   if (verbose_flag) printf("Sampled strings:\n");
-  for(string w : W) printf("%s\n", w.c_str());
+  for (string w : W) printf("%s\n", w.c_str());
 
   return 0;
 }
