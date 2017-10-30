@@ -170,7 +170,7 @@ map<string, ll> processFrequency(set<string> W, multiset<int> X)
       {
         if(getBit(CP, color[v])) continue;
         COLORSET CPv = setBit(CP, color[v]);
-        string LPv = LP + label[v];
+        string LPv = LP+label[v];
         if( !isPrefix(WR, LPv) ) continue;
         current.insert(make_tuple(v, LPv, CPv));
       }
@@ -276,8 +276,8 @@ double FJW(set<string> W, set<int> A, set<int> B)
 
 double BCW(set<string> W, set<int> A, set<int> B)
 {
-  long long num = 0ll;
-  long long den = 0ll;
+  ll num = 0ll;
+  ll den = 0ll;
   multiset<int> mA, mB;
   for(int a : A) mA.insert(a);
   for(int b : B) mB.insert(b);
@@ -490,6 +490,8 @@ int main(int argc, char **argv) {
 
   set<int> vA = set<int>(A, A + Sa);
   set<int> vB = set<int>(B, B + Sb);
+  multiset<int> mAB = multiset<int>(A, A + Sa);
+  mAB.insert(B, B + Sb);
 
   double sum = 0.;
 
@@ -502,8 +504,6 @@ int main(int argc, char **argv) {
     for (string w : W) printf("%s\n", w.c_str());
 
     if (verbose_flag) printf("Find frequency(A+B)\n");
-    multiset<int> mAB = multiset<int>(A, A + Sa);
-    mAB.insert(B, B + Sb);
     map<string, ll> freqAB = processFrequency(W, mAB);
     // if (verbose_flag) printf("Freq(A+B):\n");
     // for(auto f : freqAB)

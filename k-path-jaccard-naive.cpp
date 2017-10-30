@@ -2,6 +2,7 @@
   Author: Gaspare Ferraro
   Compute JaccardIndex on multiset for 2 subgraph A / B
 */
+#include <algorithm>
 #include <vector>
 #include <set>
 #include <map>
@@ -42,6 +43,7 @@ char *label;
 vector<int> *G;
 int Sa, Sb;
 int *A, *B;
+set<int> setA, setB;
 
 inline int nextInt() {
   int r;
@@ -50,27 +52,23 @@ inline int nextInt() {
 }
 
 // Jaccard index computation
-set<string> dict;
-map<string,ll> freq[2];
+map<string, vector< vector<int> > > freqP; // path -> string
 vector<bool> in;
+vector<int> path;
 string s;
 
-ll count = 0 ;
-void dfs(int idx, int u)
+void dfs(int u)
 {
   if( in[u] ) return;
+
+  path.push_back(u);
   s.push_back( label[u] );
   in[u] = true;
 
-  if( s.size() == k )
-  {
-    dict.insert(s);
-    count++;
-    freq[idx][s] = freq[idx][s]+1;
-  }
-  else
-    for(int v : G[u]) dfs(idx, v);
+  if( s.size() == k ) freqP[s].push_back(path);
+  else for(int v : G[u]) dfs(v);
 
+  path.pop_back();
   s.pop_back();
   in[u] = false;
 }
@@ -78,17 +76,36 @@ void dfs(int idx, int u)
 // J(A,B) = sum_{s}{ min(A_{s}, B_{s}) } / sum_{s}{ max(A_{s}, B_{s}) }
 double jaccardIndex()
 {
-  ll numerator = 0;
-  ll denominator = dict.size();
-  for(string s : dict)
+  return 0.;
+//   ll numerator = 0;
+//   ll denominator = dict.size();
+//   for(string s : dict)
+//   {
+//     ll fa = freq[0][s];
+//     ll fb = freq[1][s];
+//     if( fa > 0 && fb > 0 )
+//       numerator++;
+//   }
+//   printf("%lld %lld\n", numerator, denominator);
+//   return (double) numerator / (double) denominator;
+}
+
+ll freqV(int a, string x)
+{
+  ll out = 0ll;
+  for(auto p: freqP[x])
   {
-    ll fa = freq[0][s];
-    ll fb = freq[1][s];
-    if( fa > 0 && fb > 0 )
-      numerator++;
+    if( p[0] != a ) continue;
+    out++;
   }
-  printf("%lld %lld\n", numerator, denominator);
-  return (double) numerator / (double) denominator;
+  return out;
+}
+
+ll freqV(set<int> A, string x)
+{
+  ll f = 0ll;
+  for(int a : A) f += freqV(a, x);
+  return f;
 }
 
 // BC(A,B) = 2*sum_{s}{ min(A_{s}, B_{s}) } / sum_{s}{ A_{s}+B_{s}}
@@ -96,10 +113,12 @@ double BrayCurtisIndex()
 {
   ll numerator = 0;
   ll denominator = 0;
-  for(string s : dict)
+  for(auto sv : freqP)
   {
-    ll fa = freq[0][s];
-    ll fb = freq[1][s];
+    string s = sv.first;
+    reverse(s.begin(), s.end());
+    ll fa = freqV(setA, s);
+    ll fb = freqV(setB, s);
     numerator += min(fa, fb);
     denominator += fa+fb;
   }
@@ -270,6 +289,9 @@ int main(int argc, char **argv) {
 
   }
 
+  setA = set<int>(A, A+Sa);
+  setB = set<int>(B, B+Sb);
+
   if (verbose_flag) printf("N = %d | M = %d\n", N, M);
   if (verbose_flag) printf("|A| = %d | |B| = %d\n", Sa, Sb);
 
@@ -277,10 +299,9 @@ int main(int argc, char **argv) {
   s.reserve(k);
 
   if (verbose_flag) printf("Finding paths...\n");
-  for(int a=0; a<Sa; a++) dfs(0, A[a]);
-  for(int b=0; b<Sb; b++) dfs(1, B[b]);
+  for(unsigned int i=0; i<N; i++) dfs(i);
 
-  if (verbose_flag) printf("Count: %lld\n", count);
+  if (verbose_flag) printf("Count: %lld\n", freqP.size());
 
   if (verbose_flag) printf("Calculating Jaccard index...\n");
   double jaccard = jaccardIndex();
