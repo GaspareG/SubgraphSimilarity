@@ -114,7 +114,6 @@ void list_k_path(vector<int> ps, COLORSET cs, int x) {
 
 // Dynamic programming processing
 map<COLORSET, ll> *DP[MAXK + 1];
-map< pair<COLORSET, string>, ll > *DPLW[MAXK+1];
 
 void processDP() {
   if (verbose_flag) printf("K = %u\n", 1);
@@ -138,48 +137,56 @@ void processDP() {
   }
 }
 
-// TODO CHECK
-// map<string, ll> processDPLW(set<string> W, set<int> X)
-// {
-//   if( verbose_flag ) printf("K = %u\n", 1);
-//   for(unsigned int u=0; u<N; u++)
-//     DPLW[1][u][ make_pair( setBit(0, color[u] ), string(&label[u], 1) ) ] = 1;
-//
-//   for(unsigned int i=2; i <= k; i++)
-//   {
-//     if( verbose_flag ) printf("K = %u\n", i);
-//     #pragma omp parallel for
-//     for(unsigned int u=0; u<N; u++)
-//     {
-//       for(int v : G[u])
-//       {
-//         // Only v \in (G[u] /\ X)
-//         if( X.find(v) == X.end() ) continue;
-//         for(auto d : DPLW[i-1][v])
-//         {
-//           COLORSET s = d.first.first;
-//           string l = d.first.second;
-//           ll f = d.second;
-//           if( getBit(s, color[u]) ) continue;
-//
-//           COLORSET su = setBit(s, color[u]);
-//           string lu = string(l);
-//           lu += label[u];
-//           ll fp = DPLW[i][u][ make_pair( setBit(s, color[u]), lu ) ];
-//
-//           auto it = W.lower_bound(lu);
-//           if( it == W.end() ) continue;
-//           if( mismatch(lu.begin(), lu.end(), (*it).begin()).first != lu.end() ) continue;
-//
-//           DPLW[i][u][make_pair(su, lu)] = f+fp;
-//         }
-//       }
-//     }
-//   }
-//   map<string, ll> freq;
-//
-//   return freq;
-// }
+bool isPrefix(set<string> W, string x)
+{
+  auto it = W.lower_bound(x);
+  if( it == W.end() ) return false;
+  return mismatch(x.begin(), x.end(), (*it).begin()).first == x.end() ;
+}
+
+map<string, ll> processFrequency(set<string> W, multiset<int> X)
+{
+  set<string> WR;
+  for(string w : W)
+  {
+    reverse(w.begin(), w.end());
+    WR.insert(w);
+  }
+  multiset< tuple<int, string, COLORSET> > old;
+
+  for(int x : X)
+    if( isPrefix(WR, string(&label[x],1)) )
+      old.insert(make_tuple(x, string(&label[x],1), setBit(0ll, color[x])));
+
+  for(int i=k-1; i>0; i--)
+  {
+    multiset< tuple<int, string, COLORSET> > current;
+    for(auto o : old)
+    {
+      int u = get<0>(o);
+      string LP = get<1>(o);
+      COLORSET CP = get<2>(o);
+      for(int v : G[u])
+      {
+        if(getBit(CP, color[v])) continue;
+        COLORSET CPv = setBit(CP, color[v]);
+        string LPv = LP + label[v];
+        if( !isPrefix(WR, LPv) ) continue;
+        current.insert(make_tuple(v, LPv, CPv));
+      }
+    }
+    old = current;
+  }
+
+  map<string, ll> frequency;
+  for(auto c : old)
+  {
+    string s = get<1>(c);
+    reverse(s.begin(), s.end());
+    frequency[s]++;
+  }
+  return frequency;
+}
 
 void backProp() {
   // for (int i = k - 1; i > 0; i--) {
@@ -231,10 +238,10 @@ set<string> randomColorfulSample(vector<int> X, int r) {
     int u = X[distribution(eng)];
     vector<int> P = randomPathTo(u);
     if (R.find(P) == R.end()) {
-      for (int p : P) printf("[%6d] ", p);
-      printf("\n");
-      for (int p : P) printf("[%6d] ", color[p]);
-      printf("\n");
+      // for (int p : P) printf("[%6d] ", p);
+      // printf("\n");
+      // for (int p : P) printf("[%6d] ", color[p]);
+      // printf("\n");
       R.insert(P);
     }
   }
@@ -249,25 +256,20 @@ set<string> BCSampler(set<int> A, set<int> B, int r) {
   return randomColorfulSample(X, r);
 }
 
-// Find f_{A}[X]
-long long frequency(set<int> A, string X)
-{
-
-  return 0ll;
-}
-
 double FJW(set<string> W, set<int> A, set<int> B)
 {
-  set<int> AiB, AB;
+  multiset<int> AiB, AB;
   for(int a : A) AB.insert(a);
-  for(int b : B) AB.insert(b);
-  for(int a : A) if( B.find(a) != B.end() ) AiB.insert(a);
+  for(int b : B) if( AB.find(b) == AB.end() )  AB.insert(b);
+  for(int a : A) if(  B.find(a) !=  B.end() ) AiB.insert(a);
   long long num = 0ll;
   long long den = 0ll;
+  map<string, ll> freqAiB = processFrequency(W, AiB);
+  map<string, ll> freqAB = processFrequency(W, AB);
   for(string w : W)
   {
-    num += frequency(AiB, w);
-    den += frequency(AB, w);
+    num += freqAiB[w];
+    den += freqAB[w];
   }
   return (double) num / (double) den;
 }
@@ -276,56 +278,20 @@ double BCW(set<string> W, set<int> A, set<int> B)
 {
   long long num = 0ll;
   long long den = 0ll;
+  multiset<int> mA, mB;
+  for(int a : A) mA.insert(a);
+  for(int b : B) mB.insert(b);
+  map<string, ll> freqA = processFrequency(W, mA);
+  map<string, ll> freqB = processFrequency(W, mB);
   for(string w : W)
   {
-    long long fax = frequency(A, w);
-    long long fbx = frequency(B, w);
+    long long fax = freqA[w];
+    long long fbx = freqB[w];
     num += 2 * min(fax, fbx);
     den += fax + fbx;
   }
   return (double) num / (double) den;
 }
-
-// set<string> BCSampler(set<int> A, set<int> B, int r)
-// {
-//   set<string> W;
-//   set<vector<int>> R;
-//   vector<int> AB;
-//   vector<ll> freqAB;
-//   // Create set AB = A u B
-//   for(int a : A) AB.push_back(a);
-//   for(int b : B) AB.push_back(b);
-//   sort(AB.begin(), AB.end());
-//   AB.erase( unique(AB.begin(), AB.end()), AB.end());
-//   // Find relative frequence per v \in AB and create distribution
-//   for(int v : AB)
-//   {
-//     ll freq = DP[k][v][getCompl(0ll)];
-//     // alpha = 2 if
-//     ll alpha = 0ll;
-//     if( A.find(v) != A.end() ) alpha++;
-//     if( B.find(v) != B.end() ) alpha++;
-//     freqAB.push_back(alpha*freq);
-//   }
-//   discrete_distribution<int> distribution(freqAB.begin(), freqAB.end());
-//   // Until not sampled r path
-//   while( R.size() < (size_t) r )
-//   {
-//     int u = AB[distribution(eng)];
-//     vector<int> P = randomPathTo(u);
-//     // If P \notin R insert P in R
-//     if( R.find(P) == R.end() ){
-//       // for(int p : P) printf("[%6d] ", p);
-//       // printf("\n");
-//       // for(int p : P) printf("[%6d] ", color[p]);
-//       // printf("\n");
-//       R.insert(P);
-//     }
-//   }
-//   // W = { l \in \sigma^{k} : \exist P \in R s.t L(P) = l }
-//   for(auto r : R) W.insert(L(r));
-//   return W;
-// }
 
 void print_usage(char *filename) {
   printf(
@@ -492,11 +458,7 @@ int main(int argc, char **argv) {
   if (verbose_flag) printf("|A| = %d | |B| = %d\n", Sa, Sb);
 
   // Create DP Table
-  for (unsigned int i = 0; i <= k + 1; i++)
-  {
-    DP[i] = new map<COLORSET, ll>[N + 1];
-    DPLW[i] = new map<pair<COLORSET, string>, ll>[N + 1];
-  }
+  for (unsigned int i = 0; i <= k + 1; i++) DP[i] = new map<COLORSET, ll>[N + 1];
 
   // Random color graph
   if (verbose_flag) printf("Random coloring graph...\n");
@@ -529,11 +491,27 @@ int main(int argc, char **argv) {
   set<int> vA = set<int>(A, A + Sa);
   set<int> vB = set<int>(B, B + Sb);
 
-  if (verbose_flag) printf("Sampling strings...\n");
-  set<string> W = BCSampler(vA, vB, 10);
+  double sum = 0.;
 
-  if (verbose_flag) printf("Sampled strings:\n");
-  for (string w : W) printf("%s\n", w.c_str());
+  for(int i=0; i<1000; i++)
+  {
+    if (verbose_flag) printf("Sampling strings...\n");
+    set<string> W = BCSampler(vA, vB, 1);
 
+    if (verbose_flag) printf("Sampled strings:\n");
+    for (string w : W) printf("%s\n", w.c_str());
+
+    if (verbose_flag) printf("Find frequency(A+B)\n");
+    multiset<int> mAB = multiset<int>(A, A + Sa);
+    mAB.insert(B, B + Sb);
+    map<string, ll> freqAB = processFrequency(W, mAB);
+    // if (verbose_flag) printf("Freq(A+B):\n");
+    // for(auto f : freqAB)
+    //   printf("[%10s] = [%6lld]\n", f.first.c_str(), f.second);
+    double bcw = BCW(W,vA,vB);
+    sum += bcw;
+    if (verbose_flag) printf("BCW(W,A,B) = %.6f\n", bcw);
+  }
+  printf("E[BCW(W,A,B)] = %.6f\n", sum/1000.);
   return 0;
 }
