@@ -209,6 +209,7 @@ set<string> BCSampler(set<int> A, set<int> B, int r) {
 long long frequency(set<int> A, string X)
 {
   // TODO
+
   return 0ll;
 }
 
@@ -217,7 +218,7 @@ double FJW(set<string> W, set<int> A, set<int> B)
   set<int> AiB, AB;
   for(int a : A) AB.insert(a);
   for(int b : B) AB.insert(b);
-
+  for(int a : A) if( B.find(a) != B.end() ) AiB.insert(a);
   long long num = 0ll;
   long long den = 0ll;
   for(string w : W)
