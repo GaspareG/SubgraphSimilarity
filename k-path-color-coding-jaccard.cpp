@@ -122,7 +122,7 @@ void processDP() {
   // Induction
   for (unsigned int i = 2; i <= k; i++) {
     if (verbose_flag) printf("K = %u\n", i);
-#pragma omp parallel for
+    #pragma omp parallel for
     for (unsigned int u = 0; u < N; u++) {
       for (int v : G[u]) {
         for (auto d : DP[i - 1][v]) {
@@ -140,7 +140,7 @@ void processDP() {
 void backProp() {
   for (int i = k - 1; i > 0; i--) {
     if (verbose_flag) printf("K = %d\n", i);
-#pragma omp parallel for
+    #pragma omp parallel for
     for (unsigned int x = 0; x < N; x++) {
       vector<COLORSET> toDelete;
       for (pair<COLORSET, ll> CF : DP[i][x]) {
@@ -203,6 +203,43 @@ set<string> BCSampler(set<int> A, set<int> B, int r) {
   for (int a : A) X.push_back(a);
   for (int b : B) X.push_back(b);
   return randomColorfulSample(X, r);
+}
+
+// Find f_{A}[X]
+long long frequency(set<int> A, string X)
+{
+  // TODO
+  return 0ll;
+}
+
+double FJW(set<string> W, set<int> A, set<int> B)
+{
+  set<int> AiB, AB;
+  for(int a : A) AB.insert(a);
+  for(int b : B) AB.insert(b);
+
+  long long num = 0ll;
+  long long den = 0ll;
+  for(string w : W)
+  {
+    num += frequency(AiB, w);
+    den += frequency(AB, w);
+  }
+  return (double) num / (double) den;
+}
+
+double BCW(set<string> W, set<int> A, set<int> B)
+{
+  long long num = 0ll;
+  long long den = 0ll;
+  for(string w : W)
+  {
+    long long fax = frequency(A, w);
+    long long fbx = frequency(B, w);
+    num += 2 * min(fax, fbx);
+    den += fax + fbx;
+  }
+  return (double) num / (double) den;
 }
 
 // set<string> BCSampler(set<int> A, set<int> B, int r)
