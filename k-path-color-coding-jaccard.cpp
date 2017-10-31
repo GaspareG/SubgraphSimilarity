@@ -18,6 +18,7 @@
 #include <omp.h>
 #include <getopt.h>
 #include <unistd.h>
+#include <time.h>
 
 #ifdef K_8
 #define MAXK 8
@@ -120,12 +121,16 @@ void processDP() {
   // Base case
   for (unsigned int u = 0; u < N; u++) DP[1][u][setBit(0, color[u])] = 1ll;
   // Induction
-  for (unsigned int i = 2; i <= k; i++) {
+  for (unsigned int i = 2; i <= k; i++)
+  {
     if (verbose_flag) printf("K = %u\n", i);
-    #pragma omp parallel for
-    for (unsigned int u = 0; u < N; u++) {
-      for (int v : G[u]) {
-        for (auto d : DP[i - 1][v]) {
+    #pragma omp parallel for schedule(static, 1)
+    for (unsigned int u = 0; u < N; u++)
+    {
+      for (int v : G[u])
+      {
+        for (auto d : DP[i - 1][v])
+        {
           COLORSET s = d.first;
           ll f = d.second;
           if (getBit(s, color[u])) continue;
@@ -186,30 +191,6 @@ map<string, ll> processFrequency(set<string> W, multiset<int> X)
     frequency[s]++;
   }
   return frequency;
-}
-
-void backProp() {
-  // for (int i = k - 1; i > 0; i--) {
-  //   if (verbose_flag) printf("K = %d\n", i);
-  //   #pragma omp parallel for
-  //   for (unsigned int x = 0; x < N; x++) {
-  //     vector<COLORSET> toDelete;
-  //     for (pair<COLORSET, ll> CF : DP[i][x]) {
-  //       bool find = false;
-  //       COLORSET C = CF.first;
-  //       for (int j : G[x]) {
-  //         if (color[j] == color[x]) continue;
-  //         if (DP[i + 1][j].find(setBit(C, color[j])) != DP[i + 1][j].end()) {
-  //           find = true;
-  //           break;  // Don't stop if we need to construct the oracle H
-  //           // addLink(x, C, j);
-  //         }
-  //       }
-  //       if (!find) toDelete.push_back(C);
-  //     }
-  //     for (COLORSET C : toDelete) DP[i][x].erase(C);
-  //   }
-  // }
 }
 
 vector<int> randomPathTo(int u) {
@@ -475,13 +456,10 @@ int main(int argc, char **argv) {
 
   // Fill dynamic programming table
   if (verbose_flag) printf("Processing DP table...\n");
+  clock_t time_a = clock();
   processDP();
-  if (verbose_flag) printf("End processing DP table...\n");
-
-  // Backward-propagation of DP
-  if (verbose_flag) printf("Backward-propagation...\n");
-  backProp();
-  if (verbose_flag) printf("End Backward-propagation...\n");
+  clock_t time_b = clock() - time_a;
+  if (verbose_flag) printf("End processing DP table [%.6f]sec\n", (float)(time_b)/CLOCKS_PER_SEC);
 
   // list_k_path(vector<int>(), setBit(0ll, color[N-1]), N-1);
   N--;
@@ -493,25 +471,49 @@ int main(int argc, char **argv) {
   multiset<int> mAB = multiset<int>(A, A + Sa);
   mAB.insert(B, B + Sb);
 
-  double sum = 0.;
-
+  multiset<string> W;
+  if (verbose_flag) printf("Sampling 1000 string...\n");
+  time_a = clock();
   for(int i=0; i<1000; i++)
   {
-    if (verbose_flag) printf("Sampling strings...\n");
-    set<string> W = BCSampler(vA, vB, 1);
-
-    if (verbose_flag) printf("Sampled strings:\n");
-    for (string w : W) printf("%s\n", w.c_str());
-
-    if (verbose_flag) printf("Find frequency(A+B)\n");
-    map<string, ll> freqAB = processFrequency(W, mAB);
-    // if (verbose_flag) printf("Freq(A+B):\n");
-    // for(auto f : freqAB)
-    //   printf("[%10s] = [%6lld]\n", f.first.c_str(), f.second);
-    double bcw = BCW(W,vA,vB);
-    sum += bcw;
-    if (verbose_flag) printf("BCW(W,A,B) = %.6f\n", bcw);
+    set<string> ws = BCSampler(vA, vB, 1);
+    W.insert(ws.begin(), ws.end());
   }
-  printf("E[BCW(W,A,B)] = %.6f\n", sum/1000.);
+  time_b = clock()-time_a;
+  if (verbose_flag) printf("End sampling 1000 string [%.6f]sec\n", (float)(time_b)/CLOCKS_PER_SEC);
+
+  set<int> AB = set<int>(mAB.begin(), mAB.end());
+  if (verbose_flag) printf("Freq{AB}(W)...\n");
+  time_a = clock();
+  for(string w : W)
+  {
+    set<string> ws;
+    ws.insert(w);
+    processFrequency(ws, mAB);
+  }
+  time_b = clock()-time_a;
+  if (verbose_flag) printf("End Freq{AB}(W) [%.6f]sec\n", (float)(time_b)/CLOCKS_PER_SEC);
+
+  //
+  // double sum = 0.;
+  //
+  // for(int i=0; i<1000; i++)
+  // {
+  //   if (verbose_flag) printf("Sampling strings...\n");
+  //   set<string> W = BCSampler(vA, vB, 1);
+  //
+  //   if (verbose_flag) printf("Sampled strings:\n");
+  //   for (string w : W) printf("%s\n", w.c_str());
+  //
+  //   if (verbose_flag) printf("Find frequency(A+B)\n");
+  //   map<string, ll> freqAB = processFrequency(W, mAB);
+  //   // if (verbose_flag) printf("Freq(A+B):\n");
+  //   // for(auto f : freqAB)
+  //   //   printf("[%10s] = [%6lld]\n", f.first.c_str(), f.second);
+  //   double bcw = BCW(W,vA,vB);
+  //   sum += bcw;
+  //   if (verbose_flag) printf("BCW(W,A,B) = %.6f\n", bcw);
+  // }
+  // printf("E[BCW(W,A,B)] = %.6f\n", sum/1000.);
   return 0;
 }

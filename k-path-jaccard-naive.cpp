@@ -73,23 +73,6 @@ void dfs(int u)
   in[u] = false;
 }
 
-// J(A,B) = sum_{s}{ min(A_{s}, B_{s}) } / sum_{s}{ max(A_{s}, B_{s}) }
-double jaccardIndex()
-{
-  return 0.;
-//   ll numerator = 0;
-//   ll denominator = dict.size();
-//   for(string s : dict)
-//   {
-//     ll fa = freq[0][s];
-//     ll fb = freq[1][s];
-//     if( fa > 0 && fb > 0 )
-//       numerator++;
-//   }
-//   printf("%lld %lld\n", numerator, denominator);
-//   return (double) numerator / (double) denominator;
-}
-
 ll freqV(int a, string x)
 {
   ll out = 0ll;
@@ -108,6 +91,28 @@ ll freqV(set<int> A, string x)
   return f;
 }
 
+// J(A,B) = sum_{s}{ min(A_{s}, B_{s}) } / sum_{s}{ max(A_{s}, B_{s}) }
+double jaccardIndex()
+{
+  set<int> AB, AiB;
+  for(int a : setA) AB.insert(a);
+  for(int b : setB) AB.insert(b);
+  for(int a : setA)
+    if(setB.find(a) != setB.end()) AiB.insert(a);
+
+  ll numerator = 0ll;
+  ll denominator = 0ll;
+  for(auto sv : freqP)
+  {
+    string s = sv.first;
+    reverse(s.begin(), s.end());
+    numerator += freqV(AiB, s);
+    denominator += freqV(AB, s);
+  }
+  printf("%lld %lld\n", numerator, denominator);
+  return (double) numerator / (double) denominator;
+}
+
 // BC(A,B) = 2*sum_{s}{ min(A_{s}, B_{s}) } / sum_{s}{ A_{s}+B_{s}}
 double BrayCurtisIndex()
 {
@@ -116,7 +121,7 @@ double BrayCurtisIndex()
   for(auto sv : freqP)
   {
     string s = sv.first;
-    reverse(s.begin(), s.end());
+//    reverse(s.begin(), s.end());
     ll fa = freqV(setA, s);
     ll fb = freqV(setB, s);
     numerator += min(fa, fb);
