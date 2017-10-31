@@ -39,7 +39,7 @@ using namespace std;
 typedef long long ll;
 
 unsigned int N, M;
-unsigned k = 0, kp = 0;
+unsigned q = 0;
 unsigned thread_count = 0;
 static int verbose_flag, help_flag;
 
@@ -71,11 +71,11 @@ COLORSET setBit(COLORSET n, int pos) { return n |= 1 << pos; }
 COLORSET clearBit(COLORSET n, int pos) { return n &= ~(1 << pos); }
 
 // Complementary set of a COLORSET
-COLORSET getCompl(COLORSET n) { return ((1 << k) - 1) & (~n); }
+COLORSET getCompl(COLORSET n) { return ((1 << q) - 1) & (~n); }
 
-// Random coloring graph using kp color
+// Random coloring graph using k color
 inline void randomColor() {
-  for (unsigned int i = 0; i < N; i++) color[i] = eng() % k;
+  for (unsigned int i = 0; i < N; i++) color[i] = eng() % q;
 }
 
 // Path label
@@ -99,7 +99,7 @@ vector<int> H(int x, COLORSET C) { return links[make_pair(x, C)]; }
 
 void list_k_path(vector<int> ps, COLORSET cs, int x) {
   vector<int> oracle = H(x, cs);
-  if (ps.size() + 1 == k) {
+  if (ps.size() + 1 == q) {
     cont++;
     for (int j : ps) printf("[%6d] ", j);
     printf("\n");
@@ -122,7 +122,7 @@ void processDP() {
   // Base case
   for (unsigned int u = 0; u < N; u++) DP[1][u][setBit(0, color[u])] = 1ll;
   // Induction
-  for (unsigned int i = 2; i <= k; i++)
+  for (unsigned int i = 2; i <= q; i++)
   {
     if (verbose_flag) printf("K = %u\n", i);
     #pragma omp parallel for schedule(static, 1)
@@ -164,7 +164,7 @@ map<string, ll> processFrequency(set<string> W, multiset<int> X)
     if( isPrefix(WR, string(&label[x],1)) )
       old.push_back(make_tuple(x, string(&label[x],1), setBit(0ll, color[x])));
 
-  for(int i=k-1; i>0; i--)
+  for(int i=q-1; i>0; i--)
   {
     vector< tuple<int, string, COLORSET> > current;
     #pragma omp parallel for schedule(dynamic)
@@ -188,7 +188,6 @@ map<string, ll> processFrequency(set<string> W, multiset<int> X)
     }
     old = current;
   }
-
   map<string, ll> frequency;
   for(auto c : old)
   {
@@ -203,7 +202,7 @@ vector<int> randomPathTo(int u) {
   vector<int> P;
   P.push_back(u);
   COLORSET D = getCompl(setBit(0l, color[u]));
-  for (int i = k - 1; i > 0; i--) {
+  for (int i = q - 1; i > 0; i--) {
     vector<ll> freq;
     for (int v : G[u]) freq.push_back(DP[i][v][D]);
     discrete_distribution<int> distribution(freq.begin(), freq.end());
@@ -219,7 +218,7 @@ set<string> randomColorfulSample(vector<int> X, int r) {
   set<string> W;
   set<vector<int>> R;
   vector<ll> freqX;
-  for (int x : X) freqX.push_back(DP[k][x][getCompl(0ll)]);
+  for (int x : X) freqX.push_back(DP[q][x][getCompl(0ll)]);
   discrete_distribution<int> distribution(freqX.begin(), freqX.end());
   while (R.size() < (size_t)r) {
     int u = X[distribution(eng)];
@@ -236,6 +235,33 @@ set<string> BCSampler(set<int> A, set<int> B, int r) {
   for (int b : B) X.push_back(b);
   return randomColorfulSample(X, r);
 }
+
+// vector<int> naiveRandomPathTo(int u)
+// {
+//   vector<int> P;
+//   // set<int> Ps;
+//   // for(int i=q-1; i>0; i--)
+//   // {
+//   //   vector<int> Nu;
+//   //   for(int j : G[]]);
+//   // }
+//   return P;
+// }
+//
+// map<string, ll> baselineSampler(vector<int> X, int r)
+// {
+//   set<vector<int>> R;
+//   while(R.size() < (size_t)r)
+//   {
+//     int u = X[eng()%X.size()];
+//     vector<int> P = naiveRandomPathTo(u);
+//     if( P.size() == q && R.find(P) == R.end() ) R.insert(P);
+//     }
+//   }
+//   map<string, ll> fx;
+//   for(auto P : R) fx[L(P)]++;
+//   return fx;
+// }
 
 double FJW(set<string> W, set<int> A, set<int> B)
 {
@@ -265,7 +291,7 @@ double BCW(set<string> W, set<int> A, set<int> B)
   map<string, ll> freqA = processFrequency(W, mA);
   map<string, ll> freqB = processFrequency(W, mB);
   vector<string> vW = vector<string>(W.begin(), W.end());
-//  #pragma omp parallel for schedule(static, 1) reduction(+:num, den)
+  #pragma omp parallel for schedule(static, 1) reduction(+:num), reduction(+: den)
   for(int i=0; i<(int)vW.size(); i++)
   {
     string w = vW[i];
@@ -279,16 +305,13 @@ double BCW(set<string> W, set<int> A, set<int> B)
 
 void print_usage(char *filename) {
   printf(
-      "Usage: ./%s -k length -K number -g filename -p threadcount -s filename"
+      "Usage: ./%s -q length -g filename -p threadcount -s filename"
       "--help --verbose\n",
       filename);
   printf("Valid arguments:\n");
 
-  printf("-k, --path length\n");
+  printf("-q, --path length\n");
   printf("\tLength of the path.\n");
-
-  printf("-K, --color number\n");
-  printf("\tNumber of colors to use (default path length).\n");
 
   printf("-g, --input filename\n");
   printf("\tInput file of labeled graph in nmle format (default stdin)\n");
@@ -309,15 +332,13 @@ char *input_graph = NULL;
 long long current_timestamp() {
     struct timeval te;
     gettimeofday(&te, NULL); // get current time
-    long long milliseconds = te.tv_sec*1000LL + te.tv_usec/1000; // caculate milliseconds
-    // printf("milliseconds: %lld\n", milliseconds);
+    long long milliseconds = te.tv_sec*1000LL + te.tv_usec/1000;
     return milliseconds;
 }
 
 int main(int argc, char **argv) {
   static struct option long_options[] = {
-      {"path", required_argument, 0, 'k'},
-      {"color", required_argument, 0, 'K'},
+      {"path", required_argument, 0, 'q'},
       {"input", required_argument, 0, 'g'},
       {"parallel", required_argument, 0, 'p'},
       {"help", no_argument, &help_flag, 1},
@@ -329,16 +350,13 @@ int main(int argc, char **argv) {
   while (1) {
     // c = getopt_long (argc, argv, "k:K:g:f:t:T:l:p:", long_options,
     // &option_index);
-    c = getopt_long(argc, argv, "k:K:g:p:", long_options, &option_index);
+    c = getopt_long(argc, argv, "k:g:p:", long_options, &option_index);
 
     if (c == -1) break;
 
     switch (c) {
-      case 'k':
-        if (optarg != NULL) k = atoi(optarg);
-        break;
-      case 'K':
-        if (optarg != NULL) kp = atoi(optarg);
+      case 'q':
+        if (optarg != NULL) q = atoi(optarg);
         break;
       case 'g':
         input_graph_flag = true;
@@ -355,17 +373,15 @@ int main(int argc, char **argv) {
     return 0;
   }
 
-  if (k == 0) {
+  if (q == 0) {
     printf("Invalid or missing path length value.\n");
     return 1;
   }
 
-  if (k > MAXK || kp > MAXK) {
-    printf("k or kp to high! (max value: %d\n", MAXK);
+  if (q > MAXK) {
+    printf("q to high! (max value: %d\n", MAXK);
     return 1;
   }
-
-  if (kp == 0) kp = k;
 
   if (thread_count > 0 && (int)thread_count < omp_get_max_threads()) {
     omp_set_dynamic(0);
@@ -374,8 +390,7 @@ int main(int argc, char **argv) {
 
   if (verbose_flag) {
     printf("Options:\n");
-    printf("k = %d\n", k);
-    printf("kp = %d\n", kp);
+    printf("Q = %d\n", q);
     printf("thread = %d\n", thread_count);
     printf("input_graph = %s\n", input_graph != NULL ? input_graph : "stdin");
   }
@@ -456,7 +471,7 @@ int main(int argc, char **argv) {
   if (verbose_flag) printf("|A| = %d | |B| = %d\n", Sa, Sb);
 
   // Create DP Table
-  for (unsigned int i = 0; i <= k + 1; i++) DP[i] = new map<COLORSET, ll>[N + 1];
+  for (unsigned int i = 0; i <= q + 1; i++) DP[i] = new map<COLORSET, ll>[N + 1];
 
   // Random color graph
   if (verbose_flag) printf("Random coloring graph...\n");
@@ -467,9 +482,9 @@ int main(int argc, char **argv) {
     G[N].push_back(i);
     G[i].push_back(N);
   }
-  color[N] = k;
+  color[N] = q;
   N++;
-  k++;
+  q++;
 
   // Fill dynamic programming table
   if (verbose_flag) printf("Processing DP table...\n");
@@ -480,7 +495,7 @@ int main(int argc, char **argv) {
 
   // list_k_path(vector<int>(), setBit(0ll, color[N-1]), N-1);
   N--;
-  k--;
+  q--;
   for (unsigned int i = 0; i < N; i++) G[i].pop_back();
 
   vector<int> sampleV;
