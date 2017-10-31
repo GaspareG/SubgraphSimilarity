@@ -257,6 +257,32 @@ set<string> randomColorfulSample(vector<int> X, int r) {
   return W;
 }
 
+map<pair<int,string>, ll> randomColorfulSamplePlus(vector<int> X, int r) {
+  map<pair<int,string>, ll> W;
+  set<vector<int>> R;
+  vector<ll> freqX;
+  for (int x : X) freqX.push_back(DP[q][x][getCompl(0ll)]);
+  discrete_distribution<int> distribution(freqX.begin(), freqX.end());
+  while (R.size() < (size_t)r) {
+    int u = X[distribution(eng)];
+    vector<int> P = randomPathTo(u);
+    if (R.find(P) == R.end()) R.insert(P);
+  }
+  for (auto r : R) W[make_pair(*r.begin(),L(r))]++;
+  return W;
+  // set<vector<int>> R;
+  // while(R.size() < (size_t)r)
+  // {
+  //   int u = X[rand()%X.size()];
+  //   vector<int> P = naiveRandomPathTo(u);
+  //   if( P.size() == q && R.find(P) == R.end() ) R.insert(P);
+  // }
+  // map<pair<int,string>, ll> fx;
+  // for(auto P : R) fx[make_pair(*P.begin(), L(P))]++;
+  // return fx;
+  //
+}
+
 set<string> BCSampler(set<int> A, set<int> B, int r) {
   vector<int> X;
   for (int a : A) X.push_back(a);
@@ -285,12 +311,12 @@ vector<int> naiveRandomPathTo(int u)
 
 map<pair<int,string>, ll> baselineSampler(vector<int> X, int r)
 {
-  vector<vector<int>> R;
+  set<vector<int>> R;
   while(R.size() < (size_t)r)
   {
     int u = X[rand()%X.size()];
     vector<int> P = naiveRandomPathTo(u);
-    if( P.size() == q ) R.push_back(P);
+    if( P.size() == q && R.find(P) == R.end() ) R.insert(P);
   }
   map<pair<int,string>, ll> fx;
   for(auto P : R) fx[make_pair(*P.begin(), L(P))]++;
@@ -323,14 +349,26 @@ double BCW(set<string> W, map<string, ll> freqA, map<string, ll> freqB)
   {
     ll fax = freqA[x];
     ll fbx = freqB[x];
-//    printf("[%s] FAX(%llu) FBX(%llu)\n",x.c_str(), fax, fbx);
     num += 2 * min(fax, fbx);
     den += fax + fbx;
   }
-//  printf("\t\tNUM %llu DEN %llu\n", num, den);
   return (double) num / (double) den;
 }
 
+double FJW(set<string> W, map<string, ll> freqA, map<string, ll> freqB, map<string, ll> freqAB)
+{
+  ll num = 0ll;
+  ll den = 0ll;
+  for(string x : W)
+  {
+    ll fax = freqA[x];
+    ll fbx = freqB[x];
+    ll fabx = freqAB[x];
+    num += 2 * min(fax, fbx);
+    den += fabx;
+  }
+  return (double) num / (double) den;
+}
 double BCW(set<string> W, set<int> A, set<int> B)
 {
   ll num = 0ll;
@@ -561,24 +599,14 @@ int main(int argc, char **argv) {
       vector<int> X;
       for(int a : A) X.push_back(a);
       for(int b : B) X.push_back(b);
+      set<int> AiB;
+      for(int a : A) AiB.insert(a);
+      for(int b : B) AiB.insert(b);
 
       printf("TEST Q=[%2d] R=[%4d] (hA,hB)=(%3d,%3d):\n", q, R, ABs.first, ABs.second);
 
-      // Base line
-      printf("\t[baseline]\n");
-      map<pair<int,string>, ll> BLsampling = baselineSampler(X,R);
-
       map<string, ll> freqA, freqB;
       set<string> W;
-      for(auto w : BLsampling)
-      {
-        int u = w.first.first;
-        W.insert(w.first.second);
-        if( A.find(u) != A.end() ) freqA[w.first.second] += w.second;
-        if( B.find(u) != B.end() ) freqB[w.first.second] += w.second;
-      }
-      double bcw = BCW(W, freqA, freqB);
-      printf("\t\tBCW(A,B) = %.6f\n", bcw);
 
       // Brute force
       printf("\t[bruteforce]\n");
@@ -595,10 +623,23 @@ int main(int argc, char **argv) {
         if( A.find(u) != A.end() ) freqA[s] += freq;
         if( B.find(u) != B.end() ) freqB[s] += freq;
       }
-      bcw = BCW(dict, freqA, freqB);
+      double bcw = BCW(dict, freqA, freqB);
       printf("\t\tBCW(A,B) = %.6f\n", bcw);
 
-      // Brute force
+      // Base line
+      printf("\t[baseline]\n");
+      map<pair<int,string>, ll> BLsampling = baselineSampler(X,R);
+      for(auto w : BLsampling)
+      {
+        int u = w.first.first;
+        W.insert(w.first.second);
+        if( A.find(u) != A.end() ) freqA[w.first.second] += w.second;
+        if( B.find(u) != B.end() ) freqB[w.first.second] += w.second;
+      }
+      bcw = BCW(W, freqA, freqB);
+      printf("\t\tBCW(A,B) = %.6f\n", bcw);
+
+      // ColorfulSampler
       printf("\t[ColorfulSampler]\n");
       set<string> BCsampling = BCSampler(A,B,R);
       freqA = processFrequency(BCsampling, multiset<int>(A.begin(), A.end()));
@@ -606,10 +647,22 @@ int main(int argc, char **argv) {
       bcw = BCW(BCsampling, freqA, freqB);
       printf("\t\tBCW(A,B) = %.6f\n", bcw);
 
-      //
-      // set<string> Jsampling = randomColorfulSample(X,R);
-      //
-      // map<string, ll> processFrequency(set<string> W, multiset<int> X);
+      // ColorfulSamplerPlus
+      printf("\t[ColorfulSamplerPlus]\n");
+      map<pair<int,string>, ll> SamplePlus = randomColorfulSamplePlus(X, R);
+      W.clear();
+      for(auto w: SamplePlus) W.insert(w.first.second);
+      freqA.clear();
+      freqB.clear();
+      for(auto w : SamplePlus)
+      {
+        int u = w.first.first;
+        if( A.find(u) != A.end() ) freqA[w.first.second] += w.second;
+        if( B.find(u) != B.end() ) freqB[w.first.second] += w.second;
+      }
+      bcw = BCW(W, freqA, freqB);
+      printf("\t\tBCW(A,B) = %.6f\n", bcw);
+
       printf("\n");
     }
   }
