@@ -225,7 +225,6 @@ set<string> randomColorfulSample(vector<int> X, int r) {
     int u = X[distribution(eng)];
     vector<int> P = randomPathTo(u);
     if (R.find(P) == R.end()) R.insert(P);
-    }
   }
   for (auto r : R) W.insert(L(r));
   return W;
