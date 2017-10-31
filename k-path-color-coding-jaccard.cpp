@@ -114,6 +114,33 @@ void list_k_path(vector<int> ps, COLORSET cs, int x) {
     }
 }
 
+// bruteforce
+set<string> dict;
+map<pair<int,string>, ll> freqBrute;
+vector<int> P;
+string Pstring;
+set<int> Pset;
+
+void dfs(int u, int k)
+{
+  if(Pset.find(u) != Pset.end() ) return;
+
+  Pset.insert(u);
+  Pstring.push_back(label[u]);
+  P.push_back(u);
+
+  if( k == 0 )
+  {
+    dict.insert(Pstring);
+    freqBrute[make_pair(*P.begin(), Pstring)]++;
+  }
+  else for(int v : G[u]) dfs(v, k-1);
+
+  Pset.erase(u);
+  Pstring.pop_back();
+  P.pop_back();
+}
+
 // Dynamic programming processing
 map<COLORSET, ll> *DP[MAXK + 1];
 
@@ -160,15 +187,13 @@ map<string, ll> processFrequency(set<string> W, multiset<int> X)
   }
   vector< tuple<int, string, COLORSET> > old;
 
-  printf("\tprocessFrequency:\n");
-
   for(int x : X)
     if( isPrefix(WR, string(&label[x],1)) )
       old.push_back(make_tuple(x, string(&label[x],1), setBit(0ll, color[x])));
 
   for(int i=q-1; i>0; i--)
   {
-    printf("\t\ti = %d || |T| = %zu:\n", i, old.size());
+    // printf("\t\ti = %d || |T| = %zu:\n", i, old.size());
     vector< tuple<int, string, COLORSET> > current;
     #pragma omp parallel for schedule(dynamic)
     for(int j=0; j<(int)old.size(); j++)
@@ -239,32 +264,38 @@ set<string> BCSampler(set<int> A, set<int> B, int r) {
   return randomColorfulSample(X, r);
 }
 
-// vector<int> naiveRandomPathTo(int u)
-// {
-//   vector<int> P;
-//   // set<int> Ps;
-//   // for(int i=q-1; i>0; i--)
-//   // {
-//   //   vector<int> Nu;
-//   //   for(int j : G[]]);
-//   // }
-//   return P;
-// }
-//
-// map<string, ll> baselineSampler(vector<int> X, int r)
-// {
-//   set<vector<int>> R;
-//   while(R.size() < (size_t)r)
-//   {
-//     int u = X[eng()%X.size()];
-//     vector<int> P = naiveRandomPathTo(u);
-//     if( P.size() == q && R.find(P) == R.end() ) R.insert(P);
-//     }
-//   }
-//   map<string, ll> fx;
-//   for(auto P : R) fx[L(P)]++;
-//   return fx;
-// }
+vector<int> naiveRandomPathTo(int u)
+{
+  vector<int> P;
+  set<int> Ps;
+  P.push_back(u);
+  Ps.insert(u);
+  for(int i=q-1; i>0; i--)
+  {
+    vector<int> Nu;
+    for(int j : G[u]) if( Ps.find(j) == Ps.end() ) Nu.push_back(j);
+    if( Nu.size() == 0 ) return P;
+    int u = Nu[rand() % Nu.size()];
+    Ps.insert(u);
+    P.push_back(u);
+  }
+//  reverse(P.begin(), P.end());
+  return P;
+}
+
+map<pair<int,string>, ll> baselineSampler(vector<int> X, int r)
+{
+  vector<vector<int>> R;
+  while(R.size() < (size_t)r)
+  {
+    int u = X[rand()%X.size()];
+    vector<int> P = naiveRandomPathTo(u);
+    if( P.size() == q ) R.push_back(P);
+  }
+  map<pair<int,string>, ll> fx;
+  for(auto P : R) fx[make_pair(*P.begin(), L(P))]++;
+  return fx;
+}
 
 double FJW(set<string> W, set<int> A, set<int> B)
 {
@@ -284,6 +315,22 @@ double FJW(set<string> W, set<int> A, set<int> B)
   return (double) num / (double) den;
 }
 
+double BCW(set<string> W, map<string, ll> freqA, map<string, ll> freqB)
+{
+  ll num = 0ll;
+  ll den = 0ll;
+  for(string x : W)
+  {
+    ll fax = freqA[x];
+    ll fbx = freqB[x];
+//    printf("[%s] FAX(%llu) FBX(%llu)\n",x.c_str(), fax, fbx);
+    num += 2 * min(fax, fbx);
+    den += fax + fbx;
+  }
+//  printf("\t\tNUM %llu DEN %llu\n", num, den);
+  return (double) num / (double) den;
+}
+
 double BCW(set<string> W, set<int> A, set<int> B)
 {
   ll num = 0ll;
@@ -294,7 +341,7 @@ double BCW(set<string> W, set<int> A, set<int> B)
   map<string, ll> freqA = processFrequency(W, mA);
   map<string, ll> freqB = processFrequency(W, mB);
   vector<string> vW = vector<string>(W.begin(), W.end());
-  #pragma omp parallel for schedule(static, 1) reduction(+:num), reduction(+: den)
+  // #pragma omp parallel for schedule(static, 1) reduction(+:num), reduction(+: den)
   for(int i=0; i<(int)vW.size(); i++)
   {
     string w = vW[i];
@@ -351,8 +398,6 @@ int main(int argc, char **argv) {
   int option_index = 0;
   int c;
   while (1) {
-    // c = getopt_long (argc, argv, "k:K:g:f:t:T:l:p:", long_options,
-    // &option_index);
     c = getopt_long(argc, argv, "q:g:p:", long_options, &option_index);
 
     if (c == -1) break;
@@ -432,14 +477,6 @@ int main(int argc, char **argv) {
       G[ab[2*i+1]].push_back(ab[2*i]);
     }
     free(ab);
-    // read(input_fd, ab, 2 * sizeof(int));
-    // Sa = ab[0];
-    // Sb = ab[1];
-    // A = new int[Sa];
-    // B = new int[Sb];
-    //
-    // read(input_fd, A, Sa * sizeof(int));
-    // read(input_fd, B, Sb * sizeof(int));
 
   } else {
     // Read from stdin, nme format
@@ -462,11 +499,6 @@ int main(int argc, char **argv) {
       G[b].push_back(a);
     }
 
-    // Sa = nextInt();
-    // Sb = nextInt();
-    //
-    // for (int i = 0; i < Sa; i++) A[i] = nextInt();
-    // for (int i = 0; i < Sb; i++) B[i] = nextInt();
   }
 
   if (verbose_flag) printf("N = %d | M = %d\n", N, M);
@@ -503,46 +535,109 @@ int main(int argc, char **argv) {
 
   vector<int> sampleV;
   for(unsigned int i=0; i<N; i++) sampleV.push_back(i);
-  random_shuffle(sampleV.begin(), sampleV.end());
 
-  vector<int> size;
-  size.push_back(10);
-  size.push_back(25);
-  size.push_back(50);
-  size.push_back(100);
-  size.push_back(250);
-  size.push_back(500);
-  size.push_back(1000);
-  size.push_back(2500);
-  size.push_back(5000);
-  size.push_back(10000);
-  size.push_back(25000);
-  size.push_back(50000);
+  vector<int> Rsize;
+  Rsize.push_back(100);
+  Rsize.push_back(500);
+  Rsize.push_back(1000);
+  Rsize.push_back(2000);
 
-  for(size_t i=0; i<size.size(); i++)
+  vector<pair<int,int>> ABsize;
+  ABsize.push_back(make_pair(10,10));
+  ABsize.push_back(make_pair(100,100));
+  ABsize.push_back(make_pair(1,10));
+  ABsize.push_back(make_pair(1,100));
+  ABsize.push_back(make_pair(10,100));
+
+  srand(42);
+  for(int R : Rsize)
   {
-    printf("|A| = |B| = %d\n",size[i]);
+    for(pair<int,int> ABs : ABsize)
+    {
+      random_shuffle(sampleV.begin(), sampleV.end());
+      set<int> A = set<int>(sampleV.begin(), sampleV.begin()+ABs.first);
+      random_shuffle(sampleV.begin(), sampleV.end());
+      set<int> B = set<int>(sampleV.begin(), sampleV.begin()+ABs.second);
+      vector<int> X;
+      for(int a : A) X.push_back(a);
+      for(int b : B) X.push_back(b);
 
-    set<int> A = set<int>(sampleV.begin(), sampleV.begin()+size[i]);
-    set<int> B = set<int>(sampleV.end()-size[i]-1, sampleV.end());
-    multiset<int> AB = multiset<int>(A.begin(), A.end());
-    AB.insert(B.begin(), B.end());
+      printf("TEST Q=[%2d] R=[%4d] (hA,hB)=(%3d,%3d):\n", q, R, ABs.first, ABs.second);
 
+      // Base line
+      printf("\t[baseline]\n");
+      map<pair<int,string>, ll> BLsampling = baselineSampler(X,R);
 
-    if (verbose_flag) printf("Sampling 1000 string...\n");
-    time_a = current_timestamp();
-    set<string> W = BCSampler(A, B, 1000);
-    time_b = current_timestamp() - time_a;
-    if (verbose_flag) printf("End sampling 1000 string [%llu]ms\n",time_b);
+      map<string, ll> freqA, freqB;
+      set<string> W;
+      for(auto w : BLsampling)
+      {
+        int u = w.first.first;
+        W.insert(w.first.second);
+        if( A.find(u) != A.end() ) freqA[w.first.second] += w.second;
+        if( B.find(u) != B.end() ) freqB[w.first.second] += w.second;
+      }
+      double bcw = BCW(W, freqA, freqB);
+      printf("\t\tBCW(A,B) = %.6f\n", bcw);
 
-    if (verbose_flag) printf("Calculate BCW(A,B)...\n");
-    time_a = current_timestamp();
-    double bcw = BCW(W,A,B);
-    time_b = current_timestamp() - time_a;
-    if (verbose_flag) printf("BCW(A,B) = [%.6f]  [%llu]ms\n",bcw,time_b);
+      // Brute force
+      printf("\t[bruteforce]\n");
+      dict.clear();
+      freqBrute.clear();
+      for(unsigned int i = 0; i<N; i++) dfs(i, q-1); // TODO CHECK
+      freqA.clear();
+      freqB.clear();
+      for(auto w : freqBrute)
+      {
+        int u = w.first.first;
+        string s = w.first.second;
+        ll freq = w.second;
+        if( A.find(u) != A.end() ) freqA[s] += freq;
+        if( B.find(u) != B.end() ) freqB[s] += freq;
+      }
+      bcw = BCW(dict, freqA, freqB);
+      printf("\t\tBCW(A,B) = %.6f\n", bcw);
 
-    printf("\n\n");
+      // Brute force
+      printf("\t[ColorfulSampler]\n");
+      set<string> BCsampling = BCSampler(A,B,R);
+      freqA = processFrequency(BCsampling, multiset<int>(A.begin(), A.end()));
+      freqB = processFrequency(BCsampling, multiset<int>(B.begin(), B.end()));
+      bcw = BCW(BCsampling, freqA, freqB);
+      printf("\t\tBCW(A,B) = %.6f\n", bcw);
+
+      //
+      // set<string> Jsampling = randomColorfulSample(X,R);
+      //
+      // map<string, ll> processFrequency(set<string> W, multiset<int> X);
+      printf("\n");
+    }
   }
+
+  // for(size_t i=0; i<size.size(); i++)
+  // {
+  //   printf("|A| = |B| = %d\n",size[i]);
+  //
+  //   set<int> A = set<int>(sampleV.begin(), sampleV.begin()+size[i]);
+  //   set<int> B = set<int>(sampleV.end()-size[i]-1, sampleV.end());
+  //   multiset<int> AB = multiset<int>(A.begin(), A.end());
+  //   AB.insert(B.begin(), B.end());
+  //
+  //
+  //   if (verbose_flag) printf("Sampling 1000 string...\n");
+  //   time_a = current_timestamp();
+  //   set<string> W = BCSampler(A, B, 1000);
+  //   time_b = current_timestamp() - time_a;
+  //   if (verbose_flag) printf("End sampling 1000 string [%llu]ms\n",time_b);
+  //
+  //   if (verbose_flag) printf("Calculate BCW(A,B)...\n");
+  //   time_a = current_timestamp();
+  //   double bcw = BCW(W,A,B);
+  //   time_b = current_timestamp() - time_a;
+  //   if (verbose_flag) printf("BCW(A,B) = [%.6f]  [%llu]ms\n",bcw,time_b);
+  //
+  //   printf("\n\n");
+  // }
 
   // set<int> vA = set<int>(A, A + Sa);
   // set<int> vB = set<int>(B, B + Sb);
@@ -582,5 +677,6 @@ int main(int argc, char **argv) {
   //   if (verbose_flag) printf("BCW(W,A,B) = %.6f\n", bcw);
   // }
   // printf("E[BCW(W,A,B)] = %.6f\n", sum/1000.);
+
   return 0;
 }
