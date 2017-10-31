@@ -19,6 +19,7 @@
 #include <getopt.h>
 #include <unistd.h>
 #include <time.h>
+#include <sys/time.h>
 
 #ifdef K_8
 #define MAXK 8
@@ -303,6 +304,14 @@ void print_usage(char *filename) {
 bool input_graph_flag = false;
 char *input_graph = NULL;
 
+long long current_timestamp() {
+    struct timeval te;
+    gettimeofday(&te, NULL); // get current time
+    long long milliseconds = te.tv_sec*1000LL + te.tv_usec/1000; // caculate milliseconds
+    // printf("milliseconds: %lld\n", milliseconds);
+    return milliseconds;
+}
+
 int main(int argc, char **argv) {
   static struct option long_options[] = {
       {"path", required_argument, 0, 'k'},
@@ -384,42 +393,48 @@ int main(int argc, char **argv) {
     }
     read(input_fd, &N, sizeof(int));
     read(input_fd, &M, sizeof(int));
+    if (verbose_flag) printf("N = %d | M = %d\n", N, M);
 
     label = new char[N + 1];
     color = new int[N + 1];
     int *intLabel = new int[N + 1];
 
+    if (verbose_flag) printf("Reading labels...\n");
     read(input_fd, intLabel, N * sizeof(int));
     for (unsigned int i = 0; i < N; i++) label[i] = 'A' + intLabel[i];
 
+    if (verbose_flag) printf("Reading edges...\n");
     G = new vector<int>[N + 1];
-    int ab[2];
+    int *ab = new int[2*M];
+    read(input_fd, ab, 2 * M * sizeof(int));
     for (unsigned int i = 0; i < M; i++) {
-      read(input_fd, ab, 2 * sizeof(int));
-      G[ab[0]].push_back(ab[1]);
-      G[ab[1]].push_back(ab[0]);
+      G[ab[2*i]].push_back(ab[2*i+1]);
+      G[ab[2*i+1]].push_back(ab[2*i]);
     }
-
-    read(input_fd, ab, 2 * sizeof(int));
-    Sa = ab[0];
-    Sb = ab[1];
-    A = new int[Sa];
-    B = new int[Sb];
-
-    read(input_fd, A, Sa * sizeof(int));
-    read(input_fd, B, Sb * sizeof(int));
+    free(ab);
+    // read(input_fd, ab, 2 * sizeof(int));
+    // Sa = ab[0];
+    // Sb = ab[1];
+    // A = new int[Sa];
+    // B = new int[Sb];
+    //
+    // read(input_fd, A, Sa * sizeof(int));
+    // read(input_fd, B, Sb * sizeof(int));
 
   } else {
     // Read from stdin, nme format
     N = nextInt();
     M = nextInt();
+    if (verbose_flag) printf("N = %d | M = %d\n", N, M);
 
     label = new char[N + 1];
     color = new int[N + 1];
     G = new vector<int>[N + 1];
 
+    if (verbose_flag) printf("Reading labels...\n");
     for (unsigned int i = 0; i < N; i++) label[i] = 'A' + nextInt();
 
+    if (verbose_flag) printf("Reading edges...\n");
     for (unsigned int i = 0; i < M; i++) {
       int a = nextInt();
       int b = nextInt();
@@ -427,11 +442,11 @@ int main(int argc, char **argv) {
       G[b].push_back(a);
     }
 
-    Sa = nextInt();
-    Sb = nextInt();
-
-    for (int i = 0; i < Sa; i++) A[i] = nextInt();
-    for (int i = 0; i < Sb; i++) B[i] = nextInt();
+    // Sa = nextInt();
+    // Sb = nextInt();
+    //
+    // for (int i = 0; i < Sa; i++) A[i] = nextInt();
+    // for (int i = 0; i < Sb; i++) B[i] = nextInt();
   }
 
   if (verbose_flag) printf("N = %d | M = %d\n", N, M);
@@ -456,43 +471,75 @@ int main(int argc, char **argv) {
 
   // Fill dynamic programming table
   if (verbose_flag) printf("Processing DP table...\n");
-  clock_t time_a = clock();
+  ll time_a = current_timestamp();
   processDP();
-  clock_t time_b = clock() - time_a;
-  if (verbose_flag) printf("End processing DP table [%.6f]sec\n", (float)(time_b)/CLOCKS_PER_SEC);
+  ll time_b = current_timestamp() - time_a;
+  if (verbose_flag) printf("End processing DP table [%llu]ms\n", time_b);
 
   // list_k_path(vector<int>(), setBit(0ll, color[N-1]), N-1);
   N--;
   k--;
   for (unsigned int i = 0; i < N; i++) G[i].pop_back();
 
-  set<int> vA = set<int>(A, A + Sa);
-  set<int> vB = set<int>(B, B + Sb);
-  multiset<int> mAB = multiset<int>(A, A + Sa);
-  mAB.insert(B, B + Sb);
+  vector<int> sampleV;
+  for(unsigned int i=0; i<N; i++) sampleV.push_back(i);
+  random_shuffle(sampleV.begin(), sampleV.end());
 
-  multiset<string> W;
-  if (verbose_flag) printf("Sampling 1000 string...\n");
-  time_a = clock();
-  for(int i=0; i<1000; i++)
-  {
-    set<string> ws = BCSampler(vA, vB, 1);
-    W.insert(ws.begin(), ws.end());
-  }
-  time_b = clock()-time_a;
-  if (verbose_flag) printf("End sampling 1000 string [%.6f]sec\n", (float)(time_b)/CLOCKS_PER_SEC);
+  vector<int> size;
+  size.push_back(10);
+  size.push_back(25);
+  size.push_back(50);
+  size.push_back(100);
+  size.push_back(250);
+  size.push_back(500);
+  size.push_back(1000);
+  size.push_back(2500);
+  size.push_back(5000);
+  size.push_back(10000);
+  size.push_back(25000);
+  size.push_back(50000);
 
-  set<int> AB = set<int>(mAB.begin(), mAB.end());
-  if (verbose_flag) printf("Freq{AB}(W)...\n");
-  time_a = clock();
-  for(string w : W)
+  for(size_t i=0; i<size.size(); i++)
   {
-    set<string> ws;
-    ws.insert(w);
-    processFrequency(ws, mAB);
+    printf("|A| = |B| = %d\n",size[i]);
+
+    set<int> A = set<int>(sampleV.begin(), sampleV.begin()+size[i]);
+    set<int> B = set<int>(sampleV.end()-size[i]-1, sampleV.end());
+    multiset<int> AB = multiset<int>(A.begin(), A.end());
+    AB.insert(B.begin(), B.end());
+
+
+    if (verbose_flag) printf("Sampling 1000 string...\n");
+    time_a = current_timestamp();
+    set<string> W = BCSampler(A, B, 1000);
+    time_b = current_timestamp() - time_a;
+    if (verbose_flag) printf("End sampling 1000 string [%llu]ms\n",time_b);
+
+    if (verbose_flag) printf("Calculate BCW(A,B)...\n");
+    time_a = current_timestamp();
+    double bcw = BCW(W,A,B);
+    time_b = current_timestamp() - time_a;
+    if (verbose_flag) printf("BCW(A,B) = [%.6f]  [%llu]ms\n",bcw,time_b);
+
+    printf("\n\n");
   }
-  time_b = clock()-time_a;
-  if (verbose_flag) printf("End Freq{AB}(W) [%.6f]sec\n", (float)(time_b)/CLOCKS_PER_SEC);
+
+  // set<int> vA = set<int>(A, A + Sa);
+  // set<int> vB = set<int>(B, B + Sb);
+  // multiset<int> mAB = multiset<int>(A, A + Sa);
+  // mAB.insert(B, B + Sb);
+  //
+  // set<int> AB = set<int>(mAB.begin(), mAB.end());
+  // if (verbose_flag) printf("Freq{AB}(W)...\n");
+  // time_a = clock();
+  // for(string w : W)
+  // {
+  //   set<string> ws;
+  //   ws.insert(w);
+  //   processFrequency(ws, mAB);
+  // }
+  // time_b = clock()-time_a;
+  // if (verbose_flag) printf("End Freq{AB}(W) [%.6f]sec\n", (float)(time_b)/CLOCKS_PER_SEC);
 
   //
   // double sum = 0.;
