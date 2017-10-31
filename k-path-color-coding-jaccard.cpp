@@ -160,12 +160,15 @@ map<string, ll> processFrequency(set<string> W, multiset<int> X)
   }
   vector< tuple<int, string, COLORSET> > old;
 
+  printf("\tprocessFrequency:\n");
+
   for(int x : X)
     if( isPrefix(WR, string(&label[x],1)) )
       old.push_back(make_tuple(x, string(&label[x],1), setBit(0ll, color[x])));
 
   for(int i=q-1; i>0; i--)
   {
+    printf("\t\ti = %d || |T| = %zu:\n", i, old.size());
     vector< tuple<int, string, COLORSET> > current;
     #pragma omp parallel for schedule(dynamic)
     for(int j=0; j<(int)old.size(); j++)
