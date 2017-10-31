@@ -158,17 +158,19 @@ map<string, ll> processFrequency(set<string> W, multiset<int> X)
     reverse(w.begin(), w.end());
     WR.insert(w);
   }
-  multiset< tuple<int, string, COLORSET> > old;
+  vector< tuple<int, string, COLORSET> > old;
 
   for(int x : X)
     if( isPrefix(WR, string(&label[x],1)) )
-      old.insert(make_tuple(x, string(&label[x],1), setBit(0ll, color[x])));
+      old.push_back(make_tuple(x, string(&label[x],1), setBit(0ll, color[x])));
 
   for(int i=k-1; i>0; i--)
   {
-    multiset< tuple<int, string, COLORSET> > current;
-    for(auto o : old)
+    vector< tuple<int, string, COLORSET> > current;
+    #pragma omp parallel for schedule(dynamic)
+    for(int j=0; j<(int)old.size(); j++)
     {
+      auto o = old[j];
       int u = get<0>(o);
       string LP = get<1>(o);
       COLORSET CP = get<2>(o);
@@ -178,7 +180,10 @@ map<string, ll> processFrequency(set<string> W, multiset<int> X)
         COLORSET CPv = setBit(CP, color[v]);
         string LPv = LP+label[v];
         if( !isPrefix(WR, LPv) ) continue;
-        current.insert(make_tuple(v, LPv, CPv));
+        #pragma omp critical
+        {
+          current.push_back(make_tuple(v, LPv, CPv));
+        }
       }
     }
     old = current;
@@ -219,12 +224,7 @@ set<string> randomColorfulSample(vector<int> X, int r) {
   while (R.size() < (size_t)r) {
     int u = X[distribution(eng)];
     vector<int> P = randomPathTo(u);
-    if (R.find(P) == R.end()) {
-      // for (int p : P) printf("[%6d] ", p);
-      // printf("\n");
-      // for (int p : P) printf("[%6d] ", color[p]);
-      // printf("\n");
-      R.insert(P);
+    if (R.find(P) == R.end()) R.insert(P);
     }
   }
   for (auto r : R) W.insert(L(r));
@@ -265,8 +265,11 @@ double BCW(set<string> W, set<int> A, set<int> B)
   for(int b : B) mB.insert(b);
   map<string, ll> freqA = processFrequency(W, mA);
   map<string, ll> freqB = processFrequency(W, mB);
-  for(string w : W)
+  vector<string> vW = vector<string>(W.begin(), W.end());
+//  #pragma omp parallel for schedule(static, 1) reduction(+:num, den)
+  for(int i=0; i<(int)vW.size(); i++)
   {
+    string w = vW[i];
     long long fax = freqA[w];
     long long fbx = freqB[w];
     num += 2 * min(fax, fbx);
