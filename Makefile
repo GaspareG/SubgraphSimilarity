@@ -70,14 +70,14 @@ dataset-label: graph_generator
 dataset-jaccard: graph_generator
 	mkdir -p input | true
 	mkdir -p input/jaccard | true
-	./graph_generator     1000      5000 input/jaccard/graph-label-1k-5k-50.nme.bin      16     50     50
-	./graph_generator     1000      5000 input/jaccard/graph-label-1k-5k-100.nme.bin     16    100    100
-	./graph_generator    10000     50000 input/jaccard/graph-label-10k-50k-500.nme.bin   16    500    500
-	./graph_generator    10000     50000 input/jaccard/graph-label-10k-50k-1k.nme.bin    16   1000   1000
-	./graph_generator   100000    500000 input/jaccard/graph-label-100k-500k-5k.nme.bin  16   5000   5000
-	./graph_generator   100000    500000 input/jaccard/graph-label-100k-500k-10k.nme.bin 16  10000  10000
-	./graph_generator  1000000   5000000 input/jaccard/graph-label-1M-5M-50k.nme.bin     16  50000  50000
-	./graph_generator  1000000   5000000 input/jaccard/graph-label-1M-5M-100k.nme.bin    16 100000 100000
+	./graph_generator     1000      5000 input/jaccard/graph-label-1k-5k-50.nme.bin      4     50     50
+	./graph_generator     1000      5000 input/jaccard/graph-label-1k-5k-100.nme.bin     4    100    100
+	./graph_generator    10000     50000 input/jaccard/graph-label-10k-50k-500.nme.bin   4    500    500
+	./graph_generator    10000     50000 input/jaccard/graph-label-10k-50k-1k.nme.bin    4   1000   1000
+	./graph_generator   100000    500000 input/jaccard/graph-label-100k-500k-5k.nme.bin  4   5000   5000
+	./graph_generator   100000    500000 input/jaccard/graph-label-100k-500k-10k.nme.bin 4  10000  10000
+	./graph_generator  1000000   5000000 input/jaccard/graph-label-1M-5M-50k.nme.bin     4  50000  50000
+	./graph_generator  1000000   5000000 input/jaccard/graph-label-1M-5M-100k.nme.bin    4 100000 100000
 
 dataset: dataset-snap dataset-gen dataset-label dataset-jaccard
 

@@ -117,29 +117,53 @@ void list_k_path(vector<int> ps, COLORSET cs, int x) {
 // bruteforce
 set<string> dict;
 map<pair<int,string>, ll> freqBrute;
-vector<int> P;
-string Pstring;
-set<int> Pset;
 
-void dfs(int u, int k)
+vector<int> P[30];
+string Pstring[30];
+set<int> Pset[30];
+
+void dfs(int t, int u, int k)
 {
-  if(Pset.find(u) != Pset.end() ) return;
+  if(Pset[t].find(u) != Pset[t].end() ) return;
 
-  Pset.insert(u);
-  Pstring.push_back(label[u]);
-  P.push_back(u);
+  Pset[t].insert(u);
+  Pstring[t].push_back(label[u]);
+  P[t].push_back(u);
 
   if( k == 0 )
   {
-    dict.insert(Pstring);
-    freqBrute[make_pair(*P.begin(), Pstring)]++;
+    #pragma omp critical
+    {
+      dict.insert(Pstring[t]);
+      freqBrute[make_pair(*P[t].begin(), Pstring[t])]++;
+    }
   }
-  else for(int v : G[u]) dfs(v, k-1);
+  else for(int v : G[u]) dfs(t, v, k-1);
 
-  Pset.erase(u);
-  Pstring.pop_back();
-  P.pop_back();
+  Pset[t].erase(u);
+  Pstring[t].pop_back();
+  P[t].pop_back();
 }
+
+// void dfs(int u, int k)
+// {
+//   if(Pset.find(u) != Pset.end() ) return;
+//
+//   Pset.insert(u);
+//   Pstring.push_back(label[u]);
+//   P.push_back(u);
+//
+//   if( k == 0 )
+//   {
+//     dict.insert(Pstring);
+//     freqBrute[make_pair(*P.begin(), Pstring)]++;
+//   }
+//   else for(int v : G[u]) dfs(v, k-1);
+//
+//   Pset.erase(u);
+//   Pstring.pop_back();
+//   P.pop_back();
+// }
 
 // Dynamic programming processing
 map<COLORSET, ll> *DP[MAXK + 1];
@@ -253,7 +277,10 @@ set<string> randomColorfulSample(vector<int> X, int r) {
     vector<int> P = randomPathTo(u);
     if (R.find(P) == R.end()) R.insert(P);
   }
-  for (auto r : R) W.insert(L(r));
+  for (auto r : R){
+    reverse(r.begin(), r.end());
+    W.insert(L(r));
+  }
   return W;
 }
 
@@ -268,7 +295,10 @@ map<pair<int,string>, ll> randomColorfulSamplePlus(vector<int> X, int r) {
     vector<int> P = randomPathTo(u);
     if (R.find(P) == R.end()) R.insert(P);
   }
-  for (auto r : R) W[make_pair(*r.begin(),L(r))]++;
+  for (auto r : R){
+    reverse(r.begin(), r.end());
+    W[make_pair(*r.begin(),L(r))]++;
+  }
   return W;
   // set<vector<int>> R;
   // while(R.size() < (size_t)r)
@@ -341,6 +371,18 @@ double FJW(set<string> W, set<int> A, set<int> B)
   return (double) num / (double) den;
 }
 
+double BCW(set<string> W, map<string, ll> freqA, map<string, ll> freqB, long long R)
+{
+  ll num = 0ll;
+  for(string x : W)
+  {
+    ll fax = freqA[x];
+    ll fbx = freqB[x];
+    num += 2*min(fax, fbx);
+  }
+  return (double) num / (double) R;
+}
+
 double BCW(set<string> W, map<string, ll> freqA, map<string, ll> freqB)
 {
   ll num = 0ll;
@@ -355,20 +397,19 @@ double BCW(set<string> W, map<string, ll> freqA, map<string, ll> freqB)
   return (double) num / (double) den;
 }
 
-double FJW(set<string> W, map<string, ll> freqA, map<string, ll> freqB, map<string, ll> freqAB)
+double FJW(set<string> W, map<string, ll> freqA, map<string, ll> freqB, long long R)
 {
   ll num = 0ll;
-  ll den = 0ll;
   for(string x : W)
   {
     ll fax = freqA[x];
     ll fbx = freqB[x];
-    ll fabx = freqAB[x];
-    num += 2 * min(fax, fbx);
-    den += fabx;
+    num += min(fax, fbx);
   }
-  return (double) num / (double) den;
+//  printf("NUM = %lld DEN = %lld\n", num, R);
+  return (double) num / (double) R;
 }
+
 double BCW(set<string> W, set<int> A, set<int> B)
 {
   ll num = 0ll;
@@ -575,17 +616,29 @@ int main(int argc, char **argv) {
   for(unsigned int i=0; i<N; i++) sampleV.push_back(i);
 
   vector<int> Rsize;
+//  Rsize.push_back(20);
   Rsize.push_back(100);
   Rsize.push_back(500);
   Rsize.push_back(1000);
   Rsize.push_back(2000);
 
   vector<pair<int,int>> ABsize;
+//  ABsize.push_back(make_pair(4,4));
   ABsize.push_back(make_pair(10,10));
   ABsize.push_back(make_pair(100,100));
   ABsize.push_back(make_pair(1,10));
   ABsize.push_back(make_pair(1,100));
   ABsize.push_back(make_pair(10,100));
+
+
+  dict.clear();
+  freqBrute.clear();
+
+  #pragma omp parallel for schedule(static, 1)
+  for(unsigned int i = 0; i<N; i++){
+    int tid = omp_get_thread_num();
+    dfs(tid, i, q-1);
+  }
 
   srand(42);
   for(int R : Rsize)
@@ -599,36 +652,41 @@ int main(int argc, char **argv) {
       vector<int> X;
       for(int a : A) X.push_back(a);
       for(int b : B) X.push_back(b);
-      set<int> AiB;
-      for(int a : A) AiB.insert(a);
-      for(int b : B) AiB.insert(b);
+      set<int> AB;
+      for(int a : A) AB.insert(a);
+      for(int b : B) AB.insert(b);
 
       printf("TEST Q=[%2d] R=[%4d] (hA,hB)=(%3d,%3d):\n", q, R, ABs.first, ABs.second);
 
       map<string, ll> freqA, freqB;
       set<string> W;
+      double bcw, fjw;
+      long long Rp = 0ll;
+      double rel = 0ll;
 
       // Brute force
       printf("\t[bruteforce]\n");
-      dict.clear();
-      freqBrute.clear();
-      for(unsigned int i = 0; i<N; i++) dfs(i, q-1); // TODO CHECK
       freqA.clear();
       freqB.clear();
+      double realBC, realFJ;
       for(auto w : freqBrute)
       {
         int u = w.first.first;
         string s = w.first.second;
         ll freq = w.second;
-        if( A.find(u) != A.end() ) freqA[s] += freq;
-        if( B.find(u) != B.end() ) freqB[s] += freq;
+        if( A.find(u) != A.end() ){ Rp+= freq; freqA[s] += freq; }
+        if( B.find(u) != B.end() ){ Rp+= freq; freqB[s] += freq; }
       }
-      double bcw = BCW(dict, freqA, freqB);
-      printf("\t\tBCW(A,B) = %.6f\n", bcw);
+      realBC = bcw = BCW(dict, freqA, freqB);
+      printf("\t\tBRUTEFORCE BCW(A,B) \t\t= %.6f\n", bcw);
+      realFJ = fjw = FJW(dict, freqA, freqB, Rp);
+      printf("\t\tBRUTEFORCE FjW(A,B) \t\t= %.6f\n", fjw);
 
       // Base line
       printf("\t[baseline]\n");
       map<pair<int,string>, ll> BLsampling = baselineSampler(X,R);
+      freqA.clear();
+      freqB.clear();
       for(auto w : BLsampling)
       {
         int u = w.first.first;
@@ -637,15 +695,47 @@ int main(int argc, char **argv) {
         if( B.find(u) != B.end() ) freqB[w.first.second] += w.second;
       }
       bcw = BCW(W, freqA, freqB);
-      printf("\t\tBCW(A,B) = %.6f\n", bcw);
+      rel = abs(bcw-realBC)/realBC;
+      printf("\t\tBASELINE BCW(A,B) \t\t= %.6f \t%.6f\n", bcw, rel);
 
-      // ColorfulSampler
+      fjw = FJW(W, freqA, freqB, (long long)R);
+      rel = abs(fjw-realFJ)/realFJ;
+      printf("\t\tBASELINE FJW(A,B) \t\t= %.6f \t%.6f\n", fjw, rel);
+
+      // ColorfulSampler OLD
       printf("\t[ColorfulSampler]\n");
-      set<string> BCsampling = BCSampler(A,B,R);
-      freqA = processFrequency(BCsampling, multiset<int>(A.begin(), A.end()));
-      freqB = processFrequency(BCsampling, multiset<int>(B.begin(), B.end()));
-      bcw = BCW(BCsampling, freqA, freqB);
-      printf("\t\tBCW(A,B) = %.6f\n", bcw);
+      set<string> Sample = randomColorfulSample(X, R);
+      freqA = processFrequency(Sample, multiset<int>(A.begin(), A.end()));
+      freqB = processFrequency(Sample, multiset<int>(B.begin(), B.end()));
+      bcw = BCW(Sample, freqA, freqB);
+      rel = abs(bcw-realBC)/realBC;
+      printf("\t\tCOLORFULSAMPLER BCW(A,B) \t= %.6f \t%.6f\n", bcw, rel);
+
+      Sample = randomColorfulSample(vector<int>(AB.begin(), AB.end()), R);
+      freqA = processFrequency(Sample, multiset<int>(A.begin(), A.end()));
+      freqB = processFrequency(Sample, multiset<int>(B.begin(), B.end()));
+      Rp = 0 ;
+      for(auto a : freqA) Rp += a.second;
+      for(auto b : freqB) Rp += b.second;
+      fjw = FJW(Sample, freqA, freqB, Rp);
+      rel = abs(fjw-realFJ)/realFJ;
+      printf("\t\tCOLORFULSAMPLER FJW(A,B) \t= %.6f \t%.6f\n", fjw, rel);
+
+
+      // ColorfulSampler OLD
+      // printf("\t[ColorfulSampler]\n");
+      // set<string> BCsampling = BCSampler(A,B,R);
+      // freqA = processFrequency(BCsampling, multiset<int>(A.begin(), A.end()));
+      // freqB = processFrequency(BCsampling, multiset<int>(B.begin(), B.end()));
+      // bcw = BCW(BCsampling, freqA, freqB);
+      // rel = abs(bcw-realBC)/realBC;
+      // printf("\t\tCOLORFULSAMPLER BCW(A,B) \t= %.6f \t%.6f\n", bcw, rel);
+      // Rp = 0 ;
+      // for(auto a : freqA) Rp += a.second;
+      // for(auto b : freqB) Rp += b.second;
+      // fjw = FJW(W, freqA, freqB, (long long)Rp);
+      // rel = abs(fjw-realFJ)/realFJ;
+      // printf("\t\tCOLORFULSAMPLER FJW(A,B) \t= %.6f \t%.6f\n", fjw, rel);
 
       // ColorfulSamplerPlus
       printf("\t[ColorfulSamplerPlus]\n");
@@ -654,14 +744,57 @@ int main(int argc, char **argv) {
       for(auto w: SamplePlus) W.insert(w.first.second);
       freqA.clear();
       freqB.clear();
+
       for(auto w : SamplePlus)
       {
         int u = w.first.first;
-        if( A.find(u) != A.end() ) freqA[w.first.second] += w.second;
-        if( B.find(u) != B.end() ) freqB[w.first.second] += w.second;
+        if( A.find(u) != A.end() ){ freqA[w.first.second] += w.second; }
+        if( B.find(u) != B.end() ){ freqB[w.first.second] += w.second; }
       }
-      bcw = BCW(W, freqA, freqB);
-      printf("\t\tBCW(A,B) = %.6f\n", bcw);
+      bcw = BCW(W, freqA, freqB, R);
+      rel = abs(bcw-realBC)/realBC;
+      printf("\t\tCOLORFULSAMPLERPLUS BCW(A,B) \t= %.6f \t%.6f\n", bcw, rel);
+
+      SamplePlus = randomColorfulSamplePlus(vector<int>(AB.begin(), AB.end()), R);
+      W.clear();
+      for(auto w: SamplePlus) W.insert(w.first.second);
+      freqA.clear();
+      freqB.clear();
+
+      for(auto w : SamplePlus)
+      {
+        int u = w.first.first;
+        if( A.find(u) != A.end() ){ freqA[w.first.second] += w.second; }
+        if( B.find(u) != B.end() ){ freqB[w.first.second] += w.second; }
+      }
+      fjw = FJW(W, freqA, freqB, (long long)R);
+      rel = abs(fjw-realFJ)/realFJ;
+      printf("\t\tCOLORFULSAMPLERPLUS FJW(A,B) \t= %.6f \t%.6f\n", fjw, rel);
+
+      printf("\n");
+
+      // BRUTE------------------------------------|2PlUS--------------------------------|BASE-------------------------------|3---------------------------|
+      // #q, R, ha, hb, BC-BRUTE, FJ-BRUTE, taureal, VmRSS, time, BC-2PLUS, FJ-2PLUS, tau, VmRSS, time, BC-BASE, FJ-BASE, tau, VmRSS, time, BC-3, FJ-3, tau, VmRSS, time
+      // printf("%d,",q); // Q
+      // printf("%d,",R); // R
+      // printf("%d,",A.size()); // HA
+      // printf("%d,",B.size()); // HB
+      //
+      // printf("%.6f,",q); // BC-BRUTE
+      // printf("%d,",q); // TAU
+      // printf("%.6f,",q); // BC-2PLUS
+      // printf("%d,",q); // TAU
+      // printf("%.6f,",q); // BC-BASE
+      // printf("%d,",q); // TAU
+      // printf("%.6f,",q); // BC-3
+      // printf("%d,",q); // TAU
+      // printf("%.6f,",q); // FJ-BRUTE
+      // printf("%.6f,",q); // FJ-2PLUS
+      // printf("%d,",q); // tau
+      // printf("%.6f,",q); // FJ-BASE
+      // printf("%.6f,",q); // FJ-3
+      // printf("%d,",q); // MATRIX SIZE COLOR-CODING
+      // printf("%s,",q); // VMRSS
 
       printf("\n");
     }
