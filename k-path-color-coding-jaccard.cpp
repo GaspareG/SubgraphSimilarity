@@ -666,11 +666,18 @@ int main(int argc, char **argv) {
 
   vector<pair<int, int>> ABsize;
   //  ABsize.push_back(make_pair(4,4));
-  ABsize.push_back(make_pair(10, 10));
-  ABsize.push_back(make_pair(100, 100));
-  ABsize.push_back(make_pair(1, 10));
-  ABsize.push_back(make_pair(1, 100));
   ABsize.push_back(make_pair(10, 100));
+
+  // ABsize.push_back(make_pair(10, 10));
+  // ABsize.push_back(make_pair(100, 100));
+  // ABsize.push_back(make_pair(1, 10));
+  // ABsize.push_back(make_pair(1, 100));
+
+  vector<double> epsilonV;
+  epsilonV.push_back(0.2);
+  epsilonV.push_back(0.4);
+  epsilonV.push_back(0.6);
+  epsilonV.push_back(0.8);
 
   dict.clear();
   freqBrute.clear();
@@ -710,8 +717,7 @@ int main(int argc, char **argv) {
 
   srand(42);
 
-  double epsilon = 0.2 ; // MAGIC
-
+  for(double epsilon : epsilonV)
   for (pair<int, int> ABs : ABsize) {
 
     random_shuffle(sampleV.begin(), sampleV.end());
@@ -734,7 +740,7 @@ int main(int argc, char **argv) {
 
     R = log((double)PAB)/(epsilon*epsilon);
 
-    for(int exp = 0 ; exp < 10 ; exp++)
+    for(int exp = 0 ; exp < 50 ; exp++)
     {
     // printf("(%4d,%4d) R = %4d\n", ABs.first, ABs.second, R);
     // continue;
@@ -905,6 +911,7 @@ int main(int argc, char **argv) {
     // #q, R, ha, hb, BC-BRUTE, FJ-BRUTE, taureal, VmRSS, time, BC-2PLUS,
     // FJ-2PLUS, tau, VmRSS, time, BC-BASE, FJ-BASE, tau, VmRSS, time, BC-3,
     // FJ-3, tau, VmRSS, time
+    printf("%.1f,", epsilon);          // Q
     printf("%2d,", q);          // Q
     printf("%4d,", R);          // R
     printf("%4zu,", A.size());  // HA
