@@ -661,9 +661,8 @@ int main(int argc, char **argv) {
 
   vector<pair<int, int>> ABsize;
   //  ABsize.push_back(make_pair(4,4));
-  ABsize.push_back(make_pair(1, 1));
-  ABsize.push_back(make_pair(500, 500));
-  ABsize.push_back(make_pair(1000, 1000));
+  ABsize.push_back(make_pair(10, 100));
+  ABsize.push_back(make_pair(50, 50));
 
   // ABsize.push_back(make_pair(10, 10));
   // ABsize.push_back(make_pair(100, 100));
@@ -740,39 +739,39 @@ int main(int argc, char **argv) {
     double bcw, fjw;
     long long Rp = 0ll;
 
-    // dict.clear();
-    // freqA.clear();
-    // freqB.clear();
-    // freqBrute.clear();
-    // vmrss_brute = getCurrentRSS();
-    // time_brute = current_timestamp();
-    // #pragma omp parallel for schedule(static, 1)
-    // for (size_t i = 0; i < ABv.size(); i++) {
-    //   int tid = omp_get_thread_num();
-    //   dfs(tid, ABv[i], q - 1);
-    // }
-    //
-    // double realBC, realFJ;
-    // for (auto w : freqBrute) {
-    //   int u = w.first.first;
-    //   string s = w.first.second;
-    //   ll freq = w.second;
-    //   if (A.find(u) != A.end()) {
-    //     Rp += freq;
-    //     freqA[s] += freq;
-    //   }
-    //   if (B.find(u) != B.end()) {
-    //     Rp += freq;
-    //     freqB[s] += freq;
-    //   }
-    // }
-    // time_brute = current_timestamp() - time_brute;
-    // tau_brute = dict.size();
-    // bc_brute = realBC = bcw = BCW(dict, freqA, freqB);
-    // // printf("\t\tBRUTEFORCE BCW(A,B) \t\t= %.6f\n", bcw);
-    // fj_brute = realFJ = fjw = FJW(dict, freqA, freqB, Rp);
-    // // printf("\t\tBRUTEFORCE FjW(A,B) \t\t= %.6f\n", fjw);
-    // vmrss_brute = getCurrentRSS() - vmrss_brute;
+    dict.clear();
+    freqA.clear();
+    freqB.clear();
+    freqBrute.clear();
+    vmrss_brute = getCurrentRSS();
+    time_brute = current_timestamp();
+    #pragma omp parallel for schedule(static, 1)
+    for (size_t i = 0; i < ABv.size(); i++) {
+      int tid = omp_get_thread_num();
+      dfs(tid, ABv[i], q - 1);
+    }
+
+    double realBC, realFJ;
+    for (auto w : freqBrute) {
+      int u = w.first.first;
+      string s = w.first.second;
+      ll freq = w.second;
+      if (A.find(u) != A.end()) {
+        Rp += freq;
+        freqA[s] += freq;
+      }
+      if (B.find(u) != B.end()) {
+        Rp += freq;
+        freqB[s] += freq;
+      }
+    }
+    time_brute = current_timestamp() - time_brute;
+    tau_brute = dict.size();
+    bc_brute = realBC = bcw = BCW(dict, freqA, freqB);
+    // printf("\t\tBRUTEFORCE BCW(A,B) \t\t= %.6f\n", bcw);
+    fj_brute = realFJ = fjw = FJW(dict, freqA, freqB, Rp);
+    // printf("\t\tBRUTEFORCE FjW(A,B) \t\t= %.6f\n", fjw);
+    vmrss_brute = getCurrentRSS() - vmrss_brute;
 
 
     for(int exp = 0 ; exp < 50 ; exp++)
@@ -915,11 +914,11 @@ int main(int argc, char **argv) {
     printf("%4zu,", A.size());  // HA
     printf("%4zu,", B.size());  // HB
 
-    // printf("%.6f,", bc_brute);     // BC-BRUTE
-    // printf("%.6f,", fj_brute);     // FJ-BRUTE
-    // printf("%4d,", tau_brute);     // TAU
-    // printf("%2zu,", (size_t)0);    // VmRSS
-    // printf("%4llu,", time_brute);  // TIME
+    printf("%.6f,", bc_brute);     // BC-BRUTE
+    printf("%.6f,", fj_brute);     // FJ-BRUTE
+    printf("%4d,", tau_brute);     // TAU
+    printf("%2zu,", (size_t)0);    // VmRSS
+    printf("%4llu,", time_brute);  // TIME
 
     printf("%.6f,", bc_2plus);               // BC-2PLUS
     // printf("%.6f,", bc_2plus_rel);           // BC-2PLUS
