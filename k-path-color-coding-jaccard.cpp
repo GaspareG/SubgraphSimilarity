@@ -607,6 +607,7 @@ int main(int argc, char **argv) {
   ll time_b = current_timestamp() - time_a;
   if (verbose_flag) printf("End processing DP table [%llu]ms\n", time_b);
 
+  ll time_dp = time_b;
   // list_k_path(vector<int>(), setBit(0ll, color[N-1]), N-1);
   N--;
   q--;
@@ -630,15 +631,41 @@ int main(int argc, char **argv) {
   ABsize.push_back(make_pair(1,100));
   ABsize.push_back(make_pair(10,100));
 
-
   dict.clear();
   freqBrute.clear();
 
-  #pragma omp parallel for schedule(static, 1)
-  for(unsigned int i = 0; i<N; i++){
-    int tid = omp_get_thread_num();
-    dfs(tid, i, q-1);
-  }
+  double bc_brute;    // BC-BRUTE
+  double bc_2plus;    // BC-2PLUS
+  double bc_base;    // BC-2PLUS
+  double bc_alg3;    // BC-2PLUS
+
+  double bc_2plus_rel;    // BC-2PLUS_REL
+  double bc_base_rel;    // BC-2PLUS_REL
+  double bc_alg3_rel;    // BC-2PLUS_REL
+
+  double fj_brute;    // FJ-BRUTE_REL
+  double fj_2plus;    // FJ-2PLUS
+  double fj_base;    // FJ-2PLUS
+  double fj_alg3;    // FJ-2PLUS
+
+  double fj_2plus_rel;    // FJ-2PLUS_REL
+  double fj_base_rel;    // FJ-2PLUS_REL
+  double fj_alg3_rel;    // FJ-2PLUS_REL
+
+  int tau_brute;   // TAU
+  int tau_2plus;   // TAU
+  int tau_base;   // TAU
+  int tau_alg3;   // TAU
+
+  int vmrss_brute = 0; // VmRSS
+  int vmrss_2plus = 0; // VmRSS
+  int vmrss_base = 0; // VmRSS
+  int vmrss_alg3 = 0; // VmRSS
+
+  ll time_brute = 0ll;  // TIME
+  ll time_2plus = 0ll;  // TIME
+  ll time_base = 0ll;  // TIME
+  ll time_alg3 = 0ll;  // TIME
 
   srand(42);
   for(int R : Rsize)
@@ -655,19 +682,30 @@ int main(int argc, char **argv) {
       set<int> AB;
       for(int a : A) AB.insert(a);
       for(int b : B) AB.insert(b);
+      vector<int> ABv = vector<int>(AB.begin(), AB.end());
 
-      printf("TEST Q=[%2d] R=[%4d] (hA,hB)=(%3d,%3d):\n", q, R, ABs.first, ABs.second);
+      //printf("TEST Q=[%2d] R=[%4d] (hA,hB)=(%3d,%3d):\n", q, R, ABs.first, ABs.second);
 
       map<string, ll> freqA, freqB;
       set<string> W;
       double bcw, fjw;
       long long Rp = 0ll;
-      double rel = 0ll;
 
       // Brute force
-      printf("\t[bruteforce]\n");
+      //printf("\t[bruteforce]\n");
+
+      dict.clear();
       freqA.clear();
       freqB.clear();
+      freqBrute.clear();
+
+      time_brute = current_timestamp();
+      #pragma omp parallel for schedule(static, 1)
+      for(size_t i = 0; i<ABv.size(); i++){
+        int tid = omp_get_thread_num();
+        dfs(tid, ABv[i], q-1);
+      }
+
       double realBC, realFJ;
       for(auto w : freqBrute)
       {
@@ -677,13 +715,16 @@ int main(int argc, char **argv) {
         if( A.find(u) != A.end() ){ Rp+= freq; freqA[s] += freq; }
         if( B.find(u) != B.end() ){ Rp+= freq; freqB[s] += freq; }
       }
-      realBC = bcw = BCW(dict, freqA, freqB);
-      printf("\t\tBRUTEFORCE BCW(A,B) \t\t= %.6f\n", bcw);
-      realFJ = fjw = FJW(dict, freqA, freqB, Rp);
-      printf("\t\tBRUTEFORCE FjW(A,B) \t\t= %.6f\n", fjw);
+      time_brute = current_timestamp() - time_brute;
+      tau_brute = dict.size();
+      bc_brute = realBC = bcw = BCW(dict, freqA, freqB);
+      //printf("\t\tBRUTEFORCE BCW(A,B) \t\t= %.6f\n", bcw);
+      fj_brute = realFJ = fjw = FJW(dict, freqA, freqB, Rp);
+      //printf("\t\tBRUTEFORCE FjW(A,B) \t\t= %.6f\n", fjw);
 
       // Base line
-      printf("\t[baseline]\n");
+      //printf("\t[baseline]\n");
+      time_base = current_timestamp();
       map<pair<int,string>, ll> BLsampling = baselineSampler(X,R);
       freqA.clear();
       freqB.clear();
@@ -694,22 +735,30 @@ int main(int argc, char **argv) {
         if( A.find(u) != A.end() ) freqA[w.first.second] += w.second;
         if( B.find(u) != B.end() ) freqB[w.first.second] += w.second;
       }
-      bcw = BCW(W, freqA, freqB);
-      rel = abs(bcw-realBC)/realBC;
-      printf("\t\tBASELINE BCW(A,B) \t\t= %.6f \t%.6f\n", bcw, rel);
 
-      fjw = FJW(W, freqA, freqB, (long long)R);
-      rel = abs(fjw-realFJ)/realFJ;
-      printf("\t\tBASELINE FJW(A,B) \t\t= %.6f \t%.6f\n", fjw, rel);
+      time_base = current_timestamp() - time_base;
+
+      bc_base = bcw = BCW(W, freqA, freqB);
+      bc_base_rel = abs(bcw-realBC)/realBC;
+      //printf("\t\tBASELINE BCW(A,B) \t\t= %.6f \t%.6f\n", bcw, rel);
+
+      tau_base = W.size();
+      fj_base = fjw = FJW(W, freqA, freqB, (long long)R);
+      fj_base_rel = abs(fjw-realFJ)/realFJ;
+      //printf("\t\tBASELINE FJW(A,B) \t\t= %.6f \t%.6f\n", fjw, rel);
 
       // ColorfulSampler OLD
-      printf("\t[ColorfulSampler]\n");
+      //printf("\t[ColorfulSampler]\n");
+      time_alg3 = current_timestamp();
       set<string> Sample = randomColorfulSample(X, R);
       freqA = processFrequency(Sample, multiset<int>(A.begin(), A.end()));
       freqB = processFrequency(Sample, multiset<int>(B.begin(), B.end()));
-      bcw = BCW(Sample, freqA, freqB);
-      rel = abs(bcw-realBC)/realBC;
-      printf("\t\tCOLORFULSAMPLER BCW(A,B) \t= %.6f \t%.6f\n", bcw, rel);
+
+      time_alg3 = current_timestamp()-time_alg3;
+      tau_alg3 = Sample.size();
+      bc_alg3 = bcw = BCW(Sample, freqA, freqB);
+      bc_alg3_rel = abs(bcw-realBC)/realBC;
+      //printf("\t\tCOLORFULSAMPLER BCW(A,B) \t= %.6f \t%.6f\n", bcw, rel);
 
       Sample = randomColorfulSample(vector<int>(AB.begin(), AB.end()), R);
       freqA = processFrequency(Sample, multiset<int>(A.begin(), A.end()));
@@ -717,10 +766,9 @@ int main(int argc, char **argv) {
       Rp = 0 ;
       for(auto a : freqA) Rp += a.second;
       for(auto b : freqB) Rp += b.second;
-      fjw = FJW(Sample, freqA, freqB, Rp);
-      rel = abs(fjw-realFJ)/realFJ;
-      printf("\t\tCOLORFULSAMPLER FJW(A,B) \t= %.6f \t%.6f\n", fjw, rel);
-
+      fj_alg3 = fjw = FJW(Sample, freqA, freqB, Rp);
+      fj_alg3_rel = abs(fjw-realFJ)/realFJ;
+      //printf("\t\tCOLORFULSAMPLER FJW(A,B) \t= %.6f \t%.6f\n", fjw, rel);
 
       // ColorfulSampler OLD
       // printf("\t[ColorfulSampler]\n");
@@ -738,7 +786,9 @@ int main(int argc, char **argv) {
       // printf("\t\tCOLORFULSAMPLER FJW(A,B) \t= %.6f \t%.6f\n", fjw, rel);
 
       // ColorfulSamplerPlus
-      printf("\t[ColorfulSamplerPlus]\n");
+
+      //printf("\t[ColorfulSamplerPlus]\n");
+      time_2plus = current_timestamp();
       map<pair<int,string>, ll> SamplePlus = randomColorfulSamplePlus(X, R);
       W.clear();
       for(auto w: SamplePlus) W.insert(w.first.second);
@@ -751,9 +801,11 @@ int main(int argc, char **argv) {
         if( A.find(u) != A.end() ){ freqA[w.first.second] += w.second; }
         if( B.find(u) != B.end() ){ freqB[w.first.second] += w.second; }
       }
-      bcw = BCW(W, freqA, freqB, R);
-      rel = abs(bcw-realBC)/realBC;
-      printf("\t\tCOLORFULSAMPLERPLUS BCW(A,B) \t= %.6f \t%.6f\n", bcw, rel);
+      time_2plus = current_timestamp() - time_2plus;
+      tau_2plus = W.size();
+      bc_2plus = bcw = BCW(W, freqA, freqB, R);
+      bc_2plus_rel = abs(bcw-realBC)/realBC;
+      //printf("\t\tCOLORFULSAMPLERPLUS BCW(A,B) \t= %.6f \t%.6f\n", bcw, rel);
 
       SamplePlus = randomColorfulSamplePlus(vector<int>(AB.begin(), AB.end()), R);
       W.clear();
@@ -767,38 +819,53 @@ int main(int argc, char **argv) {
         if( A.find(u) != A.end() ){ freqA[w.first.second] += w.second; }
         if( B.find(u) != B.end() ){ freqB[w.first.second] += w.second; }
       }
-      fjw = FJW(W, freqA, freqB, (long long)R);
-      rel = abs(fjw-realFJ)/realFJ;
-      printf("\t\tCOLORFULSAMPLERPLUS FJW(A,B) \t= %.6f \t%.6f\n", fjw, rel);
+      fj_2plus = fjw = FJW(W, freqA, freqB, (long long)R);
+      fj_2plus_rel = abs(fjw-realFJ)/realFJ;
+      //printf("\t\tCOLORFULSAMPLERPLUS FJW(A,B) \t= %.6f \t%.6f\n", fjw, rel);
 
-      printf("\n");
+      //printf("\n");
 
-      // BRUTE------------------------------------|2PlUS--------------------------------|BASE-------------------------------|3---------------------------|
+      //                BRUTE------------------------------------|2PlUS--------------------------------|BASE-------------------------------|3---------------------------|
       // #q, R, ha, hb, BC-BRUTE, FJ-BRUTE, taureal, VmRSS, time, BC-2PLUS, FJ-2PLUS, tau, VmRSS, time, BC-BASE, FJ-BASE, tau, VmRSS, time, BC-3, FJ-3, tau, VmRSS, time
-      // printf("%d,",q); // Q
-      // printf("%d,",R); // R
-      // printf("%d,",A.size()); // HA
-      // printf("%d,",B.size()); // HB
-      //
-      // printf("%.6f,",q); // BC-BRUTE
-      // printf("%d,",q); // TAU
-      // printf("%.6f,",q); // BC-2PLUS
-      // printf("%d,",q); // TAU
-      // printf("%.6f,",q); // BC-BASE
-      // printf("%d,",q); // TAU
-      // printf("%.6f,",q); // BC-3
-      // printf("%d,",q); // TAU
-      // printf("%.6f,",q); // FJ-BRUTE
-      // printf("%.6f,",q); // FJ-2PLUS
-      // printf("%d,",q); // tau
-      // printf("%.6f,",q); // FJ-BASE
-      // printf("%.6f,",q); // FJ-3
-      // printf("%d,",q); // MATRIX SIZE COLOR-CODING
-      // printf("%s,",q); // VMRSS
+      printf("%2d,",q); // Q
+      printf("%5d,",R); // R
+      printf("%5zu,",A.size()); // HA
+      printf("%5zu,",B.size()); // HB
+
+      printf("%.6f," ,bc_brute);           // BC-BRUTE
+      printf("%.6f," ,fj_brute);           // FJ-BRUTE
+      printf("%5d,"  ,tau_brute);         // TAU
+      printf("%8d,"  ,vmrss_brute);       // VmRSS
+      printf("%8llu,",time_brute);        // TIME
+
+      printf("%.6f," ,bc_2plus);           // BC-2PLUS
+      printf("%.6f," ,bc_2plus_rel);       // BC-2PLUS
+      printf("%.6f," ,fj_2plus);           // FJ-2PLUS
+      printf("%.6f," ,fj_2plus_rel);       // FJ-2PLUS
+      printf("%5d,"  ,tau_2plus);         // TAU
+      printf("%8d,"  ,vmrss_2plus);       // VmRSS
+      printf("%8llu,",time_dp+time_2plus);// TIME
+
+      printf("%.6f," ,bc_base);            // BC-BASE
+      printf("%.6f," ,bc_base_rel);        // BC-BASE
+      printf("%.6f," ,fj_base);            // FJ-BASE
+      printf("%.6f," ,fj_base_rel);        // FJ-BASE
+      printf("%5d,"  ,tau_base);          // TAU
+      printf("%8d,"  ,vmrss_base);        // VmRSS
+      printf("%8llu,",time_base);         // TIME
+
+      printf("%.6f," ,bc_alg3);            // BC-ALG3
+      printf("%.6f," ,bc_alg3_rel);        // BC-ALG3
+      printf("%.6f," ,fj_alg3);            // FJ-ALG3
+      printf("%.6f," ,fj_alg3_rel);        // FJ-ALG3
+      printf("%5d,"  ,tau_alg3);          // TAU
+      printf("%8d,"  ,vmrss_alg3);        // VmRSS
+      printf("%8llu" ,time_dp+time_alg3); // TIME
 
       printf("\n");
     }
   }
+
 
   // for(size_t i=0; i<size.size(); i++)
   // {
