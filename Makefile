@@ -1,5 +1,5 @@
 CXXFLAGS += --std=c++11 -Wall -pedantic -g -DMAKE_VALGRIND_HAPPY -fopenmp
-objects = graph_generator k-path-color-coding k-path-color-coding-parallel k-induced-path-color-coding k-path-divide-color slash-burn k-induced-path-naive k-path-naive k-labeled-dpc k-labeled-dpl k-labeled-dpl-tau k-labeled-dplw k-path-jaccard-naive k-path-color-coding-jaccard
+objects = graph_generator k-path-color-coding k-path-color-coding-parallel k-induced-path-color-coding k-path-divide-color slash-burn k-induced-path-naive k-path-naive k-labeled-dpc k-labeled-dpl k-labeled-dpl-tau k-labeled-dplw k-path-jaccard-naive k-path-color-coding-jaccard final
 
 
 $(objects): %: %.cpp
