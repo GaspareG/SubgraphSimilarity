@@ -207,25 +207,6 @@ void dfs(int t, int u, int k) {
   P[t].pop_back();
 }
 
-// void dfs(int u, int k)
-// {
-//   if(Pset.find(u) != Pset.end() ) return;
-//
-//   Pset.insert(u);
-//   Pstring.push_back(label[u]);
-//   P.push_back(u);
-//
-//   if( k == 0 )
-//   {
-//     dict.insert(Pstring);
-//     freqBrute[make_pair(*P.begin(), Pstring)]++;
-//   }
-//   else for(int v : G[u]) dfs(v, k-1);
-//
-//   Pset.erase(u);
-//   Pstring.pop_back();
-//   P.pop_back();
-// }
 
 // Dynamic programming processing
 map<COLORSET, ll> *DP[MAXK + 1];
@@ -349,17 +330,6 @@ map<pair<int, string>, ll> randomColorfulSamplePlus(vector<int> X, int r) {
     W[make_pair(*r.begin(), L(r))]++;
   }
   return W;
-  // set<vector<int>> R;
-  // while(R.size() < (size_t)r)
-  // {
-  //   int u = X[rand()%X.size()];
-  //   vector<int> P = naiveRandomPathTo(u);
-  //   if( P.size() == q && R.find(P) == R.end() ) R.insert(P);
-  // }
-  // map<pair<int,string>, ll> fx;
-  // for(auto P : R) fx[make_pair(*P.begin(), L(P))]++;
-  // return fx;
-  //
 }
 
 set<string> BCSampler(set<int> A, set<int> B, int r) {
@@ -668,11 +638,6 @@ int main(int argc, char **argv) {
   //  ABsize.push_back(make_pair(4,4));
   ABsize.push_back(make_pair(10, 100));
 
-  // ABsize.push_back(make_pair(10, 10));
-  // ABsize.push_back(make_pair(100, 100));
-  // ABsize.push_back(make_pair(1, 10));
-  // ABsize.push_back(make_pair(1, 100));
-
   vector<double> epsilonV;
   epsilonV.push_back(0.2);
   epsilonV.push_back(0.4);
@@ -742,11 +707,6 @@ int main(int argc, char **argv) {
 
     for(int exp = 0 ; exp < 50 ; exp++)
     {
-    // printf("(%4d,%4d) R = %4d\n", ABs.first, ABs.second, R);
-    // continue;
-
-    // printf("TEST Q=[%2d] R=[%4d] (hA,hB)=(%3d,%3d):\n", q, R, ABs.first,
-    // ABs.second);
 
     map<string, ll> freqA, freqB;
     set<string> W;
@@ -838,27 +798,8 @@ int main(int argc, char **argv) {
     for (auto b : freqB) Rp += b.second;
     fj_alg3 = fjw = FJW(Sample, freqA, freqB, Rp);
     fj_alg3_rel = abs(fjw - realFJ) / realFJ;
-    // printf("\t\tCOLORFULSAMPLER FJW(A,B) \t= %.6f \t%.6f\n", fjw, rel);
     vmrss_alg3 = getCurrentRSS() - vmrss_alg3;
 
-    // ColorfulSampler OLD
-    // printf("\t[ColorfulSampler]\n");
-    // set<string> BCsampling = BCSampler(A,B,R);
-    // freqA = processFrequency(BCsampling, multiset<int>(A.begin(), A.end()));
-    // freqB = processFrequency(BCsampling, multiset<int>(B.begin(), B.end()));
-    // bcw = BCW(BCsampling, freqA, freqB);
-    // rel = abs(bcw-realBC)/realBC;
-    // printf("\t\tCOLORFULSAMPLER BCW(A,B) \t= %.6f \t%.6f\n", bcw, rel);
-    // Rp = 0 ;
-    // for(auto a : freqA) Rp += a.second;
-    // for(auto b : freqB) Rp += b.second;
-    // fjw = FJW(W, freqA, freqB, (long long)Rp);
-    // rel = abs(fjw-realFJ)/realFJ;
-    // printf("\t\tCOLORFULSAMPLER FJW(A,B) \t= %.6f \t%.6f\n", fjw, rel);
-
-    // ColorfulSamplerPlus
-
-    // printf("\t[ColorfulSamplerPlus]\n");
     freqA.clear();
     freqB.clear();
     W.clear();
@@ -901,16 +842,9 @@ int main(int argc, char **argv) {
     }
     fj_2plus = fjw = FJW(W, freqA, freqB, (long long)R);
     fj_2plus_rel = abs(fjw - realFJ) / realFJ;
-    // printf("\t\tCOLORFULSAMPLERPLUS FJW(A,B) \t= %.6f \t%.6f\n", fjw, rel);
 
     vmrss_2plus = getCurrentRSS() - vmrss_2plus;
 
-    // printf("\n");
-
-    //                BRUTE------------------------------------|2PlUS--------------------------------|BASE-------------------------------|3---------------------------|
-    // #q, R, ha, hb, BC-BRUTE, FJ-BRUTE, taureal, VmRSS, time, BC-2PLUS,
-    // FJ-2PLUS, tau, VmRSS, time, BC-BASE, FJ-BASE, tau, VmRSS, time, BC-3,
-    // FJ-3, tau, VmRSS, time
     printf("%.1f,", epsilon);          // Q
     printf("%2d,", q);          // Q
     printf("%4d,", R);          // R
@@ -950,71 +884,6 @@ int main(int argc, char **argv) {
     printf("\n");
     }
   }
-
-  // for(size_t i=0; i<size.size(); i++)
-  // {
-  //   printf("|A| = |B| = %d\n",size[i]);
-  //
-  //   set<int> A = set<int>(sampleV.begin(), sampleV.begin()+size[i]);
-  //   set<int> B = set<int>(sampleV.end()-size[i]-1, sampleV.end());
-  //   multiset<int> AB = multiset<int>(A.begin(), A.end());
-  //   AB.insert(B.begin(), B.end());
-  //
-  //
-  //   if (verbose_flag) printf("Sampling 1000 string...\n");
-  //   time_a = current_timestamp();
-  //   set<string> W = BCSampler(A, B, 1000);
-  //   time_b = current_timestamp() - time_a;
-  //   if (verbose_flag) printf("End sampling 1000 string [%llu]ms\n",time_b);
-  //
-  //   if (verbose_flag) printf("Calculate BCW(A,B)...\n");
-  //   time_a = current_timestamp();
-  //   double bcw = BCW(W,A,B);
-  //   time_b = current_timestamp() - time_a;
-  //   if (verbose_flag) printf("BCW(A,B) = [%.6f]  [%llu]ms\n",bcw,time_b);
-  //
-  //   printf("\n\n");
-  // }
-
-  // set<int> vA = set<int>(A, A + Sa);
-  // set<int> vB = set<int>(B, B + Sb);
-  // multiset<int> mAB = multiset<int>(A, A + Sa);
-  // mAB.insert(B, B + Sb);
-  //
-  // set<int> AB = set<int>(mAB.begin(), mAB.end());
-  // if (verbose_flag) printf("Freq{AB}(W)...\n");
-  // time_a = clock();
-  // for(string w : W)
-  // {
-  //   set<string> ws;
-  //   ws.insert(w);
-  //   processFrequency(ws, mAB);
-  // }
-  // time_b = clock()-time_a;
-  // if (verbose_flag) printf("End Freq{AB}(W) [%.6f]sec\n",
-  // (float)(time_b)/CLOCKS_PER_SEC);
-
-  //
-  // double sum = 0.;
-  //
-  // for(int i=0; i<1000; i++)
-  // {
-  //   if (verbose_flag) printf("Sampling strings...\n");
-  //   set<string> W = BCSampler(vA, vB, 1);
-  //
-  //   if (verbose_flag) printf("Sampled strings:\n");
-  //   for (string w : W) printf("%s\n", w.c_str());
-  //
-  //   if (verbose_flag) printf("Find frequency(A+B)\n");
-  //   map<string, ll> freqAB = processFrequency(W, mAB);
-  //   // if (verbose_flag) printf("Freq(A+B):\n");
-  //   // for(auto f : freqAB)
-  //   //   printf("[%10s] = [%6lld]\n", f.first.c_str(), f.second);
-  //   double bcw = BCW(W,vA,vB);
-  //   sum += bcw;
-  //   if (verbose_flag) printf("BCW(W,A,B) = %.6f\n", bcw);
-  // }
-  // printf("E[BCW(W,A,B)] = %.6f\n", sum/1000.);
 
   return 0;
 }

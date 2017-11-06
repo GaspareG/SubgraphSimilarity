@@ -7,6 +7,7 @@
 #include <set>
 #include <map>
 #include <string>
+#include <list>
 #include <algorithm>
 #include <iterator>
 #include <random>
@@ -250,19 +251,19 @@ map<string, ll> processFrequency(set<string> W, multiset<int> X) {
 }
 
 vector<int> randomPathTo(int u) {
-  vector<int> P;
-  P.push_back(u);
+  list<int> P;
+  P.push_front(u);
   COLORSET D = getCompl(setBit(0l, color[u]));
   for (int i = q - 1; i > 0; i--) {
     vector<ll> freq;
     for (int v : G[u]) freq.push_back(M[i][v][D]);
     discrete_distribution<int> distribution(freq.begin(), freq.end());
     u = G[u][distribution(eng)];
-    P.push_back(u);
+    P.push_front(u);
     D = clearBit(D, color[u]);
   }
-  reverse(P.begin(), P.end());
-  return P;
+//  reverse(P.begin(), P.end());
+  return vector<int>( begin(P), end(P));
 }
 
 set<string> randomColorfulSample(vector<int> X, int r) {
@@ -277,7 +278,7 @@ set<string> randomColorfulSample(vector<int> X, int r) {
     if (R.find(P) == R.end()) R.insert(P);
   }
   for (auto r : R) {
-    reverse(r.begin(), r.end());
+  //  reverse(r.begin(), r.end());
     W.insert(L(r));
   }
   return W;
@@ -318,7 +319,7 @@ vector<int> naiveRandomPathTo(int u) {
     for (int j : G[u])
       if (Ps.find(j) == Ps.end()) Nu.push_back(j);
     if (Nu.size() == 0) return P;
-    int u = Nu[rand() % Nu.size()];
+    int u = Nu[eng() % Nu.size()];
     Ps.insert(u);
     P.push_back(u);
   }
@@ -328,7 +329,7 @@ vector<int> naiveRandomPathTo(int u) {
 map<pair<int, string>, ll> baselineSampler(vector<int> X, int r) {
   set<vector<int>> R;
   while (R.size() < (size_t)r) {
-    int u = X[rand() % X.size()];
+    int u = X[eng() % X.size()];
     vector<int> P = naiveRandomPathTo(u);
     if (P.size() == q && R.find(P) == R.end()) R.insert(P);
   }
@@ -593,10 +594,10 @@ int main(int argc, char **argv) {
   vector<pair<int, int>> ABsize;
   // ABsize.push_back(make_pair(10,10));
   // ABsize.push_back(make_pair(10, 100));
-  ABsize.push_back(make_pair(100, 100));
+  ABsize.push_back(make_pair(20, 20));
 
   vector<double> epsilonV;
-  epsilonV.push_back(0.05);
+  epsilonV.push_back(0.1);
   // epsilonV.push_back(0.4);
   // epsilonV.push_back(0.6);
 
@@ -635,9 +636,12 @@ int main(int argc, char **argv) {
 
   for(auto ABs : ABsize)
   {
-    random_shuffle(sampleV.begin(), sampleV.end());
+      // set<int> A,B;
+      // for(int i=0; i<ABs.first; i++) A.insert(i);
+      // for(int i=(ABs.first/4); i<(ABs.first/4)+ABs.second; i++) B.insert(i);
+    shuffle(sampleV.begin(), sampleV.end(), eng);
     set<int> A = set<int>(sampleV.begin(), sampleV.begin() + ABs.first);
-    random_shuffle(sampleV.begin(), sampleV.end());
+    shuffle(sampleV.begin(), sampleV.end(), eng);
     set<int> B = set<int>(sampleV.begin(), sampleV.begin() + ABs.second);
     vector<int> X;
     for (int a : A) X.push_back(a);
@@ -672,9 +676,10 @@ int main(int argc, char **argv) {
       freqA.clear();
       freqB.clear();
       freqBrute.clear();
+      Rp = 0;
       time_brute = current_timestamp();
       #pragma omp parallel for schedule(static, 1)
-      for (size_t i = 0; i < ABv.size(); i++) {
+      for (int i = 0; i < (int)ABv.size(); i++) {
         int tid = omp_get_thread_num();
         dfs(tid, ABv[i], q - 1);
       }
@@ -697,9 +702,9 @@ int main(int argc, char **argv) {
       time_brute = current_timestamp() - time_brute;
       tau_brute = dict.size();
       bc_brute = realBC = bcw = BCW(dict, freqA, freqB);
-      fj_brute = realFJ = fjw = FJW(dict, freqA, freqB, Rp);
+      fj_brute = realFJ = fjw = FJW(dict, freqA, freqB, (long long) Rp);
 
-      for(int exp = 0 ; exp < 100 ; exp++)
+      for(int exp = 0 ; exp < 200 ; exp++)
       {
 
         // BASELINE
@@ -765,14 +770,14 @@ int main(int argc, char **argv) {
         Rp = 0;
         for (auto a : freqA) Rp += a.second;
         for (auto b : freqB) Rp += b.second;
-        fj_alg3 = FJW(Sample, freqA, freqB, Rp);
+        fj_alg3 = FJW(Sample, freqA, freqB, (long long) Rp);
         fj_alg3_rel = abs(fjw - realFJ) / realFJ;
 
         // COLORFULSAMPLER PLUS
         W.clear();
         freqA.clear();
         freqB.clear();
-        Rp = 0;
+
         time_2plus = current_timestamp();
 
         map<pair<int, string>, ll> SamplePlus = randomColorfulSamplePlus(X, R);
@@ -780,19 +785,17 @@ int main(int argc, char **argv) {
         for (auto w : SamplePlus) {
           int u = w.first.first;
           W.insert(w.first.second);
-          if (A.find(u) != A.end()) {
-            freqA[w.first.second] += w.second;
-            Rp += w.second;
-          }
-          if (B.find(u) != B.end()) {
-            freqB[w.first.second] += w.second;
-            Rp += w.second;
-          }
+          if (A.find(u) != A.end()) freqA[w.first.second] += w.second;
+          if (B.find(u) != B.end()) freqB[w.first.second] += w.second;
         }
+
+        Rp = 0;
+        for (auto a : freqA) Rp += a.second;
+        for (auto b : freqB) Rp += b.second;
 
         time_2plus = current_timestamp() - time_2plus;
         tau_2plus = W.size();
-        bc_2plus = BCW(W, freqA, freqB, Rp);
+        bc_2plus = BCW(W, freqA, freqB);
         bc_2plus_rel = abs(bcw - realBC) / realBC;
 
         W.clear();
@@ -800,7 +803,7 @@ int main(int argc, char **argv) {
         freqB.clear();
         Rp = 0ll;
 
-        SamplePlus = randomColorfulSamplePlus(vector<int>(AB.begin(), AB.end()), R);
+        SamplePlus = randomColorfulSamplePlus(ABv, R);
 
         for (auto w : SamplePlus) {
           int u = w.first.first;

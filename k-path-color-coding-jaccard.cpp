@@ -149,34 +149,33 @@ string L(vector<int> P) {
   return l;
 }
 
-// Link
-map<pair<int, COLORSET>, vector<int>> links;
-
-inline void addLink(int x, COLORSET C, int j) {
-  auto key = make_pair(x, C);
-  if (links.find(key) == links.end()) links[key] = vector<int>();
-  links[key].push_back(j);
-}
-
-// Oracle
-vector<int> H(int x, COLORSET C) { return links[make_pair(x, C)]; }
-
-void list_k_path(vector<int> ps, COLORSET cs, int x) {
-  vector<int> oracle = H(x, cs);
-  if (ps.size() + 1 == q) {
-    cont++;
-    for (int j : ps) printf("[%6d] ", j);
-    printf("\n");
-    for (int j : ps) printf("[%6d] ", color[j]);
-    printf("\n");
-  } else
-    for (int v : oracle) {
-      // printf("LINK TO %d\n",v);
-      ps.push_back(v);
-      list_k_path(ps, setBit(cs, color[v]), v);
-      ps.pop_back();
-    }
-}
+// // Link
+// map<pair<int, COLORSET>, vector<int>> links;
+//
+// inline void addLink(int x, COLORSET C, int j) {
+//   auto key = make_pair(x, C);
+//   if (links.find(key) == links.end()) links[key] = vector<int>();
+//   links[key].push_back(j);
+// }
+//
+// // Oracle
+// vector<int> H(int x, COLORSET C) { return links[make_pair(x, C)]; }
+//
+// void list_k_path(vector<int> ps, COLORSET cs, int x) {
+//   vector<int> oracle = H(x, cs);
+//   if (ps.size() + 1 == q) {
+//     cont++;
+//     for (int j : ps) printf("[%6d] ", j);
+//     printf("\n");
+//     for (int j : ps) printf("[%6d] ", color[j]);
+//     printf("\n");
+//   } else
+//     for (int v : oracle) {
+//       ps.push_back(v);
+//       list_k_path(ps, setBit(cs, color[v]), v);
+//       ps.pop_back();
+//     }
+// }
 
 // bruteforce
 set<string> dict;
@@ -191,10 +190,36 @@ void dfs(int t, int u, int k) {
 
   Pset[t].insert(u);
   Pstring[t].push_back(label[u]);
-  P[t].push_back(u);
+  P[t].push_back(u);// // Link
+// map<pair<int, COLORSET>, vector<int>> links;
+//
+// inline void addLink(int x, COLORSET C, int j) {
+//   auto key = make_pair(x, C);
+//   if (links.find(key) == links.end()) links[key] = vector<int>();
+//   links[key].push_back(j);
+// }
+//
+// // Oracle
+// vector<int> H(int x, COLORSET C) { return links[make_pair(x, C)]; }
+//
+// void list_k_path(vector<int> ps, COLORSET cs, int x) {
+//   vector<int> oracle = H(x, cs);
+//   if (ps.size() + 1 == q) {
+//     cont++;
+//     for (int j : ps) printf("[%6d] ", j);
+//     printf("\n");
+//     for (int j : ps) printf("[%6d] ", color[j]);
+//     printf("\n");
+//   } else
+//     for (int v : oracle) {
+//       ps.push_back(v);
+//       list_k_path(ps, setBit(cs, color[v]), v);
+//       ps.pop_back();
+//     }
+// }
 
   if (k == 0) {
-#pragma omp critical
+    #pragma omp critical
     {
       dict.insert(Pstring[t]);
       freqBrute[make_pair(*P[t].begin(), Pstring[t])]++;
@@ -207,37 +232,14 @@ void dfs(int t, int u, int k) {
   P[t].pop_back();
 }
 
-// void dfs(int u, int k)
-// {
-//   if(Pset.find(u) != Pset.end() ) return;
-//
-//   Pset.insert(u);
-//   Pstring.push_back(label[u]);
-//   P.push_back(u);
-//
-//   if( k == 0 )
-//   {
-//     dict.insert(Pstring);
-//     freqBrute[make_pair(*P.begin(), Pstring)]++;
-//   }
-//   else for(int v : G[u]) dfs(v, k-1);
-//
-//   Pset.erase(u);
-//   Pstring.pop_back();
-//   P.pop_back();
-// }
-
-// Dynamic programming processing
 map<COLORSET, ll> *DP[MAXK + 1];
 
 void processDP() {
   if (verbose_flag) printf("K = %u\n", 1);
-  // Base case
   for (unsigned int u = 0; u < N; u++) DP[1][u][setBit(0, color[u])] = 1ll;
-  // Induction
   for (unsigned int i = 2; i <= q; i++) {
     if (verbose_flag) printf("K = %u\n", i);
-#pragma omp parallel for schedule(static, 1)
+    #pragma omp parallel for schedule(static, 1)
     for (unsigned int u = 0; u < N; u++) {
       for (int v : G[u]) {
         for (auto d : DP[i - 1][v]) {
@@ -271,9 +273,8 @@ map<string, ll> processFrequency(set<string> W, multiset<int> X) {
       old.push_back(make_tuple(x, string(&label[x], 1), setBit(0ll, color[x])));
 
   for (int i = q - 1; i > 0; i--) {
-    // printf("\t\ti = %d || |T| = %zu:\n", i, old.size());
     vector<tuple<int, string, COLORSET>> current;
-#pragma omp parallel for schedule(dynamic)
+    #pragma omp parallel for schedule(static, 1)
     for (int j = 0; j < (int)old.size(); j++) {
       auto o = old[j];
       int u = get<0>(o);
@@ -284,7 +285,7 @@ map<string, ll> processFrequency(set<string> W, multiset<int> X) {
         COLORSET CPv = setBit(CP, color[v]);
         string LPv = LP + label[v];
         if (!isPrefix(WR, LPv)) continue;
-#pragma omp critical
+        #pragma omp critical
         { current.push_back(make_tuple(v, LPv, CPv)); }
       }
     }
@@ -349,17 +350,6 @@ map<pair<int, string>, ll> randomColorfulSamplePlus(vector<int> X, int r) {
     W[make_pair(*r.begin(), L(r))]++;
   }
   return W;
-  // set<vector<int>> R;
-  // while(R.size() < (size_t)r)
-  // {
-  //   int u = X[rand()%X.size()];
-  //   vector<int> P = naiveRandomPathTo(u);
-  //   if( P.size() == q && R.find(P) == R.end() ) R.insert(P);
-  // }
-  // map<pair<int,string>, ll> fx;
-  // for(auto P : R) fx[make_pair(*P.begin(), L(P))]++;
-  // return fx;
-  //
 }
 
 set<string> BCSampler(set<int> A, set<int> B, int r) {
@@ -383,7 +373,6 @@ vector<int> naiveRandomPathTo(int u) {
     Ps.insert(u);
     P.push_back(u);
   }
-  //  reverse(P.begin(), P.end());
   return P;
 }
 
@@ -440,15 +429,13 @@ double BCW(set<string> W, map<string, ll> freqA, map<string, ll> freqB) {
   return (double)num / (double)den;
 }
 
-double FJW(set<string> W, map<string, ll> freqA, map<string, ll> freqB,
-           long long R) {
+double FJW(set<string> W, map<string, ll> freqA, map<string, ll> freqB, long long R) {
   ll num = 0ll;
   for (string x : W) {
     ll fax = freqA[x];
     ll fbx = freqB[x];
     num += min(fax, fbx);
   }
-  //  printf("NUM = %lld DEN = %lld\n", num, R);
   return (double)num / (double)R;
 }
 
@@ -461,8 +448,6 @@ double BCW(set<string> W, set<int> A, set<int> B) {
   map<string, ll> freqA = processFrequency(W, mA);
   map<string, ll> freqB = processFrequency(W, mB);
   vector<string> vW = vector<string>(W.begin(), W.end());
-  // #pragma omp parallel for schedule(static, 1) reduction(+:num), reduction(+:
-  // den)
   for (int i = 0; i < (int)vW.size(); i++) {
     string w = vW[i];
     long long fax = freqA[w];
@@ -656,8 +641,6 @@ int main(int argc, char **argv) {
 
   vector<int> sampleV;
   for (unsigned int i = 0; i < N; i++) sampleV.push_back(i);
-
-
 
   // vector<pair<int, int>> ABsize;
   //  ABsize.push_back(make_pair(4,4));
