@@ -165,7 +165,7 @@ void dfs(int t, int u, int k) {
   P[t].push_back(u);
 
   if (k == 0) {
-    #pragma omp critical
+#pragma omp critical
     {
       dict.insert(Pstring[t]);
       freqBrute[make_pair(*P[t].begin(), Pstring[t])]++;
@@ -184,12 +184,11 @@ map<COLORSET, ll> *M[MAXQ + 1];
 void processDP() {
   if (verbose_flag) printf("Q = %u\n", 1);
 
-  #pragma omp parallel for schedule(static, 1)
-  for (unsigned int u = 0; u < N; u++)
-    M[1][u][setBit(0, color[u])] = 1ll;
+#pragma omp parallel for schedule(static)
+  for (unsigned int u = 0; u < N; u++) M[1][u][setBit(0, color[u])] = 1ll;
 
   for (unsigned int i = 2; i <= q; i++) {
-    #pragma omp parallel for schedule(static, 1)
+#pragma omp parallel for schedule(static)
     for (unsigned int u = 0; u < N; u++) {
       for (int v : G[u]) {
         for (auto d : M[i - 1][v]) {
@@ -224,7 +223,7 @@ map<string, ll> processFrequency(set<string> W, multiset<int> X) {
 
   for (int i = q - 1; i > 0; i--) {
     vector<tuple<int, string, COLORSET>> current;
-    #pragma omp parallel for schedule(static, 1)
+#pragma omp parallel for schedule(static)
     for (int j = 0; j < (int)old.size(); j++) {
       auto o = old[j];
       int u = get<0>(o);
@@ -235,7 +234,7 @@ map<string, ll> processFrequency(set<string> W, multiset<int> X) {
         COLORSET CPv = setBit(CP, color[v]);
         string LPv = LP + label[v];
         if (!isPrefix(WR, LPv)) continue;
-        #pragma omp critical
+#pragma omp critical
         { current.push_back(make_tuple(v, LPv, CPv)); }
       }
     }
@@ -262,8 +261,8 @@ vector<int> randomPathTo(int u) {
     P.push_front(u);
     D = clearBit(D, color[u]);
   }
-//  reverse(P.begin(), P.end());
-  return vector<int>( begin(P), end(P));
+  //  reverse(P.begin(), P.end());
+  return vector<int>(begin(P), end(P));
 }
 
 set<string> randomColorfulSample(vector<int> X, int r) {
@@ -278,7 +277,7 @@ set<string> randomColorfulSample(vector<int> X, int r) {
     if (R.find(P) == R.end()) R.insert(P);
   }
   for (auto r : R) {
-  //  reverse(r.begin(), r.end());
+    //  reverse(r.begin(), r.end());
     W.insert(L(r));
   }
   return W;
@@ -379,7 +378,8 @@ double BCW(set<string> W, map<string, ll> freqA, map<string, ll> freqB) {
   return (double)num / (double)den;
 }
 
-double FJW(set<string> W, map<string, ll> freqA, map<string, ll> freqB, long long R) {
+double FJW(set<string> W, map<string, ll> freqA, map<string, ll> freqB,
+           long long R) {
   ll num = 0ll;
   for (string x : W) {
     ll fax = freqA[x];
@@ -557,11 +557,10 @@ int main(int argc, char **argv) {
 
   if (verbose_flag) printf("N = %d | E = %d\n", N, E);
 
-  if (verbose_flag) printf("|A| = %d | |B| = %d\n", Sa, Sb);
+  // if (verbose_flag) printf("|A| = %d | |B| = %d\n", Sa, Sb);
 
   // Create DP Table
-  for (unsigned int i = 0; i <= q + 1; i++)
-    M[i] = new map<COLORSET, ll>[N + 1];
+  for (unsigned int i = 0; i <= q + 1; i++) M[i] = new map<COLORSET, ll>[N + 1];
 
   // Random color graph
   if (verbose_flag) printf("Random coloring graph...\n");
@@ -583,23 +582,27 @@ int main(int argc, char **argv) {
   ll time_b = current_timestamp() - time_a;
   if (verbose_flag) printf("End processing DP table [%llu]ms\n", time_b);
 
-  ll time_dp = time_b;
-  // N--;
-  // q--;
-  // for (unsigned int i = 0; i < N; i++) G[i].pop_back();
+  // ll time_dp = time_b;
 
   vector<int> sampleV;
   for (unsigned int i = 0; i < N; i++) sampleV.push_back(i);
 
   vector<pair<int, int>> ABsize;
-  // ABsize.push_back(make_pair(10,10));
-  // ABsize.push_back(make_pair(10, 100));
-  ABsize.push_back(make_pair(20, 20));
+  ABsize.push_back(make_pair(10, 100));
+  ABsize.push_back(make_pair(100, 100));
+  ABsize.push_back(make_pair(100, 500));
+  ABsize.push_back(make_pair(500, 500));
 
-  vector<double> epsilonV;
-  epsilonV.push_back(0.1);
-  // epsilonV.push_back(0.4);
-  // epsilonV.push_back(0.6);
+  vector<int> Rsize;
+  Rsize.push_back(10);
+  Rsize.push_back(100);
+  Rsize.push_back(1000);
+
+  vector<int> Qsize;
+  Qsize.push_back(3);
+  Qsize.push_back(5);
+  Qsize.push_back(7);
+  Qsize.push_back(9);
 
   dict.clear();
   freqBrute.clear();
@@ -634,11 +637,14 @@ int main(int argc, char **argv) {
 
   srand(42);
 
-  for(auto ABs : ABsize)
-  {
-      // set<int> A,B;
-      // for(int i=0; i<ABs.first; i++) A.insert(i);
-      // for(int i=(ABs.first/4); i<(ABs.first/4)+ABs.second; i++) B.insert(i);
+  for (int qp : Qsize) {
+    // Create DP Table
+    q = qp;
+    for (unsigned int i = 0; i <= q + 1; i++) M[i] = new map<COLORSET, ll>[N + 1];
+    randomColor();
+    processDP();
+
+  for (auto ABs : ABsize) {
     shuffle(sampleV.begin(), sampleV.end(), eng);
     set<int> A = set<int>(sampleV.begin(), sampleV.begin() + ABs.first);
     shuffle(sampleV.begin(), sampleV.end(), eng);
@@ -651,209 +657,199 @@ int main(int argc, char **argv) {
     for (int b : B) AB.insert(b);
     vector<int> ABv = vector<int>(AB.begin(), AB.end());
 
-    printf("|A| = %4d |B| = %4d\n",ABs.first, ABs.second);
+    // printf("|A| = %4d |B| = %4d\n", ABs.first, ABs.second);
 
-    for(double epsilon : epsilonV)
-    {
-      printf("epsilon=%0.2f\n", epsilon);
-
-      int R = 0;
-      long long PAB = 0;
-      for(int x : AB)
-        for(auto y : M[q][x])
-          PAB += y.second;
-
-      R = log((double)PAB)/(epsilon*epsilon);
-
+    for (int R : Rsize) {
       map<string, ll> freqA, freqB;
       set<string> W;
       double bcw, fjw;
       long long Rp = 0ll;
 
-      // BRUTE-FORCE
-      printf("BRUTEFORCE\n");
-      dict.clear();
-      freqA.clear();
-      freqB.clear();
-      freqBrute.clear();
-      Rp = 0;
-      time_brute = current_timestamp();
-      #pragma omp parallel for schedule(static, 1)
-      for (int i = 0; i < (int)ABv.size(); i++) {
-        int tid = omp_get_thread_num();
-        dfs(tid, ABv[i], q - 1);
-      }
 
-      double realBC, realFJ;
-      for (auto w : freqBrute) {
-        int u = w.first.first;
-        string s = w.first.second;
-        ll freq = w.second;
-        if (A.find(u) != A.end()) {
-          Rp += freq;
-          freqA[s] += freq;
-        }
-        if (B.find(u) != B.end()) {
-          Rp += freq;
-          freqB[s] += freq;
-        }
-      }
+        printf("AB[%4d,%4d] R[%4d] Q[%2d]\n", ABs.first, ABs.second, R, qp);
 
-      time_brute = current_timestamp() - time_brute;
-      tau_brute = dict.size();
-      bc_brute = realBC = bcw = BCW(dict, freqA, freqB);
-      fj_brute = realFJ = fjw = FJW(dict, freqA, freqB, (long long) Rp);
-
-      for(int exp = 0 ; exp < 200 ; exp++)
-      {
-
-        // BASELINE
-        W.clear();
+        // BRUTE-FORCE
+        dict.clear();
         freqA.clear();
         freqB.clear();
-
-        time_base = current_timestamp();
-        map<pair<int, string>, ll> BLsampling = baselineSampler(X, R);
-        for (auto w : BLsampling) {
-          int u = w.first.first;
-          W.insert(w.first.second);
-          if (A.find(u) != A.end()) freqA[w.first.second] += w.second;
-          if (B.find(u) != B.end()) freqB[w.first.second] += w.second;
-        }
-
-        tau_base = W.size();
-        time_base = current_timestamp() - time_base;
-        bc_base = BCW(W, freqA, freqB);
-        bc_base_rel = abs(bcw - realBC) / realBC;
-
-        W.clear();
-        freqA.clear();
-        freqB.clear();
+        freqBrute.clear();
         Rp = 0;
-
-        BLsampling = baselineSampler(ABv, R);
-        for (auto w : BLsampling) {
-          int u = w.first.first;
-          W.insert(w.first.second);
-          if (A.find(u) != A.end()) freqA[w.first.second] += w.second;
-          if (B.find(u) != B.end()) freqB[w.first.second] += w.second;
+        time_brute = current_timestamp();
+        #pragma omp parallel for schedule(static, 1)
+        for (int i = 0; i < (int)ABv.size(); i++) {
+          int tid = omp_get_thread_num();
+          dfs(tid, ABv[i], q - 1);
         }
 
-        for (auto a : freqA) Rp += a.second;
-        for (auto b : freqB) Rp += b.second;
-
-        fj_base = FJW(W, freqA, freqB, (long long)Rp);
-        fj_base_rel = abs(fjw - realFJ) / realFJ;
-
-        // COLORFUL SAMPLER OK
-        W.clear();
-        freqA.clear();
-        freqB.clear();
-
-        time_alg3 = current_timestamp();
-        set<string> Sample = randomColorfulSample(X, R);
-        freqA = processFrequency(Sample, multiset<int>(A.begin(), A.end()));
-        freqB = processFrequency(Sample, multiset<int>(B.begin(), B.end()));
-
-        time_alg3 = current_timestamp() - time_alg3;
-        tau_alg3 = Sample.size();
-        bc_alg3 = BCW(Sample, freqA, freqB);
-        bc_alg3_rel = abs(bcw - realBC) / realBC;
-
-        W.clear();
-        freqA.clear();
-        freqB.clear();
-
-        Sample = randomColorfulSample(vector<int>(AB.begin(), AB.end()), R);
-        freqA = processFrequency(Sample, multiset<int>(A.begin(), A.end()));
-        freqB = processFrequency(Sample, multiset<int>(B.begin(), B.end()));
-        Rp = 0;
-        for (auto a : freqA) Rp += a.second;
-        for (auto b : freqB) Rp += b.second;
-        fj_alg3 = FJW(Sample, freqA, freqB, (long long) Rp);
-        fj_alg3_rel = abs(fjw - realFJ) / realFJ;
-
-        // COLORFULSAMPLER PLUS
-        W.clear();
-        freqA.clear();
-        freqB.clear();
-
-        time_2plus = current_timestamp();
-
-        map<pair<int, string>, ll> SamplePlus = randomColorfulSamplePlus(X, R);
-
-        for (auto w : SamplePlus) {
+        double realBC, realFJ;
+        for (auto w : freqBrute) {
           int u = w.first.first;
-          W.insert(w.first.second);
-          if (A.find(u) != A.end()) freqA[w.first.second] += w.second;
-          if (B.find(u) != B.end()) freqB[w.first.second] += w.second;
-        }
-
-        Rp = 0;
-        for (auto a : freqA) Rp += a.second;
-        for (auto b : freqB) Rp += b.second;
-
-        time_2plus = current_timestamp() - time_2plus;
-        tau_2plus = W.size();
-        bc_2plus = BCW(W, freqA, freqB);
-        bc_2plus_rel = abs(bcw - realBC) / realBC;
-
-        W.clear();
-        freqA.clear();
-        freqB.clear();
-        Rp = 0ll;
-
-        SamplePlus = randomColorfulSamplePlus(ABv, R);
-
-        for (auto w : SamplePlus) {
-          int u = w.first.first;
-          W.insert(w.first.second);
+          string s = w.first.second;
+          ll freq = w.second;
           if (A.find(u) != A.end()) {
-            freqA[w.first.second] += w.second;
-            Rp += w.second;
+            Rp += freq;
+            freqA[s] += freq;
           }
           if (B.find(u) != B.end()) {
-            freqB[w.first.second] += w.second;
-            Rp += w.second;
+            Rp += freq;
+            freqB[s] += freq;
           }
         }
-        fj_2plus = fjw = FJW(W, freqA, freqB, (long long)Rp);
-        fj_2plus_rel = abs(fjw - realFJ) / realFJ;
 
-        printf("%.1f,", epsilon);               // Q
-        printf( "%2d,", q);                     // Q
-        printf( "%4d,", R);                     // R
-        printf("%4zu,", A.size());              // HA
-        printf("%4zu,", B.size());              // HB
+        time_brute = current_timestamp() - time_brute;
+        tau_brute = dict.size();
+        bc_brute = realBC = bcw = BCW(dict, freqA, freqB);
+        fj_brute = realFJ = fjw = FJW(dict, freqA, freqB, (long long)Rp);
 
-        printf( "%.6f,", bc_brute);             // BC-BRUTE
-        printf( "%.6f,", fj_brute);             // FJ-BRUTE
-        printf(  "%4d,", tau_brute);            // TAU
-        printf("%4llu,", time_brute);           // TIME
+        for (int exp = 0; exp < 10; exp++) {
+          // BASELINE
+          W.clear();
+          freqA.clear();
+          freqB.clear();
 
-        printf( "%.6f,", bc_2plus);             // BC-2PLUS
-        printf( "%.6f,", bc_2plus_rel);         // BC-2PLUS
-        printf( "%.6f,", fj_2plus);             // FJ-2PLUS
-        printf( "%.6f,", fj_2plus_rel);         // FJ-2PLUS
-        printf(  "%4d,", tau_2plus);            // TAU
-        printf("%4llu,", time_dp + time_2plus); // TIME
+          time_base = current_timestamp();
+          map<pair<int, string>, ll> BLsampling = baselineSampler(X, R);
+          for (auto w : BLsampling) {
+            int u = w.first.first;
+            W.insert(w.first.second);
+            if (A.find(u) != A.end()) freqA[w.first.second] += w.second;
+            if (B.find(u) != B.end()) freqB[w.first.second] += w.second;
+          }
 
-        printf( "%.6f,", bc_base);              // BC-BASE
-        printf( "%.6f,", bc_base_rel);          // BC-BASE
-        printf( "%.6f,", fj_base);              // FJ-BASE
-        printf( "%.6f,", fj_base_rel);          // FJ-BASE
-        printf(  "%4d,", tau_base);             // TAU
-        printf("%4llu,", time_base);            // TIME
+          tau_base = W.size();
+          time_base = current_timestamp() - time_base;
+          bc_base = BCW(W, freqA, freqB);
+          bc_base_rel = abs(bcw - realBC) / realBC;
 
-        printf( "%.6f,", bc_alg3);              // BC-ALG3
-        printf( "%.6f,", bc_alg3_rel);          // BC-ALG3
-        printf( "%.6f,", fj_alg3);              // FJ-ALG3
-        printf( "%.6f,", fj_alg3_rel);          // FJ-ALG3
-        printf(  "%4d,", tau_alg3);             // TAU
-        printf( "%4llu", time_dp + time_alg3);  // TIME
+          W.clear();
+          freqA.clear();
+          freqB.clear();
+          Rp = 0;
 
-        printf("\n");
+          BLsampling = baselineSampler(ABv, R);
+          for (auto w : BLsampling) {
+            int u = w.first.first;
+            W.insert(w.first.second);
+            if (A.find(u) != A.end()) freqA[w.first.second] += w.second;
+            if (B.find(u) != B.end()) freqB[w.first.second] += w.second;
+          }
 
+          for (auto a : freqA) Rp += a.second;
+          for (auto b : freqB) Rp += b.second;
+
+          fj_base = FJW(W, freqA, freqB, (long long)Rp);
+          fj_base_rel = abs(fjw - realFJ) / realFJ;
+
+          // COLORFUL SAMPLER OK
+          W.clear();
+          freqA.clear();
+          freqB.clear();
+
+          time_alg3 = current_timestamp();
+          set<string> Sample = randomColorfulSample(X, R);
+          freqA = processFrequency(Sample, multiset<int>(A.begin(), A.end()));
+          freqB = processFrequency(Sample, multiset<int>(B.begin(), B.end()));
+
+          time_alg3 = current_timestamp() - time_alg3;
+          tau_alg3 = Sample.size();
+          bc_alg3 = BCW(Sample, freqA, freqB);
+          bc_alg3_rel = abs(bcw - realBC) / realBC;
+
+          W.clear();
+          freqA.clear();
+          freqB.clear();
+
+          Sample = randomColorfulSample(vector<int>(AB.begin(), AB.end()), R);
+          freqA = processFrequency(Sample, multiset<int>(A.begin(), A.end()));
+          freqB = processFrequency(Sample, multiset<int>(B.begin(), B.end()));
+          Rp = 0;
+          for (auto a : freqA) Rp += a.second;
+          for (auto b : freqB) Rp += b.second;
+          fj_alg3 = FJW(Sample, freqA, freqB, (long long)Rp);
+          fj_alg3_rel = abs(fjw - realFJ) / realFJ;
+
+          // COLORFULSAMPLER PLUS
+          W.clear();
+          freqA.clear();
+          freqB.clear();
+
+          time_2plus = current_timestamp();
+
+          map<pair<int, string>, ll> SamplePlus =
+              randomColorfulSamplePlus(X, R);
+
+          for (auto w : SamplePlus) {
+            int u = w.first.first;
+            W.insert(w.first.second);
+            if (A.find(u) != A.end()) freqA[w.first.second] += w.second;
+            if (B.find(u) != B.end()) freqB[w.first.second] += w.second;
+          }
+
+          Rp = 0;
+          for (auto a : freqA) Rp += a.second;
+          for (auto b : freqB) Rp += b.second;
+
+          time_2plus = current_timestamp() - time_2plus;
+          tau_2plus = W.size();
+          bc_2plus = BCW(W, freqA, freqB);
+          bc_2plus_rel = abs(bcw - realBC) / realBC;
+
+          W.clear();
+          freqA.clear();
+          freqB.clear();
+          Rp = 0ll;
+
+          SamplePlus = randomColorfulSamplePlus(ABv, R);
+
+          for (auto w : SamplePlus) {
+            int u = w.first.first;
+            W.insert(w.first.second);
+            if (A.find(u) != A.end()) {
+              freqA[w.first.second] += w.second;
+              Rp += w.second;
+            }
+            if (B.find(u) != B.end()) {
+              freqB[w.first.second] += w.second;
+              Rp += w.second;
+            }
+          }
+          fj_2plus = fjw = FJW(W, freqA, freqB, (long long)Rp);
+          fj_2plus_rel = abs(fjw - realFJ) / realFJ;
+
+          // printf("%.1f,", epsilon);               // Q
+          printf("%2d,", q);          // Q
+          printf("%4d,", R);          // R
+          printf("%4zu,", A.size());  // HA
+          printf("%4zu,", B.size());  // HB
+
+          printf("%.6f,", bc_brute);     // BC-BRUTE
+          printf("%.6f,", fj_brute);     // FJ-BRUTE
+          printf("%4d,", tau_brute);     // TAU
+          printf("%4llu,", time_brute);  // TIME
+
+          printf("%.6f,", bc_2plus);      // BC-2PLUS
+          printf("%.6f,", bc_2plus_rel);  // BC-2PLUS
+          printf("%.6f,", fj_2plus);      // FJ-2PLUS
+          printf("%.6f,", fj_2plus_rel);  // FJ-2PLUS
+          printf("%4d,", tau_2plus);      // TAU
+          printf("%4llu,", time_2plus);   // TIME
+
+          printf("%.6f,", bc_base);      // BC-BASE
+          printf("%.6f,", bc_base_rel);  // BC-BASE
+          printf("%.6f,", fj_base);      // FJ-BASE
+          printf("%.6f,", fj_base_rel);  // FJ-BASE
+          printf("%4d,", tau_base);      // TAU
+          printf("%4llu,", time_base);   // TIME
+
+          printf("%.6f,", bc_alg3);      // BC-ALG3
+          printf("%.6f,", bc_alg3_rel);  // BC-ALG3
+          printf("%.6f,", fj_alg3);      // FJ-ALG3
+          printf("%.6f,", fj_alg3_rel);  // FJ-ALG3
+          printf("%4d,", tau_alg3);      // TAU
+          printf("%4llu", time_alg3);    // TIME
+
+          printf("\n");
+        }
       }
     }
   }
