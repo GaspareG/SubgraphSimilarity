@@ -6,20 +6,20 @@ using namespace std;
 #define MAXQ 15
 #define TOPK 10
 #define FACEBOOK_USER 4039
-#define LINKEDIN_USER 29039
+#define LINKEDIN_USER 29040
 #define COLORSET uint32_t
 
 // Flags for experiments
-bool classmateFlag = true; // Test classmate x facebook
-bool familyFlag = false;     // Test family x facebook
-bool schoolFlag = false;    // Test school x linkedin
+bool classmateFlag = false; // Test classmate x facebook
+bool familyFlag = false;    // Test family x facebook
+bool schoolFlag = true;     // Test school x linkedin
 bool workFlag = false;      // Test work x linkedin
 
-bool exact = false;  // true -> exact value || false -> color-coding + sampling
-unsigned int q = 4;         // length of paths (n° of nodes)
-unsigned int ncolor = 8;    // number of colors used for color-codign
+bool exact = false;         // true -> exact value || false -> color-coding + sampling
+unsigned int q = 4;         // length of paths (n° of nodes) (FOR EXACT ONLY 3 OR 4)
+unsigned int ncolor = 4;    // number of colors used for color-codign
 unsigned int w = 1000;      // size of the samples
-unsigned int seed = 42;      // random seed
+unsigned int seed = 42;     // random seed
 
 // Subgraph categories
 string classmateStrings[] = {"user", "education;concentration;id",
@@ -30,16 +30,12 @@ string schoolStrings[] = {"user", "college"};
 string workStrings[] = {"user", "employer"};
 
 // File names
-if( classmateFlag || familyFlag )
-{
-  char filename_graph_node[] = "facebook/graph.node";
-  char filename_graph_edge[] = "facebook/graph.edge";
-}
-else
-{
-  char filename_graph_node[] = "linkedin/graph.node";
-  char filename_graph_edge[] = "linkedin/graph.edge";
-}
+char filename_facebook_graph_node[] = "facebook/graph.node";
+char filename_facebook_graph_edge[] = "facebook/graph.edge";
+
+char filename_linkedin_graph_node[] = "linkedin/graph.node";
+char filename_linkedin_graph_edge[] = "linkedin/graph.edge";
+
 char filename_classmate_query_in[] = "classmate-query-node";
 char filename_classmate_query_out[] = "classmate-query-node.out";
 
@@ -56,7 +52,7 @@ char filename_work_query_out[] = "work-query-node.out";
 typedef long long ll;
 typedef tuple<int, int, int> label3;
 typedef tuple<int, int, int, int> label4;
-typedef label3 labelE;
+typedef label4 labelE;
 
 // File pointers
 FILE *node, *edge;
@@ -77,7 +73,7 @@ map<int, pair<string, int>> userCatId;  // id node -> <category, id cat>
 bool getBit(COLORSET n, int pos) { return ((n >> pos) & 1) == 1; }
 COLORSET setBit(COLORSET n, int pos) { return n |= 1 << pos; }
 COLORSET clearBit(COLORSET n, int pos) { return n &= ~(1 << pos); }
-COLORSET getCompl(COLORSET n) { return ((1 << q) - 1) & (~n); }
+COLORSET getCompl(COLORSET n) { return ((1 << ncolor) - 1) & (~n); }
 inline void randomColor() {
   mt19937_64 eng = mt19937_64(seed*MAXN);
   for (unsigned int i = 0; i < MAXN; i++) color[i] = eng() % ncolor;
@@ -149,7 +145,7 @@ vector<labelE> labelsFrom(int x) {
   for (int y : G[x]) {
     for (int z : G[y]) {
       if (z == x) continue;
-      out.push_back(make_tuple(label[x], label[y], label[z]));
+      out.push_back(make_tuple(label[x], label[y], label[z], 0));
     }
   }
   return out;
@@ -172,11 +168,12 @@ vector<int> randomPathTo(int u) {
   P.push_back(u);
   COLORSET D = getCompl(setBit(0l, color[u]));
   mt19937_64 eng = mt19937_64(seed*u);
+
   for (int i = q - 1; i > 0; i--) {
     vector<ll> freq;
     #pragma omp critical
     {
-    for (int v : G[u]) freq.push_back(M[i][v][D]);
+      for (int v : G[u]) freq.push_back(M[i][v][D]);
     }
     discrete_distribution<int> distribution(freq.begin(), freq.end());
     u = G[u][distribution(eng)];
@@ -188,31 +185,25 @@ vector<int> randomPathTo(int u) {
 }
 
 map<pair<int, vector<int>>, ll> randomColorfulSamplePlus(vector<int> X, int r) {
-  map<pair<int, vector<int>>, ll> W;
+  map<pair<int, vector<int>>, ll> dict;
   set<vector<int>> R;
   vector<ll> freqX;
-  freqX.clear();
   for (int x : X) freqX.push_back(M[q][x][getCompl(0ll)]);
   discrete_distribution<int> distribution(freqX.begin(), freqX.end());
   ll generated = 0;
   mt19937_64 eng = mt19937_64(seed*X[0]);
-
-  while( R.size() < (size_t)r && generated < r*4 ) // avoid infinite loop
+  while( R.size() < (size_t)r && generated < r*2 ) // avoid infinite loop
   {
-    int rem = r - R.size();
-    for(int i=0; i<rem; i++)
-    {
-      int u = X[distribution(eng)];
-      vector<int> P = randomPathTo(u);
-      R.insert(P);
-      generated++;
-    }
+    int u = X[distribution(eng)];
+    vector<int> P = randomPathTo(u);
+    R.insert(P);
+    generated++;
   }
   for (auto r : R) {
     reverse(r.begin(), r.end());
-    W[make_pair(*r.begin(), L(r))]++;
+    dict[make_pair(*r.begin(), L(r))]++;
   }
-  return W;
+  return dict;
 }
 
 // bray-curtis via fsample approach
@@ -266,7 +257,10 @@ vector<int> queryFacebook(int x, string cat) {
     int y = ys[i];
     printf("\tBC(%d, %d)\n", x, y);
     double bcvalue = brayCurtis(x, y);
-    Q.push(make_pair(bcvalue, y));
+    #pragma omp critical
+    {
+      Q.push(make_pair(bcvalue, y));
+    }
   }
   printf("\n");
   vector<int> out;
@@ -280,7 +274,21 @@ vector<int> queryFacebook(int x, string cat) {
 // Exact computation of top-10 similar nodes in a linkedin node
 vector<int> queryLinkedin(int x) {
   priority_queue<pair<double, int>> Q;
-  for (int y : Ylinkedin(x)) Q.push(make_pair(brayCurtis(x, y), y));
+  printf("X = [%d] \n", x);
+  auto yset = Ylinkedin(x);
+  vector<int> ys(yset.begin(), yset.end());
+  sort(ys.begin(), ys.end());
+  #pragma omp parallel for schedule(guided) shared(x)
+  for (unsigned int i=0; i<ys.size(); i++)
+  {
+    int y = ys[i];
+    printf("\tBC(%d, %d)\n", x, y);
+    double bcvalue = brayCurtis(x, y);
+    #pragma omp critical
+    {
+      Q.push(make_pair(bcvalue, y));
+    }
+  }
   vector<int> out;
   while (!Q.empty() && out.size() < 10) {
     out.push_back(Q.top().second);
@@ -297,8 +305,16 @@ vector<int> workQuery(int x) { return queryLinkedin(x); }
 int main() {
 
   // Opening files
-  node = fopen(filename_graph_node, "r");
-  edge = fopen(filename_graph_edge, "r");
+  if( classmateFlag || familyFlag )
+  {
+    node = fopen(filename_facebook_graph_node, "r");
+    edge = fopen(filename_facebook_graph_edge, "r");
+  }
+  else
+  {
+    node = fopen(filename_linkedin_graph_node, "r");
+    edge = fopen(filename_linkedin_graph_edge, "r");
+  }
 
   if (classmateFlag) {
     classmate = fopen(filename_classmate_query_in, "r");
