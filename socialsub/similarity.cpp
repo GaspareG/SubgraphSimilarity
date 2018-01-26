@@ -16,8 +16,8 @@ bool schoolFlag = true;     // Test school x linkedin
 bool workFlag = false;      // Test work x linkedin
 
 bool exact = true;         // true -> exact value || false -> color-coding + sampling
-unsigned int q = 3;         // length of paths (n° of nodes) (FOR EXACT ONLY 3 OR 4)
-unsigned int ncolor = 6;    // number of colors used for color-codign
+unsigned int q = 4;         // length of paths (n° of nodes) (FOR EXACT ONLY 3 OR 4)
+unsigned int ncolor = 4;    // number of colors used for color-codign
 unsigned int w = 1000;      // size of the samples
 unsigned int seed = 42;     // random seed
 
