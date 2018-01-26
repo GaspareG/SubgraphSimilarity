@@ -15,9 +15,9 @@ bool familyFlag = false;    // Test family x facebook
 bool schoolFlag = true;     // Test school x linkedin
 bool workFlag = false;      // Test work x linkedin
 
-bool exact = false;         // true -> exact value || false -> color-coding + sampling
-unsigned int q = 4;         // length of paths (n° of nodes) (FOR EXACT ONLY 3 OR 4)
-unsigned int ncolor = 4;    // number of colors used for color-codign
+bool exact = true;         // true -> exact value || false -> color-coding + sampling
+unsigned int q = 3;         // length of paths (n° of nodes) (FOR EXACT ONLY 3 OR 4)
+unsigned int ncolor = 6;    // number of colors used for color-codign
 unsigned int w = 1000;      // size of the samples
 unsigned int seed = 42;     // random seed
 
@@ -142,12 +142,33 @@ set<int> Ylinkedin(int x)
 // Enumerate all the label sequences from a nodes
 vector<labelE> labelsFrom(int x) {
   vector<labelE> out;
-  for (int y : G[x]) {
-    for (int z : G[y]) {
-      if (z == x) continue;
-      out.push_back(make_tuple(label[x], label[y], label[z], 0));
+
+  assert( q >= 3 && q <= 4 );
+
+  if( q == 3 )
+  {
+    for (int y : G[x]) {
+      for (int z : G[y]) {
+        if (z == x) continue;
+        out.push_back(make_tuple(label[x], label[y], label[z], 0));
+      }
     }
   }
+  else
+  {
+    for (int y : G[x]) {
+      for (int z : G[y]) {
+        if (z == x) continue;
+        for(int w : G[z])
+        {
+          if(w == x) continue;
+          if(w == y) continue;
+          out.push_back(make_tuple(label[x], label[y], label[z], label[w]));
+        }
+      }
+    }
+  }
+
   return out;
 }
 // bray-curtis weighted
@@ -192,7 +213,7 @@ map<pair<int, vector<int>>, ll> randomColorfulSamplePlus(vector<int> X, int r) {
   discrete_distribution<int> distribution(freqX.begin(), freqX.end());
   ll generated = 0;
   mt19937_64 eng = mt19937_64(seed*X[0]);
-  while( R.size() < (size_t)r && generated < r*2 ) // avoid infinite loop
+  while( R.size() < (size_t)r && generated < r*4 ) // avoid infinite loop
   {
     int u = X[distribution(eng)];
     vector<int> P = randomPathTo(u);
@@ -419,8 +440,8 @@ int main() {
       fprintf(classmate_out, "%d", x);
       for (int y : bcClassmate) fprintf(classmate_out, "\t%d", y);
       fprintf(classmate_out, "\n");
+      fflush(classmate_out);
     }
-    fflush(classmate_out);
   } else if (familyFlag) {
     while (!feof(family)) {
       int x;
@@ -429,8 +450,8 @@ int main() {
       fprintf(family_out, "%d", x);
       for (int y : bcFamily) fprintf(family_out, "\t%d", y);
       fprintf(family_out, "\n");
+      fflush(family_out);
     }
-    fflush(family_out);
   } else if (schoolFlag) {
     while (!feof(school)) {
       int x;
@@ -439,8 +460,8 @@ int main() {
       fprintf(school_out, "%d", x);
       for (int y : bcSchool) fprintf(school_out, "\t%d", y);
       fprintf(school_out, "\n");
+      fflush(school_out);
     }
-    fflush(school_out);
   } else if (workFlag) {
     while (!feof(work)) {
       int x;
@@ -449,8 +470,8 @@ int main() {
       fprintf(work_out, "%d", x);
       for (int y : bcWork) fprintf(work_out, "\t%d", y);
       fprintf(work_out, "\n");
+      fflush(work_out);
     }
-    fflush(work_out);
   }
 
   // Closing fiels
