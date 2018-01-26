@@ -188,11 +188,11 @@ void dfs(int t, int u, int k) {
 map<COLORSET, ll> *M[MAXQ + 1];
 
 void processDP() {
-  #pragma omp parallel for schedule(static)
+  #pragma omp parallel for schedule(guided)
   for (unsigned int u = 0; u < N; u++) M[1][u][setBit(0, color[u])] = 1ll;
 
   for (unsigned int i = 2; i <= q; i++) {
-    #pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(guided)
     for (unsigned int u = 0; u < N; u++) {
       for (int v : G[u]) {
         for (auto d : M[i - 1][v]) {
@@ -229,7 +229,7 @@ map<string, ll> processFrequency(set<string> W, multiset<int> X) {
   for (int i = q - 1; i > 0; i--) {
     vector<tuple<int, string, COLORSET>> current;
     current.clear();
-    #pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(guided)
     for (int j = 0; j < (int)old.size(); j++) {
       auto o = old[j];
       int u = get<0>(o);
@@ -305,7 +305,7 @@ map<pair<int, string>, ll> randomColorfulSamplePlus(vector<int> X, int r) {
   while( R.size() < (size_t)r)
   {
     int rem = r - R.size();
-    // #pragma omp parallel for schedule(static)
+    // #pragma omp parallel for schedule(guided)
     for(int i=0; i<rem; i++)
     {
       int u;
@@ -361,7 +361,7 @@ map<pair<int, string>, ll> baselineSampler(vector<int> X, int r) {
   while( R.size() < (size_t)r)
   {
     int rem = r - R.size();
-    #pragma omp parallel for schedule(static)
+    #pragma omp parallel for schedule(guided)
     for(int i=0; i<rem; i++)
     {
       int u;
@@ -394,8 +394,7 @@ double BCW(set<string> W, map<string, ll> freqA, map<string, ll> freqB) {
   return (double)num / (double)den;
 }
 
-double FJW(set<string> W, map<string, ll> freqA, map<string, ll> freqB,
-  long long R) {
+double FJW(set<string> W, map<string, ll> freqA, map<string, ll> freqB, long long R) {
     ll num = 0ll;
     for (string x : W) {
       ll fax = freqA[x];
@@ -503,12 +502,7 @@ double FJW(set<string> W, map<string, ll> freqA, map<string, ll> freqB,
       return milliseconds;
     }
 
-    // ./final -p 4 -Q 4 -S 42 -R 100 -A 100 -B 100 -M 0 -E 100 --bruteforce --fcount --fsample --baseline < input/NetInf.txt
-    // perf stat -B -e cache-references,cache-misses,cycles,instructions,branches,faults,migrations
-    // perf record -F 100000 -e cache-references,cache-misses,cycles,instructions,branches,faults,migrations
-    // perf report
-    // /*thread_local*/
-    int main(int argc, char **argv) {
+int main(int argc, char **argv) {
       static struct option long_options[] = {
 
         // Execution option
@@ -689,40 +683,53 @@ double FJW(set<string> W, map<string, ll> freqA, map<string, ll> freqB,
 
       ll time_dp = time_b;
 
+      long long entry = 0;
+      for(int i=1; i<=q; i++)
+      for(int j=0; j<N; j++)
+      {
+        entry += M[i][j].size();
+      }
+      printf("DP ENTRY: [%lld]\n", entry);
+      double bc_brute;
+      double bc_fcount;
+      double bc_fsample;
+      double bc_base;
 
-      double bc_brute;  // BC-BRUTE
-      double bc_fcount;   // BC-fsample
-      double bc_fsample;  // BC-fsample
-      double bc_base;   // BC-fsample
+      double bc_fcount_rel;
+      double bc_fsample_rel;
+      double bc_base_rel;
 
-      double bc_fcount_rel;   // BC-fsample_REL
-      double bc_fsample_rel;  // BC-fsample_REL
-      double bc_base_rel;   // BC-fsample_REL
+      double fj_brute;
+      double fj_fcount;
+      double fj_fsample;
+      double fj_base;
 
-      double fj_brute;  // FJ-BRUTE_REL
-      double fj_fcount;   // FJ-fsample
-      double fj_fsample;  // FJ-fsample
-      double fj_base;   // FJ-fsample
+      double fj_fsample_rel;
+      double fj_fcount_rel;
+      double fj_base_rel;
 
-      double fj_fsample_rel;  // FJ-fsample_REL
-      double fj_fcount_rel;   // FJ-fsample_REL
-      double fj_base_rel;   // FJ-fsample_REL
+      int tau_brute;
+      int tau_fcount;
+      int tau_base;
+      int tau_fsample;
 
-      int tau_brute;  // TAU
-      int tau_fcount;   // TAU
-      int tau_base;   // TAU
-      int tau_fsample;  // TAU
-
-      ll time_brute = 0ll;  // TIME
-      ll time_fcount = 0ll;   // TIME
-      ll time_fsample = 0ll;  // TIME
-      ll time_base = 0ll;   // TIME
+      ll time_brute = 0ll;
+      ll time_fcount = 0ll;
+      ll time_fsample = 0ll;
+      ll time_base = 0ll;
 
       eng = mt19937_64(seed);
       srand(seed);
 
       set<int> A = randomChoose(Sa, mod);
       set<int> B = randomChoose(Sb, mod);
+
+      A.clear();
+      A.insert(620);
+
+      B.clear();
+      B.insert(82);
+
       vector<int> X;
       for (int a : A) X.push_back(a);
       for (int b : B) X.push_back(b);
@@ -765,7 +772,7 @@ double FJW(set<string> W, map<string, ll> freqA, map<string, ll> freqB,
         dict.clear();
         freqBrute.clear();
         time_brute = current_timestamp();
-        #pragma omp parallel for schedule(static)
+        #pragma omp parallel for schedule(guided)
         for (int i = 0; i < (int)ABv.size(); i++) {
           int tid = omp_get_thread_num();
           dfs(tid, ABv[i], q - 1);

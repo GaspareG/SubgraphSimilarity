@@ -108,24 +108,23 @@ void processDP() {
 
 // Definition of Y(x) for facebook' users
 set<int> Yfacebook(int x, string cat) {
-  vector<int> catX;
-  set<int> ys;
-  for (int y : G[x])
-    if (userCatId[y].first == cat)
-      catX.push_back(y);
+  set<int> Guser;
+  set<int> myCat;
 
-  for (int y : catX)
-    for (int z : G[y])
-      if (userCatId[z].first == "user")
-        ys.insert(z);
+  for(int y : G[x])
+    if( userCatId[y].first == cat )
+      myCat.insert(y);
 
-  ys.erase(x);
-  vector<int> ysv(ys.begin(), ys.end());
-  vector<int> out(ysv.size() + G[x].size());
-  auto it = set_intersection(ysv.begin(), ysv.end(), G[x].begin(), G[x].end(),
-                             out.begin());
-  out.resize(it - out.begin());
-  return set<int>(out.begin(), out.end());
+  for(int y : G[x])
+    if( userCatId[y].first == "user" )
+      for(int z : G[y])
+        if( myCat.find(z) != myCat.end() )
+        {
+          Guser.insert(y);
+          break;
+        }
+
+  return Guser;
 }
 
 // Definition of Y(x) for linkedin' users
@@ -250,17 +249,19 @@ double brayCurtis(int x, int y) {
 // Exact computation of top-10 similar nodes in a facebook node
 vector<int> queryFacebook(int x, string cat) {
   priority_queue<pair<double, int>> Q;
-  printf("QUERY: Y=[%d]\n", x);
+  printf("X = [%d] \n", x);
   auto yset = Yfacebook(x, cat);
   vector<int> ys(yset.begin(), yset.end());
-  #pragma omp parallel for schedule(guided) shared(x)
+  sort(ys.begin(), ys.end());
+  #pragma omp parallel for schedule(guided)
   for (unsigned int i=0; i<ys.size(); i++)
   {
     int y = ys[i];
     printf("\tBC(%d, %d)\n", x, y);
     double bcvalue = brayCurtis(x, y);
-      Q.push(make_pair(bcvalue, y));
+    Q.push(make_pair(bcvalue, y));
   }
+  printf("\n");
   vector<int> out;
   while (!Q.empty() && out.size() < 10) {
     out.push_back(Q.top().second);
