@@ -216,11 +216,11 @@ double fsampleBrayCurtis(int x, int y)
   X.push_back(x);
   X.push_back(y);
 
-  for (auto w : randomColorfulSamplePlus(X, w)) {
-    int u = w.first.first;
-    W.insert(w.first.second);
-    if (u == x) freqA[w.first.second] += w.second;
-    if (u == y) freqB[w.first.second] += w.second;
+  for (auto dw : randomColorfulSamplePlus(X, w)) {
+    int u = dw.first.first;
+    W.insert(dw.first.second);
+    if (u == x) freqA[dw.first.second] += dw.second;
+    if (u == y) freqB[dw.first.second] += dw.second;
   }
 
   return BCW(W, freqA, freqB);
