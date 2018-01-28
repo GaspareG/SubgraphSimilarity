@@ -1,4 +1,6 @@
 #include <bits/stdc++.h>
+#include <omp.h>
+
 using namespace std;
 
 // CONSTANT DEFINE
@@ -15,9 +17,9 @@ bool familyFlag = false;    // Test family x facebook
 bool schoolFlag = true;     // Test school x linkedin
 bool workFlag = false;      // Test work x linkedin
 
-bool exact = true;         // true -> exact value || false -> color-coding + sampling
-unsigned int q = 4;         // length of paths (n° of nodes) (FOR EXACT ONLY 3 OR 4)
-unsigned int ncolor = 4;    // number of colors used for color-codign
+bool exact = false;         // true -> exact value || false -> color-coding + sampling
+unsigned int q = 6;         // length of paths (n° of nodes) (FOR EXACT ONLY 3 OR 4)
+unsigned int ncolor = 6;    // number of colors used for color-codign
 unsigned int w = 1000;      // size of the samples
 unsigned int seed = 42;     // random seed
 
@@ -73,7 +75,7 @@ map<int, pair<string, int>> userCatId;  // id node -> <category, id cat>
 bool getBit(COLORSET n, int pos) { return ((n >> pos) & 1) == 1; }
 COLORSET setBit(COLORSET n, int pos) { return n |= 1 << pos; }
 COLORSET clearBit(COLORSET n, int pos) { return n &= ~(1 << pos); }
-COLORSET getCompl(COLORSET n) { return ((1 << ncolor) - 1) & (~n); }
+COLORSET getCompl(COLORSET n) { return ((1 << q) - 1) & (~n); }
 inline void randomColor() {
   mt19937_64 eng = mt19937_64(seed*MAXN);
   for (unsigned int i = 0; i < MAXN; i++) color[i] = eng() % ncolor;
@@ -87,7 +89,7 @@ vector<int> L(vector<int> P) {
 }
 
 // Color-Coding Dynamic Programming preprocessing
-map<COLORSET, ll> *M[MAXQ + 1];
+map<COLORSET, ll> M[MAXQ + 1][MAXN];
 
 void processDP() {
   #pragma omp parallel for schedule(guided)
@@ -187,19 +189,21 @@ double BCW(set<vector<int>> W, map<vector<int>, ll> freqA, map<vector<int>, ll> 
 vector<int> randomPathTo(int u) {
   vector<int> P;
   P.push_back(u);
-  COLORSET D = getCompl(setBit(0l, color[u]));
+  COLORSET cs = getCompl(setBit(0ll, color[u]));
   mt19937_64 eng = mt19937_64(seed*u);
-
-  for (int i = q - 1; i > 0; i--) {
+  for (int qi = q - 1; qi > 0; qi--) {
     vector<ll> freq;
-    #pragma omp critical
+    for (int v : G[u])
     {
-      for (int v : G[u]) freq.push_back(M[i][v][D]);
+      int add=0;
+      if( M[qi][v].find(cs) != M[qi][v].end() )
+        add = M[qi][v][cs];
+      freq.push_back(add);
     }
     discrete_distribution<int> distribution(freq.begin(), freq.end());
     u = G[u][distribution(eng)];
     P.push_back(u);
-    D = clearBit(D, color[u]);
+    cs = clearBit(cs, color[u]);
   }
   reverse(P.begin(), P.end());
   return P;
@@ -213,6 +217,7 @@ map<pair<int, vector<int>>, ll> randomColorfulSamplePlus(vector<int> X, int r) {
   discrete_distribution<int> distribution(freqX.begin(), freqX.end());
   ll generated = 0;
   mt19937_64 eng = mt19937_64(seed*X[0]);
+
   while( R.size() < (size_t)r && generated < r*4 ) // avoid infinite loop
   {
     int u = X[distribution(eng)];
@@ -266,9 +271,10 @@ double brayCurtis(int x, int y) {
 }
 
 // Exact computation of top-10 similar nodes in a facebook node
+int query_count=0;
 vector<int> queryFacebook(int x, string cat) {
   priority_queue<pair<double, int>> Q;
-  printf("X = [%d] \n", x);
+  printf("%3d) X = [%d] \n", query_count++, x);
   auto yset = Yfacebook(x, cat);
   vector<int> ys(yset.begin(), yset.end());
   sort(ys.begin(), ys.end());
@@ -276,7 +282,7 @@ vector<int> queryFacebook(int x, string cat) {
   for (unsigned int i=0; i<ys.size(); i++)
   {
     int y = ys[i];
-    printf("\tBC(%d, %d)\n", x, y);
+    // printf("\tBC(%d, %d) [%d]\n", x, y, omp_get_thread_num());
     double bcvalue = brayCurtis(x, y);
     #pragma omp critical
     {
@@ -295,15 +301,15 @@ vector<int> queryFacebook(int x, string cat) {
 // Exact computation of top-10 similar nodes in a linkedin node
 vector<int> queryLinkedin(int x) {
   priority_queue<pair<double, int>> Q;
-  printf("X = [%d] \n", x);
+  printf("%3d) X = [%d] \n", query_count++, x);
   auto yset = Ylinkedin(x);
   vector<int> ys(yset.begin(), yset.end());
   sort(ys.begin(), ys.end());
-  #pragma omp parallel for schedule(guided) shared(x)
+  #pragma omp parallel for schedule(guided)
   for (unsigned int i=0; i<ys.size(); i++)
   {
     int y = ys[i];
-    printf("\tBC(%d, %d)\n", x, y);
+    // printf("\tBC(%d, %d) [%d]\n", x, y, omp_get_thread_num());
     double bcvalue = brayCurtis(x, y);
     #pragma omp critical
     {
@@ -423,7 +429,7 @@ int main() {
   if( !exact )
   {
     // Create and process DP Table
-    for (unsigned int i = 0; i <= q + 1; i++) M[i] = new map<COLORSET, ll>[MAXN + 1];
+//    for (unsigned int i = 0; i <= q + 1; i++) M[i] = new map<COLORSET, ll>[MAXN + 1];
     printf("Random coloring...\n");
     randomColor();
     printf("Process DP table...\n");
