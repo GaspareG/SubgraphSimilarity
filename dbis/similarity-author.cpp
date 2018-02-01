@@ -21,7 +21,7 @@ bool schoolFlag = true;     // Test school x linkedin
 bool workFlag = false;      // Test work x linkedin
 
 bool exact = true;         // true -> exact value || false -> color-coding + sampling
-unsigned int w = 5000;      // size of the samples
+unsigned int w = 100000;      // size of the samples
 unsigned int seed = 42;     // random seed
 
 // File names
@@ -43,7 +43,8 @@ FILE *conf_paper, *paper_author;
 unsigned int N, E;    // number of nodes, edges
 int label[MAXN];      // id node -> id label
 vector<int> CP[MAXN]; // conference -> { paper }
-vector<int> PA[MAXN]; // paper -> { authoro }
+vector<int> PA[MAXN]; // paper -> { author }PPP
+vector<int> AP[MAXN]; // author -> { paper }
 
 double BC(vector<int> Lx, vector<int> Ly)
 {
@@ -74,8 +75,8 @@ int main() {
   srand(seed);
 
   vector<int> author_id, conf_id, paper_id;
-  vector<int> conf_author[MAXN];
-  vector<int> conf_author_samp[MAXN];
+  vector<int> author_paper[MAXN];
+  vector<int> author_paper_samp[MAXN];
 
   // printf("Read author\n");
   while( !feof(author) )
@@ -131,57 +132,30 @@ int main() {
     assert(2 == sscanf(line, "%d\t%d",&x,&y));
     // printf("%d\n",x);
     PA[x].push_back(y);
+    AP[y].push_back(x);
   }
 
-  int conf_node = 3329;
-  scanf("%d", &conf_node);
-  /*
-    SIGMOD 3329
-    VLDB 3594
-    ICDE 1798
-    PODS 3027
-    EDBT 1234
-    DASFAA 983
-    KDD 2504
-    ICDM 1801
-    PKDD 3011
-    SDM 3230
-    PAKDD 2934
-    WWW 3771
-    SIGIR 3318
-    TREC 3510
-    APWeb 294
-  */
+  int auth_node = 113755; // TODO CHANGE
 
   // printf("Creation of multiset\n");
-  for(int c : conf_id)
-    for(int p : CP[c])
-      for(int a : PA[p])
-          conf_author[c].push_back(a);
+  for(int a : author_id)
+    for(int p : AP[a])
+      author_paper[a].push_back(p);
 
-  for(int c : conf_id)
-    sample(conf_author[c].begin(), conf_author[c].end(), back_inserter(conf_author_samp[c]), w, mt19937{random_device{}()});
-  //    conf_author_samp[c] = conf_author[c];
+  // printf("Sampling\n");
+  for(int a : author_id)
+  {
+    // printf("Sampling [%d] [%d]\n", a, author_paper[a].size());
+    sample(author_paper[a].begin(), author_paper[a].end(), back_inserter(author_paper_samp[a]), w, mt19937{random_device{}()});
+  }
+  // printf("Sorting\n");
+  sort(author_id.begin(), author_id.end());
 
-  sort(conf_id.begin(), conf_id.end());
-
-  for(int c : conf_id)
-    printf("%.8lf %6d %6d\n", BC(conf_author_samp[conf_node], conf_author_samp[c]), conf_node, c);
-
-  //
-  //
-  // printf("\t");
-  // for(int x : conf_id)
-  //   printf("%d\t", x);
-  // printf("\n");
-  //
-  // for(int x : conf_id)
-  // {
-  //   printf("%d\t", x);
-  //   for(int y : conf_id)
-  //     printf("%.6f\t", BC(conf_author_samp[x], conf_author_samp[y]));
-  //   printf("\n");
-  // }
+  // printf("BC\n");
+  for(int a : author_id)
+  {
+    printf("%.8lf %6d %6d\n", BC(author_paper_samp[auth_node], author_paper_samp[a]), auth_node, a);
+  }
 
   // Closing fiels
   fclose(author);
