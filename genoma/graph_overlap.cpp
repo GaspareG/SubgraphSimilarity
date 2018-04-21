@@ -1,7 +1,6 @@
 #include <bits/stdc++.h>
 #include <omp.h>
 #include <parallel/algorithm>
-#include "graph.hpp"
 
 using namespace std;
 
@@ -10,37 +9,30 @@ using namespace std;
 #define DEBUG(x) fprintf(stderr, x)
 #define DEBUG1(x, y) fprintf(stderr, (x), (y))
 #define DEBUG2(x, y, z) fprintf(stderr, (x), (y), (z))
+#define MAXN 3000000
 
-/*
- * A 00
- * C 01
- * G 10
- * T 11
- */
 typedef uint_fast32_t fuint;
 typedef uint_fast64_t ull;
 
 typedef struct {
-  int id;
+  pair<fuint,fuint> pos;
   string seq;
-  // string qual;
-} read_t;
+  string label;
+} read;
 
 fuint N=0; // number of reads
 fuint k=0; // Size of overlap
 fuint q=0; // number of color/length of paths
 fuint e=0; // number of experiments
 
-vector<read_t> reads;
-map<string, vector<pair<int,int>> > prefixRead; // [PREFIX] -> {multiset of read_t id}
-
+read reads[MAXN];
+// vector<read> reads;
 vector< pair<fuint, fuint> > permutations;
 vector<fuint> lcp;
-unordered_set<fuint> *Gr;
-vector<fuint> *G;
+unordered_set<fuint> Gr[MAXN];
+vector<fuint> G[MAXN];
 vector<fuint> sortedPos;
-
-map<COLORSET, ull> *M[MAXQ + 1];
+map<COLORSET, ull> M[MAXQ + 1][MAXN];
 COLORSET *color;
 
 // Random generator
@@ -60,76 +52,26 @@ COLORSET clearBit(COLORSET n, int pos) { return n &= ~(1 << pos); }
 COLORSET getCompl(COLORSET n) { return ((1 << q) - 1) & (~n); }
 
 /*************************************/
-// Genoma functions
-inline char getBaseCompl(char c)
-{
-  switch(c)
-  {
-    case 'A': return 'T';
-    case 'C': return 'C';
-    case 'G': return 'G';
-    case 'T': return 'A';
-    default: break;
-  }
-  return c;
-}
-
-string getReadCompl(const string& read)
-{
-  string out;
-  out.reserve(read.size());
-  for(int i=read.size()-1; i>=0; i--)
-    out.push_back(getBaseCompl(read[i]));
-  return out;
-}
-
-string getReadRev(const string& read)
-{
-  string out(read);
-  reverse(out.begin(), out.end());
-  return out;
-}
-
-string getReadRevCompl(const string& read)
-{
-  string rread = getReadRev(read);
-  return getReadCompl(rread);
-}
-
-/*************************************/
 // Base functions
 void readInput()
 {
   ios::sync_with_stdio(false);
   cin >> N;
-  reads.reserve(N<<1);
-  read_t tmp, rctmp;
+  // reads.resize(N);
+  read tmp;
   for(fuint i=0; i<N; ++i)
   {
+    cin >> tmp.pos.first >> tmp.pos.second;
     cin >> tmp.seq;
-    rctmp.seq = getReadRevCompl(tmp.seq);
-    rctmp.id = i;
-    tmp.id = i;
-    reads.push_back(tmp);
-    reads.push_back(rctmp);
+    tmp.seq += "$";
+    reads[i] = tmp;
   }
 }
 
 void buildGraph()
 {
 
-  for(read_t read : reads)
-  {
-    string& sequence = read.seq;
-    int len = sequence.size();
-    for(int i=0; i+k-1 < len; i++)
-    {
-      string sub = sequence.substring(i+1, k);
-      prefixRead[sub].push_back( make_pair(read.id, i) );
-    }
-  }
-
-/*  // Gr = new unordered_set<fuint>[N];
+  // Gr = new unordered_set<fuint>[N];
   // G = new vector<fuint>[N];
   permutations.reserve(N*150);
 
@@ -186,7 +128,7 @@ void buildGraph()
     for(fuint j : Gr[i])
       G[j].push_back(i);
     Gr[i].clear();
-  }*/
+  }
 }
 
 void randomColor() {
