@@ -2,7 +2,7 @@
 // Refactor with libraries
 #include <bits/stdc++.h>
 
-namespace gaspare 
+namespace gaspare
 {
 
     typedef unsigned long long int ull;
@@ -29,11 +29,11 @@ namespace gaspare
     // S = seed of rng (default 42)
     // D = direct graph (default true)
     template<typename V, typename E, unsigned int Q = 8, unsigned int S = 42, bool D = true>
-    class graph 
+    class graph
     {
         std::vector<V> vertex;
         std::vector<std::vector<std::pair<std::size_t, E>>> edge;
-        std::vector<color_t> color; 
+        std::vector<color_t> color;
         std::mt19937 rng;
         std::vector<std::map<color_t, ull>> M[1+Q]; // Color-Coding DP table
 
@@ -44,7 +44,7 @@ namespace gaspare
 
         public:
 
-        graph() 
+        graph()
         {
             rng = std::mt19937(S);
         }
@@ -85,15 +85,15 @@ namespace gaspare
 
             #pragma omp parallel for schedule(guided)
             for (unsigned u = 0; u < N; u++) M[1][u][setBit(0, color[u])] = 1ll;
- 
+
             for (unsigned i = 2; i <= Q; i++) {
                 #pragma omp parallel for schedule(guided)
-                for (unsigned u = 0; u < N; u++) 
+                for (unsigned u = 0; u < N; u++)
                 {
-                    for (auto e : edge[u]) 
+                    for (auto e : edge[u])
                     {
                         auto v = e.first;
-                        for (auto d : M[i - 1][v]) 
+                        for (auto d : M[i - 1][v])
                         {
                             if (getBit(d.first, color[u])) continue;
                             M[i][u][setBit(d.first, color[u])] += d.second;
@@ -103,14 +103,14 @@ namespace gaspare
             }
         }
 
-        std::vector<V> randomColorfulPath(ssize_t u, std::function<ssize_t (const std::vector<std::pair<std::size_t, E>>&)> chooser)
+        std::vector<V> randomColorfulPath(ssize_t u, std::function<ssize_t (const std::vector<std::pair<std::size_t, E>>&, std::mt19937&)> chooser)
         {
             color_t cs = 0;
             std::vector<V> path;
             if( u == -1 ) return path;
             path.reserve(Q);
             path.push_back(vertex[(size_t)u]);
-            cs = gaspare::setBit(cs, color[u]); 
+            cs = gaspare::setBit(cs, color[u]);
             while(path.size() < Q)
             {
                 std::vector<std::pair<std::size_t, E>> uedge;
@@ -120,7 +120,7 @@ namespace gaspare
                     if( !getBit(cs, color[ e.first ]) )
                         uedge.push_back(e);
                 }
-                u = chooser(uedge);
+                u = chooser(uedge, rng);
                 if( u == -1 ) break;
                 cs = gaspare::setBit(cs, color[ (size_t) u]);
                 path.push_back(vertex[u]);
@@ -129,7 +129,7 @@ namespace gaspare
         }
     };
 
-    namespace genoma 
+    namespace genoma
     {
         std::string getReverse(const std::string& seq)
         {
@@ -170,10 +170,10 @@ namespace gaspare
             return seq;
         }
     }
-    
-    namespace sampling 
+
+    namespace sampling
     {
-        
+
         double jaccard(const std::set<std::string>& W, std::map<std::string, ull>& fA, std::map<std::string, ull>& fB, ull R)
         {
             ull num = 0;
@@ -193,16 +193,15 @@ namespace gaspare
             return static_cast<double>(num) / static_cast<double>(den);
         }
 
-        ssize_t pathChooser(const std::vector<std::pair<std::size_t, gaspare::edge_t>>& edges)
+        ssize_t pathChooser(const std::vector<std::pair<std::size_t, gaspare::edge_t>>& edges, std::mt19937& rng)
         {
             if( edges.size() == 0 ) return -1;
             std::vector<ull> freq;
             freq.resize(edges.size());
             for(auto e : edges)
                 freq.push_back(e.second.freq);
-            std::default_random_engine generator;
             std::discrete_distribution<ull> distr(freq.begin(), freq.end());
-            return edges[ distr(generator) ].first;
+            return edges[ distr(rng) ].first;
         }
 
     }

@@ -3,7 +3,7 @@
 
 int main()
 {
-    const unsigned k = 8;
+    const unsigned k = 50;
     const unsigned seed = 42;
 
     std::vector<std::string> reads;
@@ -17,6 +17,7 @@ int main()
     std::cin >> N;
     reads.reserve(N);
 
+    std::cout << "Reading reads" << std::endl;
     for(auto i=0; i<N; i++)
     {
         std::string seq, revcseq;
@@ -26,10 +27,21 @@ int main()
         reads.push_back(seq);
     }
 
+    std::cout << "Creating k-mers" << std::endl;
     for(auto read : reads)
+    {
+        #pragma omp parallel for schedule(guided)
         for(auto i=0; i+k-1<read.size(); i++)
-            kmers.insert(read.substr(i, k));
+        {
+            auto kmer = read.substr(i, k);
+            #pragma omp critical
+            {
+              kmers.insert(kmer);
+            }
+        }
+    }
 
+    std::cout << "Create (k-1)-mers mapping" << std::endl;
     for(auto kmer : kmers)
     {
         gaspare::vertex_t v;
@@ -40,6 +52,7 @@ int main()
         kmersMap[kmer.substr(0, k-1)].insert(idx);
     }
 
+    std::cout << "Create graph' edges" << std::endl;
     for(auto u : kmers)
         for(auto idv : kmersMap[u.substr(1, k-1)] )
         {
@@ -49,10 +62,16 @@ int main()
             G.addEdge(idMap[u], idMap[v], e);
         }
 
+
+    std::cout << "Processing DP table" << std::endl;
     G.processDP();
 
-    auto path = G.randomColorfulPath(0, gaspare::sampling::pathChooser);
-    std::cout << gaspare::genoma::getSequence(path) << std::endl;
-
+    std::cout << "Sampling random path" << std::endl;
+    std::mt19937 rng(seed);
+    for(int i=0; i<10; i++)
+    {
+        auto path = G.randomColorfulPath(rng() % G.getVertex().size(), gaspare::sampling::pathChooser);
+        std::cout << gaspare::genoma::getSequence(path) << std::endl;
+    }
     return 0;
 }
