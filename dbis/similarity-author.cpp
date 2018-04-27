@@ -135,7 +135,7 @@ int main() {
     AP[y].push_back(x);
   }
 
-  int auth_node = 113755; // TODO CHANGE
+  int auth_node = 113755; 
 
   // printf("Creation of multiset\n");
   for(int a : author_id)
@@ -148,14 +148,13 @@ int main() {
     // printf("Sampling [%d] [%d]\n", a, author_paper[a].size());
     sample(author_paper[a].begin(), author_paper[a].end(), back_inserter(author_paper_samp[a]), w, mt19937{random_device{}()});
   }
+
   // printf("Sorting\n");
   sort(author_id.begin(), author_id.end());
 
   // printf("BC\n");
   for(int a : author_id)
-  {
     printf("%.8lf %6d %6d\n", BC(author_paper_samp[auth_node], author_paper_samp[a]), auth_node, a);
-  }
 
   // Closing fiels
   fclose(author);

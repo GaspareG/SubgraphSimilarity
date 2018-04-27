@@ -15,3 +15,7 @@ k-labeled-dpl
 k-labeled-dpl-tau
 k-labeled-dplw
 slash-burn 
+
+# genoma sequences
+*.tar.gz
+*.txt

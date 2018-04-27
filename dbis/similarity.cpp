@@ -21,7 +21,7 @@ bool schoolFlag = true;     // Test school x linkedin
 bool workFlag = false;      // Test work x linkedin
 
 bool exact = true;         // true -> exact value || false -> color-coding + sampling
-unsigned int w = 5000;      // size of the samples
+unsigned int w = 2000;      // size of the samples
 unsigned int seed = 42;     // random seed
 
 // File names
@@ -76,27 +76,35 @@ int main() {
   vector<int> author_id, conf_id, paper_id;
   vector<int> conf_author[MAXN];
   vector<int> conf_author_samp[MAXN];
+  map<int, string> map_author, map_conf;
 
   // printf("Read author\n");
   while( !feof(author) )
   {
+    int x;
+    fscanf(author, "%d\t", &x);
     char line[1024];
     if ( NULL == fgets(line, 1023, author) )
       break;
-    int x;
-    assert(1 == sscanf(line, "%d",&x));
+    line[strlen(line)-2] = '\0';
+//    printf("%d -> %s\n",x, line);
     author_id.push_back(x);
+    map_author[x] = string(line);
   }
 
   // printf("Read conference\n");
   while( !feof(conf) )
   {
-    char line[1024];
-    if ( NULL == fgets(line, 1023, conf) )
-      break;
     int x;
-    assert(1 == sscanf(line, "%d",&x));
+    fscanf(conf, "%d\t", &x);
+    char line[2024];
+    if ( NULL == fgets(line, 2023, conf) )
+      break;
+    line[strlen(line)-2] = '\0';
+    // printf("%d -> %s\n",x, line);
     conf_id.push_back(x);
+    map_conf[x] = string(line);
+    // printf("[%d] [%s]\n", x, line);
   }
 
   // printf("Read paper\n");
@@ -133,8 +141,7 @@ int main() {
     PA[x].push_back(y);
   }
 
-  int conf_node = 3329;
-  scanf("%d", &conf_node);
+  // scanf("%d", &conf_node);
   /*
     SIGMOD 3329
     VLDB 3594
@@ -152,22 +159,59 @@ int main() {
     TREC 3510
     APWeb 294
   */
+  int conf_nodes[] = {
+    3011
+  /*    3329,
+      3594,
+      1798,
+      3027,
+      1234,
+       983,
+      2504,
+      1801,
+      3011,
+      3230,
+      2934,
+      3771,
+      3318,
+      3510,
+       294*/
+  };
+
+  ios::sync_with_stdio(true);
 
   // printf("Creation of multiset\n");
-  for(int c : conf_id)
-    for(int p : CP[c])
-      for(int a : PA[p])
-          conf_author[c].push_back(a);
+  for(int conf_node : conf_nodes)
+  {
 
-  for(int c : conf_id)
-    sample(conf_author[c].begin(), conf_author[c].end(), back_inserter(conf_author_samp[c]), w, mt19937{random_device{}()});
-  //    conf_author_samp[c] = conf_author[c];
+    for(int c : conf_id)
+      for(int p : CP[c])
+        for(int a : PA[p])
+            conf_author[c].push_back(a);
 
-  sort(conf_id.begin(), conf_id.end());
+    for(int c : conf_id)
+      sample(conf_author[c].begin(), conf_author[c].end(), back_inserter(conf_author_samp[c]), w, mt19937{random_device{}()});
+    //    conf_author_samp[c] = conf_author[c];
 
-  for(int c : conf_id)
-    printf("%.8lf %6d %6d\n", BC(conf_author_samp[conf_node], conf_author_samp[c]), conf_node, c);
+    printf("%s\n", map_conf[conf_node].c_str());
+    fflush(stdout);
+    vector< tuple<double, int, int> > top;
 
+    for(int c : conf_id)
+      top.push_back( make_tuple( BC(conf_author_samp[conf_node], conf_author_samp[c]), conf_node, c) );
+
+    sort(top.begin(), top.end());
+    reverse(top.begin(), top.end());
+
+    for(int i=0; i<20; i++)
+    {
+      // cout << get<0>(top[i]) << map_conf[get<1>(top[i])] << " " << map_conf[get<2>(top[i])] << "\n
+      printf("%.8lf\t%s\t%s\n", get<0>(top[i]), map_conf[get<1>(top[i])].c_str(), map_conf[get<2>(top[i])].c_str() );
+      fflush(stdout);
+    }
+
+    printf("\n");
+  }
   //
   //
   // printf("\t");

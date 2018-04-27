@@ -1,4 +1,4 @@
-CXXFLAGS += --std=c++11 -g -Wall -pedantic -O0 -DMAKE_VALGRIND_HAPPY -fopenmp
+CXXFLAGS += --std=c++17 -g -Wall -pedantic -O0 -DMAKE_VALGRIND_HAPPY -fopenmp
 objects = similarity
 
 $(objects): %: %.cpp
