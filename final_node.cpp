@@ -406,14 +406,14 @@ double BCW_old(set<string> W, map<string, ll> freqA, map<string, ll> freqB) {
 }
 
 double FJW(set<string> W, map<string, ll> freqA, map<string, ll> freqB, long long R) {
-    ll num = 0ll;
-    for (string x : W) {
-      ll fax = freqA[x];
-      ll fbx = freqB[x];
-      num += min(fax, fbx);
-    }
-    return (double)num / (double) R;
+  ll num = 0ll;
+  for (string x : W) {
+    ll fax = freqA[x];
+    ll fbx = freqB[x];
+    num += min(fax, fbx);
   }
+  return (double)num / (double) R;
+}
 
   vector<int> sampleV;
   set<int> randomChoose(int s, int mod)

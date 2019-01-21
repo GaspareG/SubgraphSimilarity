@@ -1,32 +1,91 @@
 #include <bits/stdc++.h>
 #include <omp.h>
 #include "cxxopts.hpp"
-#include "bloomfilter.hpp"
 
-#define ERROR(c,s) if( c ){ perror(s); return -1; }
+#define ERROR(c,s) if(c){perror(s); return -1;}
 
+typedef uint64_t bf_t;
 typedef uint64_t ll;
 typedef std::vector<int> path;
 typedef std::string qpath;
 typedef std::set<qpath> dict_t;     // dictionary of string (q-paths)
 typedef std::map<qpath, ll> fdict_t;// frequency dictionary of string (q-paths)
 
+/*
+  qpath non stringa ma set
+*/
+
+// Bloom filter
+namespace bf
+{
+  bf_t create(int z, int h, std::mt19937& rng)
+  {
+    bf_t out = bf_t(0);
+    for(int i=0; i<h; i++) out |= 1<<(rng()%z);
+    /*
+    	maybe:
+    		bitset<> {1, ..., 1, 0, ..., 0}
+    				  1 x h + 0 x (z-h)
+    		random shuffle
+    		bit -> int
+    */
+    return out;
+  }
+
+  bf_t join(const bf_t a, const bf_t b)
+  {
+    return (a|b);
+  }
+}
+
+/*
+struct bloom_filter 
+{
+  bf_t data;
+	
+  bloom_filter(int z, int h, std::mt19937& rng)
+  {
+    std::vector<bool> vb(z, false);
+    std::fill(vb.begin(), vb.begin()+h, true);
+    std::shuffle(vb.begin(), vb.end(), rng);
+    data = bf_t(0);
+    for(bool b : vb) data = (data<<1) | b;
+  }
+  
+  bloom_filter(bf_t bdata) : data(bdata) {}
+  
+  struct bloom_filter operator+(const struct bloom_filter& a) const
+  {
+    return struct bloom_filter(data|a.data);
+  }
+
+  // equality comparison. doesn't modify object. therefore const.
+  bool operator==(const struct bloom_filter& a) const
+  {
+    return (data == a.data);
+  }  
+};
+*/
+
 // Graph data struct
-typedef struct graph {
+typedef struct graph 
+{
   int N;
 
   std::vector<char> label;
   std::vector<bf_t> filter;
   std::vector<std::vector<int>> edges;
 
-  graph(int n) {
+  graph(int n) 
+  {
     N = n;
     label.resize(N, 0);
     filter.resize(N, 0);
     edges.resize(N, std::vector<int>());
   };
 
-  void addEdge(int i, int j) {
+  void addEdge(int i, int j) 
+  {
     edges[i].push_back(j);
     edges[j].push_back(i);
   };
@@ -176,20 +235,21 @@ std::tuple<double, double> bruteforce()
 }
 
 // DP Preprocessing
-std::vector<std::vector<std::map<bf_t, ll>>> dp;
+std::vector< std::vector<std::set<bf_t>> > dp;
+// std::vector< std::vector<std::map<bf_t, long long int>> > dp; TODO REMOVE
 
 void processDP()
 {
 
   // create matrix (Q+1)*N
-  dp.resize(Q+1, std::vector<std::map<bf_t, ll>>(N));
+  dp.resize(Q+1, std::vector<std::set<bf_t>>(N));
 
   auto timer_now = timer_start();
 
   // Base case
   std::cerr << "DP preprocessing 1/" << Q << std::endl;
   #pragma omp parallel for schedule(guided)
-  for(int u = 0; u < N; u++) dp[1][u][G.filter[u]] = 1ll;
+  for(int u = 0; u < N; u++) dp[1][u].insert(G.filter[u]);
 
   // For each level
   for(size_t i = 2; i <= Q; i++)
@@ -203,16 +263,26 @@ void processDP()
       for (int v : G.edges[u])
       {
         // For each entry in dp table
-        for (auto d : dp[i-1][v])
+        for (bf_t s : dp[i-1][v])
         {
-          bf_t s = d.first;
           bf_t s2 = G.filter[u];
-          ll f = d.second;
-          if((s | s2) == s) continue;
-          dp[i][u][s|s2] += f;
+          if(bf::join(s, s2) == s) continue;
+          dp[i][u].insert(bf::join(s, s2));
         }
+        /* TODO REMOVE 
+        // For each entry in dp table
+        for (auto [s, v] : dp[i-1][v])
+        {
+          bf_t s2 = G.filter[u];
+          if(bf::join(s, s2) == s) continue;
+          dp[i][u][bf::join(s, s2)]++;
+        }
+        */
       }
     }
+    ll count = 0;
+    for(int u=0; u<N; u++) count += dp[i][u].size();
+    std::cerr << "\t" << count << " bf at level " << i << std::endl;
   }
   std::cerr << "DP table processed in " << timer_step(timer_now) << "ms" << std::endl;
 
@@ -220,23 +290,123 @@ void processDP()
 
 
 // Fcount
+bool isPrefix(dict_t& W, std::string& x) {
+  auto it = W.lower_bound(x);
+  if (it == W.end()) return false;
+  return std::mismatch(x.begin(), x.end(), (*it).begin()).first == x.end();
+}
+
+path randomPathTo(int u)
+{
+  path p = {u};
+  for(int i=1; i<Q; i++)
+  {
+    // TODO
+    
+  }
+  return p;
+}
+
+dict_t randomSample()
+{
+  dict_t W;
+
+  ll fA = dp[Q][A].size();
+  ll fB = dp[Q][B].size();
+
+  std::discrete_distribution<ll> distribution({fA, fB});
+  std::vector<int> X = {A,B};
+
+  std::set<path> R;
+  while(R.size() < Rsize)
+  {
+    int start = X[distribution(rng)];
+    path toAdd = randomPathTo(u);
+    if(toAdd.size() < Q) continue;
+    R.insert(toAdd);
+  }
+
+  for(const path& r : R) W.insert(L(r));
+
+  return W;
+}
+
+fdict_t processFrequency(dict_t& W, int X)
+{
+  // TODO
+  return fdict_t();
+}
+
 std::tuple<double, double> fcount()
 {
   double fj = 0.;
   double bc = 0.;
 
-  // TODO
+  dict_t W = randomSample();
+
+  fdict_t freqA = processFrequency(W, A);
+  fdict_t freqB = processFrequency(W, B);
+
+  ll Rcount = 0;
+  for(const auto& [w, v] : freqA) Rcount += v;
+  for(const auto& [w, v] : freqB) Rcount += v;
+
+  fj = fjw(W, freqA, freqB, Rcount);
+  bc = bcw(W, freqA, freqB);
 
   return std::make_tuple(fj, bc);
 }
 
 // Fsample
+std::tuple<dict_t, fdict_t, fdict_t> randomSamplePlus()
+{
+  dict_t W;
+  fdict_t freqA;
+  fdict_t freqB;
+
+  ll fA = dp[Q][A].size();
+  ll fB = dp[Q][B].size();
+
+  std::discrete_distribution<ll> distribution({fA, fB});
+  std::vector<int> X = {A,B};
+
+  std::set<path> R;
+  while(R.size() < Rsize)
+  {
+    int start = X[distribution(rng)];
+    path toAdd = randomPathTo(u);
+    if(toAdd.size() < Q) continue;
+    R.insert(toAdd);
+  }
+
+  for(const path& p : R)
+  {
+    qpath q = L(p);
+    if(p[0] == A) freqA[q]++;
+    else freqB[q]++;
+  }
+
+  return std::make_tuple(W, freqA, freqB);
+}
+
 std::tuple<double, double> fsample()
 {
   double fj = 0.;
   double bc = 0.;
 
-  // TODO
+  std::tuple<dict_t, fdict_t, fdict_t> sample = randomSamplePlus();
+
+  dict_t W = std::get<0>(sample);
+
+  fdict_t freqA = std::get<1>(sample);
+  fdict_t freqB = std::get<2>(sample);
+
+  ll Rsample = 0;
+  for(const auto& [w, v] : freqA) Rsample += v;
+  for(const auto& [w, v] : freqB) Rsample += v;
+
+  fj = fjw(W, freqA, freqB, Rsample);
+  bc = bcw(W, freqA, freqB);
 
   return std::make_tuple(fj, bc);
 }
@@ -302,7 +472,6 @@ std::tuple<double, double> baseline()
 }
 
 int main(int argc, char** argv) {
-
 
   // Parse arguments
   cxxopts::Options options("nSimGram-BloomFilter","Compute node similarity using bloom filter");
@@ -422,7 +591,7 @@ int main(int argc, char** argv) {
 
   // Create filter
   std::cerr << "Create bloomfilter..." << std::endl;
-  for(int i=0; i<N; i++) G.filter[i] = 0; // TODO createBloomFilter(G.label[i], Z, H, rng);
+  for(int i=0; i<N; i++) G.filter[i] = bf::create(Z, H, rng);
   std::cerr << "end" << std::endl;
 
   // Bruteforce similarity
