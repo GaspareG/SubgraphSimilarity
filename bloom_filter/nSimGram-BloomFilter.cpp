@@ -11,10 +11,6 @@ typedef std::string qpath;
 typedef std::set<qpath> dict_t;     // dictionary of string (q-paths)
 typedef std::map<qpath, ll> fdict_t;// frequency dictionary of string (q-paths)
 
-/*
-  qpath non stringa ma set
-*/
-
 // Bloom filter
 namespace bf
 {
@@ -115,7 +111,7 @@ int experiments = 1;
 size_t Rsize = 1000;
 int Nthreads = -1;
 
-bool first = false;
+bool first = true;
 
 size_t Q = 4;
 int A = -1;
@@ -166,6 +162,7 @@ qpath L(const path& p)
   out.reserve(p.size());
   for(int v : p) out += G.label[v];
   if(first) out = out.substr(1);
+  std::sort(out.begin(), out.end());
   return out;
 }
 
@@ -235,21 +232,19 @@ std::tuple<double, double> bruteforce()
 }
 
 // DP Preprocessing
-std::vector< std::vector<std::set<bf_t>> > dp;
-// std::vector< std::vector<std::map<bf_t, long long int>> > dp; TODO REMOVE
-
+std::vector< std::vector<std::map<bf_t, long long int>> > dp;
 void processDP()
 {
 
   // create matrix (Q+1)*N
-  dp.resize(Q+1, std::vector<std::set<bf_t>>(N));
+  dp.resize(Q+1, std::vector<std::map<bf_t, long long int>>(N));
 
   auto timer_now = timer_start();
 
   // Base case
   std::cerr << "DP preprocessing 1/" << Q << std::endl;
   #pragma omp parallel for schedule(guided)
-  for(int u = 0; u < N; u++) dp[1][u].insert(G.filter[u]);
+  for(int u = 0; u < N; u++) dp[1][u][G.filter[u]] = 1;
 
   // For each level
   for(size_t i = 2; i <= Q; i++)
@@ -263,21 +258,12 @@ void processDP()
       for (int v : G.edges[u])
       {
         // For each entry in dp table
-        for (bf_t s : dp[i-1][v])
+        for (auto [s, f] : dp[i-1][v])
         {
           bf_t s2 = G.filter[u];
           if(bf::join(s, s2) == s) continue;
-          dp[i][u].insert(bf::join(s, s2));
+          dp[i][u][bf::join(s, s2)] = f+1;
         }
-        /* TODO REMOVE 
-        // For each entry in dp table
-        for (auto [s, v] : dp[i-1][v])
-        {
-          bf_t s2 = G.filter[u];
-          if(bf::join(s, s2) == s) continue;
-          dp[i][u][bf::join(s, s2)]++;
-        }
-        */
       }
     }
     ll count = 0;
@@ -299,10 +285,28 @@ bool isPrefix(dict_t& W, std::string& x) {
 path randomPathTo(int u)
 {
   path p = {u};
-  for(int i=1; i<Q; i++)
-  {
-    // TODO
     
+  for(size_t i=1; i<Q; i++)
+  {
+    std::vector<ll> freq;
+    bf_t pref(0);
+    for(size_t j=1; j<p.size(); j++) pref = bf::join(pref, G.filter[p[j]]);
+
+    for (int v : G.edges[u])
+    {
+      bf_t temp  = bf::join(pref, G.filter[v]);
+      bf_t temp2 = bf::join(temp, G.filter[p[0]]);
+      if(temp == temp2) continue;
+      freq.push_back(dp[i][v][temp]);
+    }
+    std::discrete_distribution<ll> distribution(freq.begin(), freq.end());
+
+    #pragma omp critical
+    {
+      u = G.edges[u][distribution(rng)];
+    }
+    p.push_back(u);
+
   }
   return p;
 }
@@ -311,17 +315,18 @@ dict_t randomSample()
 {
   dict_t W;
 
-  ll fA = dp[Q][A].size();
-  ll fB = dp[Q][B].size();
-
-  std::discrete_distribution<ll> distribution({fA, fB});
+  ll fA = static_cast<ll>(dp[Q][A].size());
+  ll fB = static_cast<ll>(dp[Q][B].size());
+  std::vector<ll> fV = {fA, fB};
+  
+  std::discrete_distribution<ll> distribution(fV.begin(), fV.end());
   std::vector<int> X = {A,B};
 
   std::set<path> R;
   while(R.size() < Rsize)
   {
     int start = X[distribution(rng)];
-    path toAdd = randomPathTo(u);
+    path toAdd = randomPathTo(start);
     if(toAdd.size() < Q) continue;
     R.insert(toAdd);
   }
@@ -333,8 +338,9 @@ dict_t randomSample()
 
 fdict_t processFrequency(dict_t& W, int X)
 {
-  // TODO
-  return fdict_t();
+  fdict_t ret;
+   
+  return ret;
 }
 
 std::tuple<double, double> fcount()
@@ -366,15 +372,15 @@ std::tuple<dict_t, fdict_t, fdict_t> randomSamplePlus()
 
   ll fA = dp[Q][A].size();
   ll fB = dp[Q][B].size();
-
-  std::discrete_distribution<ll> distribution({fA, fB});
+  std::vector<ll> fV = {fA, fB};
+  std::discrete_distribution<ll> distribution(fV.begin(), fV.end());
   std::vector<int> X = {A,B};
 
   std::set<path> R;
   while(R.size() < Rsize)
   {
     int start = X[distribution(rng)];
-    path toAdd = randomPathTo(u);
+    path toAdd = randomPathTo(start);
     if(toAdd.size() < Q) continue;
     R.insert(toAdd);
   }
@@ -382,6 +388,7 @@ std::tuple<dict_t, fdict_t, fdict_t> randomSamplePlus()
   for(const path& p : R)
   {
     qpath q = L(p);
+    W.insert(q);
     if(p[0] == A) freqA[q]++;
     else freqB[q]++;
   }
@@ -595,18 +602,18 @@ int main(int argc, char** argv) {
   std::cerr << "end" << std::endl;
 
   // Bruteforce similarity
-  double realFJ = 0.;
-  double realBC = 0.;
+  double real_fj = 0.;
+  double real_bc = 0.;
 
   if(bruteforce_f)
   {
     std::cerr << "Bruteforce..." << std::endl;
     auto bf = bruteforce();
-    realFJ = std::get<0>(bf);
-    realBC = std::get<1>(bf);
+    real_fj = std::get<0>(bf);
+    real_bc = std::get<1>(bf);
     std::cerr << "End bruteforce" << std::endl;
-    std::cerr << "Real FJ(A,B) = " << realFJ << std::endl;
-    std::cerr << "Real BC(A,B) = " << realBC << std::endl;
+    std::cerr << "Real FJ(A,B) = " << real_fj << std::endl;
+    std::cerr << "Real BC(A,B) = " << real_bc << std::endl;
   }
 
   // Process DP only if fcount or fsample are enabled
@@ -645,20 +652,20 @@ int main(int argc, char** argv) {
   std::cout << std::endl;
 
   // Average values for statistics
-  double fcount_fj_avg = 0.;
-  double fcount_bc_avg = 0.;
-  double fsample_fj_avg = 0.;
-  double fsample_bc_avg = 0.;
-  double baseline_fj_avg = 0.;
-  double baseline_bc_avg = 0.;
+  std::vector<double> fcount_fj;
+  std::vector<double> fcount_bc;
+  std::vector<double> fsample_fj;
+  std::vector<double> fsample_bc;
+  std::vector<double> baseline_fj;
+  std::vector<double> baseline_bc;
 
   // Start experiments
   for(int i=0; i<experiments; i++)
   {
     if(bruteforce_f)
     {
-      std::cout << realFJ << ",";
-      std::cout << realBC << ",";
+      std::cout << real_fj << ",";
+      std::cout << real_bc << ",";
     }
 
     if(fcount_f)
@@ -666,8 +673,8 @@ int main(int argc, char** argv) {
       auto fc = fcount();
       std::cout << std::get<0>(fc) << ",";
       std::cout << std::get<1>(fc) << ",";
-      fcount_fj_avg += static_cast<double>(std::get<0>(fc));
-      fcount_bc_avg += static_cast<double>(std::get<1>(fc));
+      fcount_fj.push_back(static_cast<double>(std::get<0>(fc)));
+      fcount_bc.push_back(static_cast<double>(std::get<1>(fc)));
     }
 
     if(fsample_f)
@@ -675,8 +682,8 @@ int main(int argc, char** argv) {
       auto fs = fsample();
       std::cout << std::get<0>(fs) << ",";
       std::cout << std::get<1>(fs) << ",";
-      fsample_fj_avg += static_cast<double>(std::get<0>(fs));
-      fsample_bc_avg += static_cast<double>(std::get<1>(fs));
+      fsample_fj.push_back(static_cast<double>(std::get<0>(fs)));
+      fsample_bc.push_back(static_cast<double>(std::get<1>(fs)));
     }
 
     if(baseline_f)
@@ -684,28 +691,48 @@ int main(int argc, char** argv) {
       auto bl = baseline();
       std::cout << std::get<0>(bl) << ",";
       std::cout << std::get<1>(bl) << ",";
-      baseline_fj_avg += static_cast<double>(std::get<0>(bl));
-      baseline_bc_avg += static_cast<double>(std::get<1>(bl));
+      baseline_fj.push_back(static_cast<double>(std::get<0>(bl)));
+      baseline_bc.push_back(static_cast<double>(std::get<1>(bl)));
     }
     std::cout << std::endl;
   }
 
-  fcount_fj_avg /= static_cast<double>(experiments);
-  fcount_bc_avg /= static_cast<double>(experiments);
-  fsample_fj_avg /= static_cast<double>(experiments);
-  fsample_bc_avg /= static_cast<double>(experiments);
-  baseline_fj_avg /= static_cast<double>(experiments);
-  baseline_bc_avg /= static_cast<double>(experiments);
-
-  if(fcount_f || fsample_f || baseline_f)
+  auto avg = [](const std::vector<double> &V)
   {
-    std::cerr << std::endl;
-    std::cerr << "Average of " << experiments << " experiments:" << std::endl;
-    if(bruteforce_f) std::cerr << "Bruteforce FJ(A,B) = " <<          realFJ << " BC(A,B) = " <<          realBC << std::endl;
-    if(    fcount_f) std::cerr << "FCount:    FJ(A,B) = " <<   fcount_fj_avg << " BC(A,B) = " <<   fcount_bc_avg << std::endl;
-    if(   fsample_f) std::cerr << "FSample:   FJ(A,B) = " <<  fsample_fj_avg << " BC(A,B) = " <<  fsample_bc_avg << std::endl;
-    if(  baseline_f) std::cerr << "Baseline:  FJ(A,B) = " << baseline_fj_avg << " BC(A,B) = " << baseline_bc_avg << std::endl;
-  }
+    if(V.size() == 0) return 0.;
+    return std::accumulate(V.begin(), V.end(), 0.) / V.size();
+  };
+
+  auto var = [](const std::vector<double> &V, double avg)
+  {
+    if(V.size() == 0) return 0.;
+    return std::accumulate(V.begin(), V.end(), 0., [avg](const double sum, const double x)
+    {
+      return sum + (x-avg)*(x-avg);
+    }) / V.size();
+  };
+
+  double   fcount_fj_avg = avg(fcount_fj);
+  double   fcount_bc_avg = avg(fcount_bc);
+  double  fsample_fj_avg = avg(fsample_fj);
+  double  fsample_bc_avg = avg(fsample_bc);
+  double baseline_fj_avg = avg(baseline_fj);
+  double baseline_bc_avg = avg(baseline_bc);
+
+  double   fcount_fj_var = var(fcount_fj, fcount_fj_avg);
+  double   fcount_bc_var = var(fcount_bc, fcount_bc_avg);
+  double  fsample_fj_var = var(fsample_fj, fsample_fj_avg);
+  double  fsample_bc_var = var(fsample_bc, fsample_bc_avg);
+  double baseline_fj_var = var(baseline_fj, baseline_fj_avg);
+  double baseline_bc_var = var(baseline_bc, baseline_bc_avg);
+
+  std::cout << std::endl;
+  std::cout << "algorithm,fj_average,fj_variance,bc_average,bc_variance" << std::endl;
+  
+  if(bruteforce_f) std::cout << "bruteforce," <<     real_fj     << "," <<      "0.000000" << "," <<     real_bc     << "," <<      "0.000000" << std::endl;
+  if(    fcount_f) std::cout << "    fcount," <<   fcount_fj_avg << "," <<   fcount_fj_var << "," <<   fcount_bc_avg << "," <<   fcount_bc_var << std::endl;
+  if(   fsample_f) std::cout << "   fsample," <<  fsample_fj_avg << "," <<  fsample_fj_var << "," <<  fsample_bc_avg << "," <<  fsample_bc_var << std::endl;
+  if(  baseline_f) std::cout << "  baseline," << baseline_fj_avg << "," << baseline_fj_var << "," << baseline_bc_avg << "," << baseline_bc_var << std::endl;
 
   // Flush output buffers
   std::cout.flush();
