@@ -11,16 +11,13 @@ typedef std::string qpath;
 typedef std::set<qpath> dict_t;     // dictionary of string (q-paths)
 typedef std::map<qpath, ll> fdict_t;// frequency dictionary of string (q-paths)
 
-typedef struct bloom_filter 
+typedef struct bloom_filter
 {
   bf_t data;
-	
+
 	bloom_filter(){ data = 0; }
-	
   bloom_filter(const bf_t d){ data = d; }
-  
   bloom_filter(const struct bloom_filter &d){ data = d.data; }
-  
   bloom_filter(const int z, const int h, std::mt19937& rng)
   {
     std::vector<bool> vb(z, false);
@@ -29,7 +26,7 @@ typedef struct bloom_filter
     data = bf_t(0);
     for(bool b : vb) data = (data<<1) | b;
   }
-  
+
   bloom_filter operator+(const struct bloom_filter& a) const
   {
     return bloom_filter(data|a.data);
@@ -39,18 +36,18 @@ typedef struct bloom_filter
   bool operator==(const struct bloom_filter& a) const
   {
     return (data == a.data);
-  }  
+  }
 
   // equality comparison. doesn't modify object. therefore const.
   bool operator<(const struct bloom_filter& a) const
   {
     return (data < a.data);
-  }  
+  }
 
 } bloom_filter;
 
 // Graph data struct
-typedef struct graph 
+typedef struct graph
 {
   int N;
 
@@ -58,7 +55,7 @@ typedef struct graph
   std::vector<bloom_filter> filter;
   std::vector<std::vector<int>> edges;
 
-  graph(int n) 
+  graph(int n)
   {
     N = n;
     label.resize(N, 0);
@@ -66,7 +63,7 @@ typedef struct graph
     edges.resize(N, std::vector<int>());
   };
 
-  void addEdge(int i, int j) 
+  void addEdge(int i, int j)
   {
     edges[i].push_back(j);
     edges[j].push_back(i);
@@ -252,7 +249,7 @@ void processDP()
         }
       }
     }
-    
+
     ll count = 0;
     for(int u=0; u<N; u++) count += dp[i][u].size();
     std::cerr << "\t" << count << " bf at level " << i << std::endl;
@@ -264,7 +261,7 @@ void processDP()
 
 // Fcount
 bool isPrefix(dict_t& W, qpath& x) {
-  
+
   if(!sort)
   {
     auto it = W.lower_bound(x);
@@ -272,7 +269,7 @@ bool isPrefix(dict_t& W, qpath& x) {
     else return std::mismatch(x.begin(), x.end(), (*it).begin()).first == x.end();
   }
 
-  bool found = false;  
+  bool found = false;
   for(const qpath &q : W)
   {
     size_t l=0;
@@ -283,11 +280,11 @@ bool isPrefix(dict_t& W, qpath& x) {
       else if(q[l] < x[r]) l++;
       else break;
     }
-    
+
     found = (r == x.size());
    	if(found) break;
   }
-  
+
   return found;
 }
 
@@ -295,8 +292,8 @@ path randomPathTo(int u)
 {
   path p = {u};
   bloom_filter cur = G.filter[u];
-  
-  for(int i=2; i<=Q; i++)
+
+  for(size_t i=2; i<=Q; i++)
   {
     std::vector<ll> freq;
     bool one = false;
@@ -306,9 +303,9 @@ path randomPathTo(int u)
       freq.push_back(valid ? dp[i][v][cur+G.filter[v]] : 0);
       one = one || valid;
     }
-    
+
     if(!one) return p;
-    
+
     std::discrete_distribution<ll> distribution(freq.begin(), freq.end());
 
     u = G.edges[u][distribution(rng)];
@@ -325,13 +322,13 @@ dict_t randomSample()
   ll fA = static_cast<ll>(dp[Q][A].size());
   ll fB = static_cast<ll>(dp[Q][B].size());
   std::vector<ll> fV = {fA, fB};
-  
+
   std::discrete_distribution<ll> distribution(fV.begin(), fV.end());
   std::vector<int> X = {A,B};
 
   std::set<path> R;
   for(int i=0; i<5; i++)
-  {	
+  {
     int diff = Rsize - R.size();
     for(int j=0; j<diff; j++)
     {
@@ -350,15 +347,15 @@ dict_t randomSample()
 fdict_t processFrequency(dict_t& W, int X)
 {
   fdict_t ret;
-   
+
   std::vector<std::tuple<int, path>> prec;
-  
+
   prec.emplace_back(X, path({X}));
-  
+
   for(size_t i=2; i<=Q; i++)
   {
     std::vector<std::tuple<int, path>> cur;
-    
+
     for(auto &[u, p] : prec)
     {
       for(int v : G.edges[u])
@@ -375,22 +372,22 @@ fdict_t processFrequency(dict_t& W, int X)
           pref = (pref+G.filter[p[j]]);
         }
 
-        if(!valid) continue;     
-        
-        p.push_back(v);   
+        if(!valid) continue;
+
+        p.push_back(v);
 
         auto qp = L(p);
-        if (isPrefix(W, qp)) cur.emplace_back(v, p);        
+        if (isPrefix(W, qp)) cur.emplace_back(v, p);
 
         p.pop_back();
-        
+
       }
     }
     prec = cur;
   }
 
   for(auto &[u,p] : prec) ret[L(p)]++;
-  
+
   return ret;
 }
 
@@ -421,9 +418,9 @@ std::tuple<dict_t, fdict_t, fdict_t> randomSamplePlus()
   fdict_t freqA;
   fdict_t freqB;
 
-  ll fA = 0ll; 
-  ll fB = 0ll; 
-  
+  ll fA = 0ll;
+  ll fB = 0ll;
+
   for(auto &[m, f] : dp[Q][A]) fA += f;
   for(auto &[m, f] : dp[Q][B]) fB += f;
 
@@ -443,7 +440,7 @@ std::tuple<dict_t, fdict_t, fdict_t> randomSamplePlus()
       R.insert(toAdd);
     }
   }
-  
+
   for(const path& p : R)
   {
     qpath q = L(p);
@@ -480,7 +477,7 @@ std::tuple<double, double> fsample()
 // Baseline
 path naiveRandomPath()
 {
-  path rPath = { (rng()%2==0)?A:B };
+  path rPath = {(rng()%2==0)? A : B};
   std::set<int> seen;
 
   while(rPath.size() < Q)
@@ -661,6 +658,13 @@ int main(int argc, char** argv) {
   for(int i=0; i<N; i++) G.filter[i] = bloom_filter(Z, H, rng);
   std::cerr << "end" << std::endl;
 
+
+  // Time
+  long long int bruteforce_time = 0;
+  long long int     fcount_time = 0;
+  long long int    fsample_time = 0;
+  long long int   baseline_time = 0;
+
   // Bruteforce similarity
   double real_fj = 0.;
   double real_bc = 0.;
@@ -668,7 +672,9 @@ int main(int argc, char** argv) {
   if(bruteforce_f)
   {
     std::cerr << "Bruteforce..." << std::endl;
+    auto t  = timer_start();
     auto bf = bruteforce();
+    bruteforce_time = timer_step(t);
     real_fj = std::get<0>(bf);
     real_bc = std::get<1>(bf);
     std::cerr << "End bruteforce" << std::endl;
@@ -712,11 +718,12 @@ int main(int argc, char** argv) {
   std::cerr << std::endl;
 
   // Average values for statistics
-  std::vector<double> fcount_fj;
-  std::vector<double> fcount_bc;
-  std::vector<double> fsample_fj;
-  std::vector<double> fsample_bc;
+  std::vector<double>   fcount_fj;
+  std::vector<double>  fsample_fj;
   std::vector<double> baseline_fj;
+
+  std::vector<double>   fcount_bc;
+  std::vector<double>  fsample_bc;
   std::vector<double> baseline_bc;
 
   // Start experiments
@@ -733,7 +740,10 @@ int main(int argc, char** argv) {
 
     if(fcount_f)
     {
+      auto t = timer_start();
       auto fc = fcount();
+      fcount_time += timer_step(t);
+
       std::cerr << std::get<0>(fc) << ",";
       std::cerr << std::get<1>(fc) << ",";
       fcount_fj.push_back(static_cast<double>(std::get<0>(fc)));
@@ -742,7 +752,10 @@ int main(int argc, char** argv) {
 
     if(fsample_f)
     {
+      auto t = timer_start();
       auto fs = fsample();
+      fsample_time += timer_step(t);
+
       std::cerr << std::get<0>(fs) << ",";
       std::cerr << std::get<1>(fs) << ",";
       fsample_fj.push_back(static_cast<double>(std::get<0>(fs)));
@@ -751,7 +764,10 @@ int main(int argc, char** argv) {
 
     if(baseline_f)
     {
+      auto t = timer_start();
       auto bl = baseline();
+      baseline_time += timer_step(t);
+
       std::cerr << std::get<0>(bl) << ",";
       std::cerr << std::get<1>(bl) << ",";
       baseline_fj.push_back(static_cast<double>(std::get<0>(bl)));
@@ -775,6 +791,15 @@ int main(int argc, char** argv) {
     }) / V.size();
   };
 
+  auto sse = [](const std::vector<double> &V, double real)
+  {
+    if(V.size() == 0) return 0.;
+    return std::accumulate(V.begin(), V.end(), 0., [real](const double sum, const double x)
+    {
+      return sum + (x-real)*(x-real);
+    }) / V.size();
+  };
+
   double   fcount_fj_avg = avg(fcount_fj);
   double   fcount_bc_avg = avg(fcount_bc);
   double  fsample_fj_avg = avg(fsample_fj);
@@ -789,12 +814,44 @@ int main(int argc, char** argv) {
   double baseline_fj_var = var(baseline_fj, baseline_fj_avg);
   double baseline_bc_var = var(baseline_bc, baseline_bc_avg);
 
-  std::cout << " algorithm,   fj_avg,   fj_var,   bc_avg,   bc_var" << std::endl;
- 
+    fcount_time /= experiments;
+   fsample_time /= experiments;
+  baseline_time /= experiments;
+
+                   std::cout << " algorithm,   fj_avg,   fj_var,   bc_avg,   bc_var"                                                               << std::endl;
   if(bruteforce_f) std::cout << "bruteforce, " <<     real_fj     << ", " <<      "0.000000" << ", " <<     real_bc     << ", " <<      "0.000000" << std::endl;
   if(    fcount_f) std::cout << "    fcount, " <<   fcount_fj_avg << ", " <<   fcount_fj_var << ", " <<   fcount_bc_avg << ", " <<   fcount_bc_var << std::endl;
   if(   fsample_f) std::cout << "   fsample, " <<  fsample_fj_avg << ", " <<  fsample_fj_var << ", " <<  fsample_bc_avg << ", " <<  fsample_bc_var << std::endl;
   if(  baseline_f) std::cout << "  baseline, " << baseline_fj_avg << ", " << baseline_fj_var << ", " << baseline_bc_avg << ", " << baseline_bc_var << std::endl;
+
+  std::cout << std::endl;
+
+                   std::cout << " algorithm, time"                  << std::endl;
+  if(bruteforce_f) std::cout << "bruteforce, " <<   bruteforce_time << std::endl;
+  if(    fcount_f) std::cout << "    fcount, " <<       fcount_time << std::endl;
+  if(   fsample_f) std::cout << "   fsample, " <<      fsample_time << std::endl;
+  if(  baseline_f) std::cout << "  baseline, " <<     baseline_time << std::endl;
+
+  if(bruteforce_f)
+  {
+
+    double   fcount_fj_sse = sse(  fcount_fj, real_fj);
+    double   fcount_bc_sse = sse(  fcount_bc, real_bc);
+
+    double  fsample_fj_sse = sse( fsample_fj, real_fj);
+    double  fsample_bc_sse = sse( fsample_bc, real_bc);
+
+    double baseline_fj_sse = sse(baseline_fj, real_fj);
+    double baseline_bc_sse = sse(baseline_bc, real_bc);
+
+    std::cout << std::endl;
+
+                     std::cout << " algorithm, fj_SSE, bc_SSE"                                  << std::endl;
+    if(    fcount_f) std::cout << "    fcount, " <<     fcount_fj_sse << ", " <<   fcount_bc_sse << std::endl;
+    if(   fsample_f) std::cout << "   fsample, " <<    fsample_fj_sse << ", " <<  fsample_bc_sse << std::endl;
+    if(  baseline_f) std::cout << "  baseline, " <<   baseline_fj_sse << ", " << baseline_bc_sse << std::endl;
+  }
+
 
   // Flush output buffers
   std::cout.flush();
