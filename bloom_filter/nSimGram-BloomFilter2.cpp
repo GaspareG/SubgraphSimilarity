@@ -11,17 +11,35 @@ typedef std::string qpath;
 typedef std::set<qpath> dict_t;     // dictionary of string (q-paths)
 typedef std::map<qpath, ll> fdict_t;// frequency dictionary of string (q-paths)
 
-typedef struct bloom_filter 
+// Bloom filter
+namespace bf
+{
+  bf_t create(int z, int h, std::mt19937& rng)
+  {
+    bf_t out = bf_t(0);
+    for(int i=0; i<h; i++) out |= 1<<(rng()%z);
+    /*
+    	maybe:
+    		bitset<> {1, ..., 1, 0, ..., 0}
+    				  1 x h + 0 x (z-h)
+    		random shuffle
+    		bit -> int
+    */
+    return out;
+  }
+
+  bf_t join(const bf_t a, const bf_t b)
+  {
+    return (a|b);
+  }
+}
+
+/*
+struct bloom_filter 
 {
   bf_t data;
 	
-	bloom_filter(){ data = 0; }
-	
-  bloom_filter(const bf_t d){ data = d; }
-  
-  bloom_filter(const struct bloom_filter &d){ data = d.data; }
-  
-  bloom_filter(const int z, const int h, std::mt19937& rng)
+  bloom_filter(int z, int h, std::mt19937& rng)
   {
     std::vector<bool> vb(z, false);
     std::fill(vb.begin(), vb.begin()+h, true);
@@ -30,9 +48,11 @@ typedef struct bloom_filter
     for(bool b : vb) data = (data<<1) | b;
   }
   
-  bloom_filter operator+(const struct bloom_filter& a) const
+  bloom_filter(bf_t bdata) : data(bdata) {}
+  
+  struct bloom_filter operator+(const struct bloom_filter& a) const
   {
-    return bloom_filter(data|a.data);
+    return struct bloom_filter(data|a.data);
   }
 
   // equality comparison. doesn't modify object. therefore const.
@@ -40,14 +60,8 @@ typedef struct bloom_filter
   {
     return (data == a.data);
   }  
-
-  // equality comparison. doesn't modify object. therefore const.
-  bool operator<(const struct bloom_filter& a) const
-  {
-    return (data < a.data);
-  }  
-
-} bloom_filter;
+};
+*/
 
 // Graph data struct
 typedef struct graph 
@@ -55,14 +69,14 @@ typedef struct graph
   int N;
 
   std::vector<char> label;
-  std::vector<bloom_filter> filter;
+  std::vector<bf_t> filter;
   std::vector<std::vector<int>> edges;
 
   graph(int n) 
   {
     N = n;
     label.resize(N, 0);
-    filter.resize(N, bloom_filter());
+    filter.resize(N, 0);
     edges.resize(N, std::vector<int>());
   };
 
@@ -219,11 +233,11 @@ std::tuple<double, double> bruteforce()
 }
 
 // DP Preprocessing
-std::vector< std::vector<std::map<bloom_filter, long long int>> > dp;
+std::vector< std::vector<std::map<bf_t, long long int>> > dp;
 void processDP()
 {
   // create matrix (Q+1)*N
-  dp.resize(Q+1, std::vector<std::map<bloom_filter, long long int>>(N));
+  dp.resize(Q+1, std::vector<std::map<bf_t, long long int>>(N));
 
   auto timer_now = timer_start();
 
@@ -243,16 +257,15 @@ void processDP()
       // For each neighbor
       for (int v : G.edges[u])
       {
-        bloom_filter s2 = G.filter[u];
         // For each entry in dp table
         for (auto [s, f] : dp[i-1][v])
         {
-          if((s+s2) == s) continue;
-          dp[i][u][s+s2] = f+1;
+          bf_t s2 = G.filter[u];
+          if(bf::join(s, s2) == s) continue;
+          dp[i][u][bf::join(s, s2)] = f+1;
         }
       }
     }
-    
     ll count = 0;
     for(int u=0; u<N; u++) count += dp[i][u].size();
     std::cerr << "\t" << count << " bf at level " << i << std::endl;
@@ -294,26 +307,28 @@ bool isPrefix(dict_t& W, qpath& x) {
 path randomPathTo(int u)
 {
   path p = {u};
-  bloom_filter cur = G.filter[u];
-  
-  for(int i=2; i<=Q; i++)
+    
+  for(size_t i=1; i<Q; i++)
   {
     std::vector<ll> freq;
-    bool one = false;
+    bf_t pref(0);
+    for(size_t j=1; j<p.size(); j++) pref = bf::join(pref, G.filter[p[j]]);
+
     for (int v : G.edges[u])
     {
-      bool valid = !((cur+G.filter[v]) == cur);
-      freq.push_back(valid ? dp[i][v][cur+G.filter[v]] : 0);
-      one = one || valid;
+      bf_t temp  = bf::join(pref, G.filter[v]);
+      bf_t temp2 = bf::join(temp, G.filter[p[0]]);
+      if(temp == temp2) continue;
+      freq.push_back(dp[i][v][temp]);
     }
-    
-    if(!one) return p;
-    
     std::discrete_distribution<ll> distribution(freq.begin(), freq.end());
 
-    u = G.edges[u][distribution(rng)];
-    cur = cur+G.filter[u];
+    #pragma omp critical
+    {
+      u = G.edges[u][distribution(rng)];
+    }
     p.push_back(u);
+
   }
   return p;
 }
@@ -330,16 +345,14 @@ dict_t randomSample()
   std::vector<int> X = {A,B};
 
   std::set<path> R;
-  for(int i=0; i<5; i++)
+  size_t tests = 0;
+  while(R.size() < Rsize && tests++ < Q*5)
   {	
-    int diff = Rsize - R.size();
-    for(int j=0; j<diff; j++)
-    {
-      int u= distribution(rng);
-      path toAdd = randomPathTo(X[u]);
-      if(toAdd.size() < Q) continue;
-      R.insert(toAdd);
-    }
+    int start = X[distribution(rng)];
+    path toAdd = randomPathTo(start);
+   	// std::cout << "RANDOM SAMPLE " << toAdd.size() << "/" << Q << " = " << R.size() << std::endl;
+    if(toAdd.size() < Q) continue;
+    R.insert(toAdd);
   }
 
   for(const path& r : R) W.insert(L(r));
@@ -355,7 +368,7 @@ fdict_t processFrequency(dict_t& W, int X)
   
   prec.emplace_back(X, path({X}));
   
-  for(size_t i=2; i<=Q; i++)
+  for(int i=1; i<Q; i++)
   {
     std::vector<std::tuple<int, path>> cur;
     
@@ -363,16 +376,16 @@ fdict_t processFrequency(dict_t& W, int X)
     {
       for(int v : G.edges[u])
       {
-        bloom_filter pref = G.filter[v];
+        bf_t pref = G.filter[v];
         bool valid = true;
         for(int j=p.size()-1; j>=0; j--)
         {
-          if(pref == (pref+G.filter[p[j]]))
+          if(pref == bf::join(pref, G.filter[p[j]]))
           {
             valid = false;
             break;
           }
-          pref = (pref+G.filter[p[j]]);
+          pref = bf::join(pref, G.filter[p[j]]);
         }
 
         if(!valid) continue;     
@@ -421,29 +434,21 @@ std::tuple<dict_t, fdict_t, fdict_t> randomSamplePlus()
   fdict_t freqA;
   fdict_t freqB;
 
-  ll fA = 0ll; 
-  ll fB = 0ll; 
-  
-  for(auto &[m, f] : dp[Q][A]) fA += f;
-  for(auto &[m, f] : dp[Q][B]) fB += f;
-
+  ll fA = dp[Q][A].size();
+  ll fB = dp[Q][B].size();
   std::vector<ll> fV = {fA, fB};
   std::discrete_distribution<ll> distribution(fV.begin(), fV.end());
   std::vector<int> X = {A,B};
 
   std::set<path> R;
-  for(int i=0; i<5; i++)    // TODO Parametrize
+  while(R.size() < Rsize)
   {
-    int diff = Rsize-R.size();
-    for(int j=0; j<diff; j++)
-    {
-      int u = distribution(rng);
-      path toAdd = randomPathTo(X[u]);
-      if(toAdd.size() < Q) continue;
-      R.insert(toAdd);
-    }
+    int start = X[distribution(rng)];
+    path toAdd = randomPathTo(start);
+    if(toAdd.size() < Q) continue;
+    R.insert(toAdd);
   }
-  
+
   for(const path& p : R)
   {
     qpath q = L(p);
@@ -558,8 +563,7 @@ int main(int argc, char** argv) {
     ("e,experiments", "Number of experiments to run (default: 1)",            cxxopts::value(experiments))
     (      "r,rsize", "Size of the sample",                                   cxxopts::value(Rsize))
     (    "t,threads", "Number of parallel threads to run (default: all)",     cxxopts::value(Nthreads))
-    (      "f,first", "Drop first label in path (default: true)",             cxxopts::value(first))
-    (       "s,sort", "Consider QPath as set instead of list (default: true)",cxxopts::value(sort))
+    (      "f,first", "Drop first label in path (default: false)",            cxxopts::value(first))
     // Algorithms parameters
     (            "Q", "Length of the paths (default: 4)",                     cxxopts::value(Q))
     (            "A", "First node of similarity (default: random node)",      cxxopts::value(A))
@@ -658,7 +662,7 @@ int main(int argc, char** argv) {
 
   // Create filter
   std::cerr << "Create bloomfilter..." << std::endl;
-  for(int i=0; i<N; i++) G.filter[i] = bloom_filter(Z, H, rng);
+  for(int i=0; i<N; i++) G.filter[i] = bf::create(Z, H, rng);
   std::cerr << "end" << std::endl;
 
   // Bruteforce similarity
