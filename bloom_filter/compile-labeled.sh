@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Compiling..."
-g++ -O3 -Wall -Wextra -pedantic -fopenmp -fconcepts --std=c++17 -march=native -o nSimGram-BloomFilter-multilabeled nSimGram-BloomFilter-multilabeled.cpp
+g++ -O3 -Wall -Wextra -pedantic -fopenmp -fconcepts --std=c++17 -march=native -o nSimGram-BloomFilter nSimGram-BloomFilter.cpp
 echo "Done!"
 
 echo "Testing. Z=64 H=32"
