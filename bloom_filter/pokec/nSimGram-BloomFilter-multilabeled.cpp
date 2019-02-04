@@ -403,29 +403,7 @@ std::tuple<double, double> baseline()
   return std::make_tuple(fj, bc);
 }
 
-  auto avg = [](const std::vector<double> &V)
-  {
-    if(V.size() == 0) return 0.;
-    return std::accumulate(V.begin(), V.end(), 0.) / V.size();
-  };
 
-  auto var = [](const std::vector<double> &V, double avg)
-  {
-    if(V.size() == 0) return 0.;
-    return std::accumulate(V.begin(), V.end(), 0., [avg](const double sum, const double x)
-    {
-      return sum + (x-avg)*(x-avg);
-    }) / V.size();
-  };
-
-  auto sse = [](const std::vector<double> &V, double real)
-  {
-    if(V.size() == 0) return 0.;
-    return std::accumulate(V.begin(), V.end(), 0., [real](const double sum, const double x)
-    {
-      return sum + (x-real)*(x-real);
-    }) / V.size();
-  };
 
 int main(int argc, char** argv) {
 
@@ -500,7 +478,7 @@ int main(int argc, char** argv) {
   }
 
   // Redirect cin buffer
-  input = "dataset/dblp.graph";
+  input = "dataset/pokec.graph";
   std::ifstream fin(input);
   std::cin.rdbuf(fin.rdbuf());
 
@@ -547,7 +525,7 @@ int main(int argc, char** argv) {
 
 
   std::cerr << "Read attributes..." << std::endl;
-  input = "dataset/dblp.att";
+  input = "dataset/pokec.att";
   fin = std::ifstream(input);
   std::cin.rdbuf(fin.rdbuf());
   for(int i=1; i<N; i++)
@@ -561,7 +539,6 @@ int main(int argc, char** argv) {
   }
   std::cerr << "end" << std::endl;
   
-  std::vector<std::multiset<int>> realFingerprint(N);
   std::vector<std::multiset<int>> sampledFingerprint(N);
 
   // Process DP only if fcount or fsample are enabled
@@ -569,18 +546,106 @@ int main(int argc, char** argv) {
   processDP();
   std::cerr << "end" << std::endl;
 
-  std::cerr << "Start BFS" << std::endl;
-  //#pragma omp parallel for
-  std::vector<int> authors{103478, 58835, 65229, 90255, 1471, 4384, 102389, 6195, 40631, 71896, 16453, 16380, 78337, 8205, 81154, 1615, 77017, 64335, 1352, 18263, 6072, 77742};
-  for(int i : authors)
+  auto avg = [](const std::vector<double> &V)
   {
-    //std::vector<path> pathI = bfs(i); // generate all paths from I
-    //realFingerprint[i] = fingerprint(pathI);
+    if(V.size() == 0) return 0.;
+    return std::accumulate(V.begin(), V.end(), 0.) / V.size();
+  };
+
+  auto var = [](const std::vector<double> &V, double avg)
+  {
+    if(V.size() == 0) return 0.;
+    return std::accumulate(V.begin(), V.end(), 0., [avg](const double sum, const double x)
+    {
+      return sum + (x-avg)*(x-avg);
+    }) / V.size();
+  };
+
+  auto sse = [](const std::vector<double> &V, double real)
+  {
+    if(V.size() == 0) return 0.;
+    return std::accumulate(V.begin(), V.end(), 0., [real](const double sum, const double x)
+    {
+      return sum + (x-real)*(x-real);
+    }) / V.size();
+  };
+  
+  
+  auto get_sim = [](const std::multiset<int> &fingerprintA, const std::multiset<int> &fingerprintB)
+  {
+    std::multiset<int> intersect = multiIntersect(fingerprintA, fingerprintB);
+    std::multiset<int> unions = multiUnion(fingerprintA, fingerprintB);
+
+    double fj = static_cast<double>(intersect.size()) / static_cast<double>(unions.size());
+    double bc = 2.*static_cast<double>(intersect.size()) / static_cast<double>(fingerprintA.size() + fingerprintB.size());
+
+    return std::array<double,2>{fj, bc};
+  };
+  
+  // cross(a,b) = (sim(a,N(b)) + sim(b,N(a))) / 2
+  auto cross_sim = [&](const int iA, const int iB)
+  {
+    std::multiset<int> sA = sampledFingerprint[iA];
+    std::multiset<int> sB = sampledFingerprint[iB];
+
+    std::multiset<int> nA;
+    std::multiset<int> nB;
+
+    for(int v : G.edges[iA]) nA = multiUnion(nA, sampledFingerprint[v]);
+    for(int v : G.edges[iB]) nB = multiUnion(nB, sampledFingerprint[v]);
+
+    auto cross_sA_nB = get_sim(sA, nB);
+    auto cross_sB_nA = get_sim(sB, nA);
     
-    // size_t limit = realFingerprint[i].size() / 10; // 10% threshold
+    double fj = (cross_sA_nB[0] + cross_sB_nA[0])/2.0;
+    double bc = (cross_sA_nB[1] + cross_sB_nA[1])/2.0;
+    return std::array<double,2>{fj, bc};  
+  };
+  
+  auto attr_jaccard = [&](const int iA, const int iB)
+  {
+    std::multiset<int> fingerprintA = G.attributes[iA];
+    std::multiset<int> fingerprintB = G.attributes[iB];
+    std::multiset<int> intersect = multiIntersect(fingerprintA, fingerprintB);
+    std::multiset<int> unions = multiUnion(fingerprintA, fingerprintB);
+    return static_cast<double>(intersect.size()) / static_cast<double>(unions.size());
+  };
+  
+  // 
+  std::set<int> X;
+  std::set<std::array<int, 2>> Y;
+  std::set<int> choosenNodes;  
+  size_t dim = 10;
+  
+  while(X.size() < dim)
+  {
+    int choosen = 1+(rng()%(N-1));
+    if(X.find(choosen) != X.end()) continue;
+    choosenNodes.insert(choosen);
+    X.insert(choosen);
+  }
+  
+  while(Y.size() < dim)
+  {
+    int u = 1+(rng()%(N-1));
+    if(G.edges[u].size() == 0) continue;
+    int v = G.edges[u][rng() % G.edges[u].size()];
+    if(Y.find({u, v}) != Y.end()) continue;
+    Y.insert({u, v});
+    choosenNodes.insert(u);
+    choosenNodes.insert(v);
+  }
+  
+  // Compute fingerprints
+  std::cerr << "Start BFS" << std::endl;
+  for(int i : choosenNodes)
+  {
+
     size_t limit = 0;
     for(auto &[k, v] : dp[Q][i]) limit += v;
-    limit = 10000;
+    limit /= 100;
+    
+    std::cout << "BFS " << i << "/" << choosenNodes.size() << " " << limit << "\r";
     
     std::set<path> R;
     for(size_t t=0; t<10*limit; t++)
@@ -593,162 +658,72 @@ int main(int argc, char** argv) {
     
     sampledFingerprint[i] = fingerprint(std::vector<path>(R.begin(), R.end()));
   }
+  
+  
+  //X = 1000 coppie di nodi a caso
+  //Y = 1000 archi a caso (che sono coppie di nodi adiacenti)
 
-  auto get_sim = [](const std::multiset<int> &fingerprintA, const std::multiset<int> &fingerprintB)
+  std::vector<int> vX(X.begin(), X.end());
+  std::vector<std::array<int, 2>> vY(Y.begin(), Y.end());
+
+  std::vector<double> sim_X, cross_X, jaccard_X;
+  std::vector<double> sim_Y, cross_Y, jaccard_Y;
+  
+  // A : similarita' media (con varianza) delle coppie in X, e delle coppie in Y 
+  for(size_t i=0; i<vX.size(); i++)
   {
-    std::multiset<int> intersect = multiIntersect(fingerprintA, fingerprintB);
-    std::multiset<int> unions = multiUnion(fingerprintA, fingerprintB);
-
-    double fj = static_cast<double>(intersect.size()) / static_cast<double>(unions.size());
-    double bc = 2.*static_cast<double>(intersect.size()) / static_cast<double>(fingerprintA.size() + fingerprintB.size());
-
-    return std::array<double,2>{fj, bc};
-  };
-  
-  // std::vector<int> authors{103478, 58835, 65229, 90255, 1471, 4384, 102389, 6195, 40631, 71896, 16453, 16380, 78337, 8205, 81154, 1615, 77017, 64335, 1352, 18263, 6072, 77742};
-  
-  std::map<int,int> correct;
-  
-  std::map<int, std::string> nomi;
-  nomi[103478] = "Manna";
-  nomi[58835] = "Abadi";
-  nomi[65229] = "Dershowitz";
-  nomi[90255] = "T.A. Henzinger";
-  nomi[1471] = "Shamir";
-  nomi[4384] = "Fiat";
-  nomi[102389] = "Rabani";
-  nomi[6195] = "Moss";
-  nomi[40631] = "Vuillemin";
-  nomi[71896] = "Flajolet";
-  nomi[16453] = "Puech";
-  nomi[16380] = "Mathieu";
-  nomi[78337] = "Rivest";
-  nomi[8205] = "Blum";
-  nomi[81154] = "Vempala";
-  nomi[1615] = "Vetta";
-  nomi[77017] = "Tarjan";
-  nomi[64335] = "M.R. Henzinger";
-  nomi[1352] = "Buchsbaum";
-  nomi[18263] = "Sleator";
-  nomi[6072] = "Feldmann";
-  nomi[77742] = "Sommer";
-
-    /*
-  103478	Zohar--Manna
-  58835	|	Mart&iacute;n--Abadi         (np)
-  65229	|	Nachum--Dershowitz 
-  90255	|	Thomas--A.--Henzinger 
-  1471	|	Adi--Shamir                  (np)
-  4384	|	|	Amos--Fiat                 (np)
-  102389	|	|	|	Yuval--Rabani          (np)
-  6195	|	|	|	|	Anna--Moss
-  40631	|	Jean--Vuillemin              (np)
-  71896	|	|	Philippe--Flajolet         (np)
-  16453	|	|	|	Claude--Puech
-  16380 |	Claire--Mathieu
-
-  78337	Ronald--L.--Rivest
-  8205	|	Avrim--Blum
-  81154	|	|	Santosh--Vempala
-  1615	|	|	|	Adrian--Vetta     
-
-  77017	Robert--Endre--Tarjan
-  64335	|	Monika--Rauch--Henzinger    (np)  
-  1352	|	Adam--L.--Buchsbaum            
-  18263	|	Daniel--Dominic--Sleator      
-  6072	|	|	Anja--Feldmann            (np)
-  77742	|	|	|	Robin--Sommer              
-  */
-  
-  //correct[1615] = 81154;
-  //correct[81154] = 8205;
-  //correct[8205] = 78337;
-  //correct[78337] = 78337;
-  
-  //correct[77742] = 6072;
-  correct[6072] = 18263;
-  //correct[18263] = 77017;
-  //correct[1352] = 77017;
-  correct[64335] = 77017;
-  //correct[77017] = 77017;
- 
-  //correct[103478] = 103478;
-  correct[58835] = 103478;
-  //correct[65229] = 103478;
-  //correct[90255] = 103478;
-  correct[1471] = 103478;
-  correct[4384] = 1471;
-  correct[102389] = 4384;
-  //correct[6195] = 4384;  
-  correct[40631] = 103478;
-  correct[71896] = 40631;
-  //correct[16453] = 71896;
-  //correct[16380] = 103478;
-  
-  int correct_ok = 0;
-  for(int author : authors)
-  {
-    std::vector<std::tuple<double, double, double, double, int>> similar;
-    for(int i : authors)
+    for(size_t j=i+1; j<vX.size(); j++)
     {
-
-      auto sim_A_B = get_sim(sampledFingerprint[author], sampledFingerprint[i]);
-      auto sim_A_B_real = std::array<double,2>{0.0, 0.0}; // get_sim(realFingerprint[author], realFingerprint[i]);
-
-      similar.emplace_back(-sim_A_B[0], -sim_A_B[1], -sim_A_B_real[0], -sim_A_B_real[1], i);
-
+      int u = vX[i];
+      int v = vX[j];
+      sim_X.push_back(get_sim(sampledFingerprint[u], sampledFingerprint[v])[0]);
+      cross_X.push_back(cross_sim(u, v)[0]);
+      jaccard_X.push_back(attr_jaccard(u, v));
     }
-    
-    std::sort(similar.begin(), similar.end());
-    for(int i=0; i<5; i++)
-    {
-      std::cout <<                   nomi[author] << "\t";
-      std::cout <<  nomi[std::get<4>(similar[i])] << "\t";
-      std::cout << -std::get<0>(similar[i]) << "\t";
-      std::cout << -std::get<1>(similar[i]) << "\t";
-      std::cout << -std::get<2>(similar[i]) << "\t";
-      std::cout << -std::get<3>(similar[i]) << std::endl;
-    }
-  
-    if(correct[author] == std::get<4>(similar[0])) correct_ok++;
-    if(correct[author] == std::get<4>(similar[1])) correct_ok++;
-    if(correct[author] == std::get<4>(similar[2])) correct_ok++;
-    if(correct[author] == std::get<4>(similar[3])) correct_ok++;
-    if(correct[author] == std::get<4>(similar[4])) correct_ok++;
-    if(correct[author] == std::get<4>(similar[5])) correct_ok++;
-
-    std::cout << std::endl;
   }
-
-  std::cout << "CORRECT OK " << correct_ok << std::endl;
   
-  /*
-  103478	Zohar--Manna
-  58835	|	Mart&iacute;n--Abadi         (np)
-  65229	|	Nachum--Dershowitz 
-  90255	|	Thomas--A.--Henzinger 
-  1471	|	Adi--Shamir (np)
-  4384	|	|	Amos--Fiat (np)
-  102389	|	|	|	Yuval--Rabani          (np)
-  6195	|	|	|	|	Anna--Moss
-  40631	|	Jean--Vuillemin              (np)
-  71896	|	|	Philippe--Flajolet         (np)
-  16453	|	|	|	Claude--Puech
-  16380 |	Claire--Mathieu
+  // B : cross similarity media (con varianza) delle coppie in X, e delle coppie in Y 
+  for(auto &[u, v]: vY)
+  {
+    sim_Y.push_back(get_sim(sampledFingerprint[u], sampledFingerprint[v])[0]);
+    cross_Y.push_back(cross_sim(u, v)[0]);
+    jaccard_Y.push_back(attr_jaccard(u, v));  
+  }
+  
+  
+  double     sim_X_avg = avg(    sim_X);
+  double   cross_X_avg = avg(  cross_X);
+  double jaccard_X_avg = avg(jaccard_X);
+  double     sim_Y_avg = avg(    sim_Y);
+  double   cross_Y_avg = avg(  cross_Y);
+  double jaccard_Y_avg = avg(jaccard_Y);
+  
+  double     sim_X_var = var(    sim_X,     sim_X_avg);
+  double   cross_X_var = var(  cross_X,   cross_X_avg);
+  double jaccard_X_var = var(jaccard_X, jaccard_X_avg);
+  double     sim_Y_var = var(    sim_Y,     sim_Y_avg);
+  double   cross_Y_var = var(  cross_Y,   cross_Y_avg);
+  double jaccard_Y_var = var(jaccard_Y, jaccard_Y_avg);
 
-  78337	Ronald--L.--Rivest
-  8205	|	Avrim--Blum
-  81154	|	|	Santosh--Vempala
-  1615	|	|	|	Adrian--Vetta     
+  std::cout << "RESULT X" << std::endl;
+  std::cout << "sim_avg, sim_var, cross_avg, cross_var, jaccard_avg, jaccard_var" << std::endl;
+  std::cout <<     sim_X_avg << ", ";
+  std::cout <<     sim_X_var << ", ";
+  std::cout <<   cross_X_avg << ", ";
+  std::cout <<   cross_X_var << ", ";
+  std::cout << jaccard_X_avg << ", ";
+  std::cout << jaccard_X_var << std::endl;
+  
+  std::cout << std::endl;
 
-  77017	Robert--Endre--Tarjan
-  64335	|	Monika--Rauch--Henzinger    (np)  
-  1352	|	Adam--L.--Buchsbaum            
-  18263	|	Daniel--Dominic--Sleator      
-  6072	|	|	Anja--Feldmann            (np)
-  77742	|	|	|	Robin--Sommer              
-
-  */
+  std::cout << "RESULT Y" << std::endl;
+  std::cout << "sim_avg, sim_var, cross_avg, cross_var, jaccard_avg, jaccard_var" << std::endl;
+  std::cout <<     sim_Y_avg << ", ";
+  std::cout <<     sim_Y_var << ", ";
+  std::cout <<   cross_Y_avg << ", ";
+  std::cout <<   cross_Y_var << ", ";
+  std::cout << jaccard_Y_avg << ", ";
+  std::cout << jaccard_Y_var << std::endl;
   
   // Flush output buffers
   std::cout.flush();

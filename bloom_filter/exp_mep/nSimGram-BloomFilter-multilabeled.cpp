@@ -766,9 +766,10 @@ int main(int argc, char** argv) {
   /*******************************************************************/
   /* EXP 3: C1 : ogni politico -> similarita' con tutti i partiti    */
   /*******************************************************************/
-  /*
+  
   std::cout << "name\tparty\tfj_avg\tbc_avg" << std::endl;
   int validi = 0;
+  int validi_eu = 0;
   int tot_validi = 0;
   for(int i=1; i<N; i++)
   {
@@ -811,21 +812,23 @@ int main(int argc, char** argv) {
     if(party_to_name[party_id[i]] == "random-large") continue;    
     if(party_member[party_to_name[party_id[i]]].size() <= 2) continue;
     
-    tot_validi++;    
-         if(std::get<2>(member_party_sim[0]) == party_to_name[party_id[i]]) validi++;
+    tot_validi++;  
+      
+    if(std::get<2>(member_party_sim[0]) == party_to_name[party_id[i]]) validi++;
     else if(std::get<2>(member_party_sim[1]) == party_to_name[party_id[i]]) validi++;
     else if(std::get<2>(member_party_sim[2]) == party_to_name[party_id[i]]) validi++;
     else if(std::get<2>(member_party_sim[3]) == party_to_name[party_id[i]]) validi++;
     else if(std::get<2>(member_party_sim[4]) == party_to_name[party_id[i]]) validi++;
-    //else if(std::get<2>(member_party_sim[5]) == party_to_name[party_id[i]]) validi++;
-    //else if(std::get<2>(member_party_sim[6]) == party_to_name[party_id[i]]) validi++;
-    //else if(std::get<2>(member_party_sim[7]) == party_to_name[party_id[i]]) validi++;
-    //else if(std::get<2>(member_party_sim[8]) == party_to_name[party_id[i]]) validi++;
-    //else if(std::get<2>(member_party_sim[9]) == party_to_name[party_id[i]]) validi++;
-    
+
+    if(party_to_eu[std::get<2>(member_party_sim[0])] == party_to_eu[party_to_name[party_id[i]]]) validi_eu++;
+    else if(party_to_eu[std::get<2>(member_party_sim[1])] == party_to_eu[party_to_name[party_id[i]]]) validi_eu++;
+    else if(party_to_eu[std::get<2>(member_party_sim[2])] == party_to_eu[party_to_name[party_id[i]]]) validi_eu++;
+    else if(party_to_eu[std::get<2>(member_party_sim[3])] == party_to_eu[party_to_name[party_id[i]]]) validi_eu++;
+    else if(party_to_eu[std::get<2>(member_party_sim[4])] == party_to_eu[party_to_name[party_id[i]]]) validi_eu++;    
   }
   std::cout << "VALIDI: " << validi << "/" << tot_validi << std::endl;
-  */
+  std::cout << "EU VALIDI: " << validi_eu << "/" << tot_validi << std::endl;
+  
   
   /*******************************************************************/
   /* EXP 3: C2 : ogni politico -> similarita' con tutti i gruppi EU  */
@@ -927,7 +930,7 @@ int main(int argc, char** argv) {
   /* EXP 4: D2 : ogni partito -> gruppi eu (anche qui top 20)        */
   /*******************************************************************/
   
-  
+  /*
   int validi = 0;
   int tot_validi = 0;
 
@@ -1001,7 +1004,8 @@ int main(int argc, char** argv) {
     
   }
   std::cout << "VALIDI: " << validi << "/" << tot_validi << std::endl;
-
+  */
+  
   /*
   VALIDI: 34/46
   $ ./nSimGram-BloomFilter-multilabeled --bruteforce --baseline --fsample -e 10 -r 100 -t 4 -Q 4 -Z 32 -H 24 --verbose
