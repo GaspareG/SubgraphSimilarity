@@ -1,0 +1,941 @@
+party_1	party_2	fj_avg	bc_avg	fj_real	bc_real
+-1	-1	1.000000	1.000000	1.000000	1.000000
+-1	Österreichische Volkspartei	1.000000	1.000000	0.979730	0.989761
+-1	Platforma Obywatelska	0.996552	0.998273	0.983165	0.991511
+-1	Christlich-Soziale Union in Bayern e.V.	0.996552	0.998273	0.979730	0.989761
+-1	Partija 'VIENOTIBA'	0.996552	0.998273	0.979730	0.989761
+-1	Citizens for European Development of Bulgaria	0.996540	0.998267	0.972973	0.986301
+-1	Moderaterna	0.993103	0.996540	0.979730	0.989761
+-1	Kansallinen Kokoomus	0.993103	0.996540	0.976351	0.988034
+-1	Democraten 66	0.989726	0.994836	0.993266	0.996622
+-1	Partido Popular	0.989691	0.994819	0.989899	0.994924
+-1	Arbetarepartiet- Socialdemokraterna	0.989691	0.994819	0.983108	0.991482
+-1	Mouvement Démocrate	0.989691	0.994819	0.983108	0.991482
+-1	Socialdemokratiet	0.989655	0.994801	0.972973	0.986301
+-1	Sozialdemokratische Partei Österreichs	0.986348	0.993127	0.993243	0.996610
+-1	Partit Nazzjonalista	0.986348	0.993127	0.989865	0.994907
+-1	Christlich Demokratische Union Deutschlands	0.986301	0.993103	0.986532	0.993220
+-1	Freie Demokratische Partei	0.986207	0.993056	0.979730	0.989761
+-1	Bündnis 90/Die Grünen	0.982993	0.991424	0.993266	0.996622
+-1	Sozialdemokratische Partei Deutschlands	0.979661	0.989726	0.993266	0.996622
+-1	Partij van de Arbeid	0.979592	0.989691	0.986532	0.993220
+Arbetarepartiet- Socialdemokraterna	Arbetarepartiet- Socialdemokraterna	1.000000	1.000000	1.000000	1.000000
+Arbetarepartiet- Socialdemokraterna	Democraten 66	0.993151	0.996564	0.983108	0.991482
+Arbetarepartiet- Socialdemokraterna	Platforma Obywatelska	0.993127	0.996552	0.993174	0.996575
+Arbetarepartiet- Socialdemokraterna	Christlich-Soziale Union in Bayern e.V.	0.993127	0.996552	0.989726	0.994836
+Arbetarepartiet- Socialdemokraterna	Partija 'VIENOTIBA'	0.993127	0.996552	0.989726	0.994836
+Arbetarepartiet- Socialdemokraterna	Partido Popular	0.993127	0.996552	0.979730	0.989761
+Arbetarepartiet- Socialdemokraterna	Moderaterna	0.989691	0.994819	0.989726	0.994836
+Arbetarepartiet- Socialdemokraterna	Österreichische Volkspartei	0.989691	0.994819	0.989726	0.994836
+Arbetarepartiet- Socialdemokraterna	Kansallinen Kokoomus	0.989691	0.994819	0.986301	0.993103
+Arbetarepartiet- Socialdemokraterna	-1	0.989691	0.994819	0.983108	0.991482
+Arbetarepartiet- Socialdemokraterna	Mouvement Démocrate	0.986301	0.993103	0.993151	0.996564
+Arbetarepartiet- Socialdemokraterna	Citizens for European Development of Bulgaria	0.986254	0.993080	0.982877	0.991364
+Arbetarepartiet- Socialdemokraterna	Socialdemokratiet	0.986254	0.993080	0.982877	0.991364
+Arbetarepartiet- Socialdemokraterna	Sozialdemokratische Partei Deutschlands	0.983051	0.991453	0.983108	0.991482
+Arbetarepartiet- Socialdemokraterna	Sozialdemokratische Partei Österreichs	0.982993	0.991424	0.989796	0.994872
+Arbetarepartiet- Socialdemokraterna	Partit Nazzjonalista	0.982993	0.991424	0.979661	0.989726
+Arbetarepartiet- Socialdemokraterna	Christlich Demokratische Union Deutschlands	0.982935	0.991394	0.989796	0.994872
+Arbetarepartiet- Socialdemokraterna	Freie Demokratische Partei	0.982818	0.991334	0.989726	0.994836
+Arbetarepartiet- Socialdemokraterna	Labour Party	0.979730	0.989761	0.979798	0.989796
+Arbetarepartiet- Socialdemokraterna	Bündnis 90/Die Grünen	0.979661	0.989726	0.983108	0.991482
+Bündnis 90/Die Grünen	Bündnis 90/Die Grünen	1.000000	1.000000	1.000000	1.000000
+Bündnis 90/Die Grünen	Sozialdemokratische Partei Deutschlands	0.996610	0.998302	1.000000	1.000000
+Bündnis 90/Die Grünen	Sozialdemokratische Partei Österreichs	0.996599	0.998296	0.993243	0.996610
+Bündnis 90/Die Grünen	Labour Party	0.993243	0.996610	0.996633	0.998314
+Bündnis 90/Die Grünen	Parti socialiste	0.993220	0.996599	0.993266	0.996622
+Bündnis 90/Die Grünen	Sinn Féin	0.993220	0.996599	0.989899	0.994924
+Bündnis 90/Die Grünen	Die Grünen - Die Grüne Alternative	0.989899	0.994924	0.996633	0.998314
+Bündnis 90/Die Grünen	Christen Democratisch Appel	0.989865	0.994907	0.993266	0.996622
+Bündnis 90/Die Grünen	Partij van de Arbeid	0.989831	0.994889	0.993243	0.996610
+Bündnis 90/Die Grünen	Independent	0.986577	0.993243	0.993289	0.996633
+Bündnis 90/Die Grünen	Les Républicains	0.986577	0.993243	0.993289	0.996633
+Bündnis 90/Die Grünen	Partido Socialista Obrero Espanol	0.986577	0.993243	0.993289	0.996633
+Bündnis 90/Die Grünen	Green Party	0.986486	0.993197	0.993243	0.996610
+Bündnis 90/Die Grünen	Democraten 66	0.986441	0.993174	1.000000	1.000000
+Bündnis 90/Die Grünen	Fine Gael Party	0.986441	0.993174	0.986486	0.993197
+Bündnis 90/Die Grünen	Partito Democratico	0.983221	0.991540	0.993289	0.996633
+Bündnis 90/Die Grünen	Europe Écologie	0.983165	0.991511	0.989933	0.994941
+Bündnis 90/Die Grünen	Partit Nazzjonalista	0.983108	0.991482	0.983165	0.991511
+Bündnis 90/Die Grünen	Izquierda Unida	0.983051	0.991453	0.986532	0.993220
+Bündnis 90/Die Grünen	-1	0.982993	0.991424	0.993266	0.996622
+Christen Democratisch Appel	Christen Democratisch Appel	1.000000	1.000000	1.000000	1.000000
+Christen Democratisch Appel	Die Grünen - Die Grüne Alternative	0.993266	0.996622	0.996633	0.998314
+Christen Democratisch Appel	Sozialdemokratische Partei Deutschlands	0.993243	0.996610	0.993266	0.996622
+Christen Democratisch Appel	Independent	0.989933	0.994941	0.993289	0.996633
+Christen Democratisch Appel	Les Républicains	0.989933	0.994941	0.993289	0.996633
+Christen Democratisch Appel	Partido Socialista Obrero Espanol	0.989933	0.994941	0.993289	0.996633
+Christen Democratisch Appel	Labour Party	0.989899	0.994924	0.989933	0.994941
+Christen Democratisch Appel	Bündnis 90/Die Grünen	0.989865	0.994907	0.993266	0.996622
+Christen Democratisch Appel	Parti socialiste	0.989865	0.994907	0.993266	0.996622
+Christen Democratisch Appel	Sinn Féin	0.989865	0.994907	0.989899	0.994924
+Christen Democratisch Appel	Fine Gael Party	0.989831	0.994889	0.986486	0.993197
+Christen Democratisch Appel	Partito Democratico	0.986577	0.993243	0.993289	0.996633
+Christen Democratisch Appel	Sozialdemokratische Partei Österreichs	0.986486	0.993197	0.986532	0.993220
+Christen Democratisch Appel	Izquierda Unida	0.986441	0.993174	0.986532	0.993220
+Christen Democratisch Appel	Conservative Party	0.983221	0.991540	0.986577	0.993243
+Christen Democratisch Appel	Green Party	0.983165	0.991511	0.986532	0.993220
+Christen Democratisch Appel	Democraten 66	0.983108	0.991482	0.993266	0.996622
+Christen Democratisch Appel	Partido Popular	0.983051	0.991453	0.996622	0.998308
+Christen Democratisch Appel	Movimento 5 Stelle	0.979933	0.989865	0.989967	0.994958
+Christen Democratisch Appel	Europe Écologie	0.979866	0.989831	0.989933	0.994941
+Christlich Demokratische Union Deutschlands	Christlich Demokratische Union Deutschlands	1.000000	1.000000	1.000000	1.000000
+Christlich Demokratische Union Deutschlands	Kansallinen Kokoomus	0.993127	0.996552	0.982993	0.991424
+Christlich Demokratische Union Deutschlands	Platforma Obywatelska	0.989726	0.994836	0.989831	0.994889
+Christlich Demokratische Union Deutschlands	Christlich-Soziale Union in Bayern e.V.	0.989726	0.994836	0.986395	0.993151
+Christlich Demokratische Union Deutschlands	Partija 'VIENOTIBA'	0.989726	0.994836	0.986395	0.993151
+Christlich Demokratische Union Deutschlands	Partit Nazzjonalista	0.986395	0.993151	0.983108	0.991482
+Christlich Demokratische Union Deutschlands	-1	0.986301	0.993103	0.986532	0.993220
+Christlich Demokratische Union Deutschlands	Moderaterna	0.986301	0.993103	0.986395	0.993151
+Christlich Demokratische Union Deutschlands	Österreichische Volkspartei	0.986301	0.993103	0.986395	0.993151
+Christlich Demokratische Union Deutschlands	Conservative Party	0.983108	0.991482	0.986532	0.993220
+Christlich Demokratische Union Deutschlands	Democraten 66	0.982993	0.991424	0.986532	0.993220
+Christlich Demokratische Union Deutschlands	Partido Popular	0.982935	0.991394	0.989865	0.994907
+Christlich Demokratische Union Deutschlands	Arbetarepartiet- Socialdemokraterna	0.982935	0.991394	0.989796	0.994872
+Christlich Demokratische Union Deutschlands	Mouvement Démocrate	0.982935	0.991394	0.989796	0.994872
+Christlich Demokratische Union Deutschlands	Citizens for European Development of Bulgaria	0.982877	0.991364	0.979592	0.989691
+Christlich Demokratische Union Deutschlands	Socialdemokratiet	0.982877	0.991364	0.979592	0.989691
+Christlich Demokratische Union Deutschlands	Die Grünen - Die Grüne Alternative	0.979798	0.989796	0.989899	0.994924
+Christlich Demokratische Union Deutschlands	Partito Democratico	0.979798	0.989796	0.986577	0.993243
+Christlich Demokratische Union Deutschlands	Christen Democratisch Appel	0.979730	0.989761	0.986532	0.993220
+Christlich Demokratische Union Deutschlands	Sozialdemokratische Partei Deutschlands	0.979730	0.989761	0.986532	0.993220
+Christlich-Soziale Union in Bayern e.V.	Christlich-Soziale Union in Bayern e.V.	1.000000	1.000000	1.000000	1.000000
+Christlich-Soziale Union in Bayern e.V.	Partija 'VIENOTIBA'	1.000000	1.000000	1.000000	1.000000
+Christlich-Soziale Union in Bayern e.V.	Platforma Obywatelska	1.000000	1.000000	0.989761	0.994854
+Christlich-Soziale Union in Bayern e.V.	Moderaterna	0.996552	0.998273	1.000000	1.000000
+Christlich-Soziale Union in Bayern e.V.	Österreichische Volkspartei	0.996552	0.998273	1.000000	1.000000
+Christlich-Soziale Union in Bayern e.V.	Kansallinen Kokoomus	0.996552	0.998273	0.996552	0.998273
+Christlich-Soziale Union in Bayern e.V.	-1	0.996552	0.998273	0.979730	0.989761
+Christlich-Soziale Union in Bayern e.V.	Democraten 66	0.993151	0.996564	0.979730	0.989761
+Christlich-Soziale Union in Bayern e.V.	Mouvement Démocrate	0.993127	0.996552	0.996564	0.998279
+Christlich-Soziale Union in Bayern e.V.	Arbetarepartiet- Socialdemokraterna	0.993127	0.996552	0.989726	0.994836
+Christlich-Soziale Union in Bayern e.V.	Partido Popular	0.993127	0.996552	0.976351	0.988034
+Christlich-Soziale Union in Bayern e.V.	Citizens for European Development of Bulgaria	0.993103	0.996540	0.993103	0.996540
+Christlich-Soziale Union in Bayern e.V.	Socialdemokratiet	0.993103	0.996540	0.993103	0.996540
+Christlich-Soziale Union in Bayern e.V.	Partit Nazzjonalista	0.989761	0.994854	0.989761	0.994854
+Christlich-Soziale Union in Bayern e.V.	Christlich Demokratische Union Deutschlands	0.989726	0.994836	0.986395	0.993151
+Christlich-Soziale Union in Bayern e.V.	Freie Demokratische Partei	0.989655	0.994801	0.993127	0.996552
+Christlich-Soziale Union in Bayern e.V.	Sozialdemokratische Partei Deutschlands	0.983051	0.991453	0.979730	0.989761
+Christlich-Soziale Union in Bayern e.V.	Sozialdemokratische Partei Österreichs	0.982993	0.991424	0.986395	0.993151
+Christlich-Soziale Union in Bayern e.V.	Conservative Party	0.979730	0.989761	0.979730	0.989761
+Christlich-Soziale Union in Bayern e.V.	Labour Party	0.979730	0.989761	0.976431	0.988075
+Citizens for European Development of Bulgaria	Citizens for European Development of Bulgaria	1.000000	1.000000	0.996540	0.998267
+Citizens for European Development of Bulgaria	Österreichische Volkspartei	0.996540	0.998267	0.996552	0.998273
+Citizens for European Development of Bulgaria	-1	0.996540	0.998267	0.976351	0.988034
+Citizens for European Development of Bulgaria	Christlich-Soziale Union in Bayern e.V.	0.993103	0.996540	0.996552	0.998273
+Citizens for European Development of Bulgaria	Partija 'VIENOTIBA'	0.993103	0.996540	0.996552	0.998273
+Citizens for European Development of Bulgaria	Platforma Obywatelska	0.993103	0.996540	0.986348	0.993127
+Citizens for European Development of Bulgaria	Partido Popular	0.993103	0.996540	0.972973	0.986301
+Citizens for European Development of Bulgaria	Moderaterna	0.989655	0.994801	0.996552	0.998273
+Citizens for European Development of Bulgaria	Kansallinen Kokoomus	0.989655	0.994801	0.993103	0.996540
+Citizens for European Development of Bulgaria	Democraten 66	0.986301	0.993103	0.976351	0.988034
+Citizens for European Development of Bulgaria	Mouvement Démocrate	0.986254	0.993080	0.993127	0.996552
+Citizens for European Development of Bulgaria	Arbetarepartiet- Socialdemokraterna	0.986254	0.993080	0.986301	0.993103
+Citizens for European Development of Bulgaria	Socialdemokratiet	0.986207	0.993056	0.989655	0.994801
+Citizens for European Development of Bulgaria	Partit Nazzjonalista	0.982935	0.991394	0.986348	0.993127
+Citizens for European Development of Bulgaria	Sozialdemokratische Partei Österreichs	0.982935	0.991394	0.982993	0.991424
+Citizens for European Development of Bulgaria	Christlich Demokratische Union Deutschlands	0.982877	0.991364	0.982993	0.991424
+Citizens for European Development of Bulgaria	Freie Demokratische Partei	0.982759	0.991304	0.989691	0.994819
+Citizens for European Development of Bulgaria	Bündnis 90/Die Grünen	0.979592	0.989691	0.976351	0.988034
+Citizens for European Development of Bulgaria	Sozialdemokratische Partei Deutschlands	0.976271	0.987993	0.976351	0.988034
+Citizens for European Development of Bulgaria	Christen Democratisch Appel	0.976271	0.987993	0.969697	0.984615
+Conservative Party	Conservative Party	1.000000	1.000000	1.000000	1.000000
+Conservative Party	Les Républicains	0.993289	0.996633	0.993289	0.996633
+Conservative Party	Die Grünen - Die Grüne Alternative	0.989933	0.994941	0.989933	0.994941
+Conservative Party	Partito Democratico	0.989933	0.994941	0.986622	0.993266
+Conservative Party	Independent	0.986622	0.993266	0.986622	0.993266
+Conservative Party	Partido Socialista Obrero Espanol	0.986622	0.993266	0.986622	0.993266
+Conservative Party	Labour Party	0.986577	0.993243	0.983278	0.991568
+Conservative Party	Movimento 5 Stelle	0.983278	0.991568	0.989967	0.994958
+Conservative Party	Christen Democratisch Appel	0.983221	0.991540	0.986577	0.993243
+Conservative Party	Sozialdemokratische Partei Deutschlands	0.983221	0.991540	0.986577	0.993243
+Conservative Party	Sozialdemokratische Partei Österreichs	0.983165	0.991511	0.986532	0.993220
+Conservative Party	Partit Nazzjonalista	0.983165	0.991511	0.983165	0.991511
+Conservative Party	Christlich Demokratische Union Deutschlands	0.983108	0.991482	0.986532	0.993220
+Conservative Party	Bündnis 90/Die Grünen	0.979866	0.989831	0.986577	0.993243
+Conservative Party	Parti socialiste	0.979866	0.989831	0.986577	0.993243
+Conservative Party	Sinn Féin	0.979866	0.989831	0.983221	0.991540
+Conservative Party	Green Party	0.979866	0.989831	0.979866	0.989831
+Conservative Party	United Kingdom Independence Party	0.979798	0.989796	0.996633	0.998314
+Conservative Party	Democraten 66	0.979798	0.989796	0.986577	0.993243
+Conservative Party	Platforma Obywatelska	0.979730	0.989761	0.983165	0.991511
+DIE LINKE.	DIE LINKE.	1.000000	1.000000	1.000000	1.000000
+DIE LINKE.	Izquierda Unida	0.986301	0.993103	0.982993	0.991424
+DIE LINKE.	Sinn Féin	0.982993	0.991424	0.979661	0.989726
+DIE LINKE.	Parti socialiste	0.982993	0.991424	0.976351	0.988034
+DIE LINKE.	PODEMOS	0.979661	0.989726	0.979661	0.989726
+DIE LINKE.	Bündnis 90/Die Grünen	0.976271	0.987993	0.969697	0.984615
+DIE LINKE.	Die Grünen - Die Grüne Alternative	0.973064	0.986348	0.973064	0.986348
+DIE LINKE.	Movimento 5 Stelle	0.973064	0.986348	0.966555	0.982993
+DIE LINKE.	Europe Écologie	0.972973	0.986301	0.973064	0.986348
+DIE LINKE.	Front de Gauche	0.972973	0.986301	0.972973	0.986301
+DIE LINKE.	Christen Democratisch Appel	0.972973	0.986301	0.969697	0.984615
+DIE LINKE.	Sozialdemokratische Partei Deutschlands	0.972973	0.986301	0.969697	0.984615
+DIE LINKE.	Partij van de Arbeid	0.972881	0.986254	0.976271	0.987993
+DIE LINKE.	Sozialdemokratische Partei Österreichs	0.972881	0.986254	0.969595	0.984563
+DIE LINKE.	Independent	0.969799	0.984668	0.969799	0.984668
+DIE LINKE.	Les Républicains	0.969799	0.984668	0.969799	0.984668
+DIE LINKE.	Partido Socialista Obrero Espanol	0.969799	0.984668	0.969799	0.984668
+DIE LINKE.	Labour Party	0.969697	0.984615	0.966443	0.982935
+DIE LINKE.	Green Party	0.969595	0.984563	0.969595	0.984563
+DIE LINKE.	Partito Democratico	0.966443	0.982935	0.969799	0.984668
+Democraten 66	Democraten 66	1.000000	1.000000	1.000000	1.000000
+Democraten 66	Partido Popular	0.993151	0.996564	0.989899	0.994924
+Democraten 66	Platforma Obywatelska	0.993151	0.996564	0.989865	0.994907
+Democraten 66	Arbetarepartiet- Socialdemokraterna	0.993151	0.996564	0.983108	0.991482
+Democraten 66	Mouvement Démocrate	0.993151	0.996564	0.983108	0.991482
+Democraten 66	Christlich-Soziale Union in Bayern e.V.	0.993151	0.996564	0.979730	0.989761
+Democraten 66	Partija 'VIENOTIBA'	0.993151	0.996564	0.979730	0.989761
+Democraten 66	Sozialdemokratische Partei Deutschlands	0.989831	0.994889	1.000000	1.000000
+Democraten 66	Sozialdemokratische Partei Österreichs	0.989796	0.994872	0.993243	0.996610
+Democraten 66	-1	0.989726	0.994836	0.993266	0.996622
+Democraten 66	Moderaterna	0.989726	0.994836	0.979730	0.989761
+Democraten 66	Österreichische Volkspartei	0.989726	0.994836	0.979730	0.989761
+Democraten 66	Kansallinen Kokoomus	0.989726	0.994836	0.976351	0.988034
+Democraten 66	Labour Party	0.986486	0.993197	0.996633	0.998314
+Democraten 66	Bündnis 90/Die Grünen	0.986441	0.993174	1.000000	1.000000
+Democraten 66	Citizens for European Development of Bulgaria	0.986301	0.993103	0.972973	0.986301
+Democraten 66	Socialdemokratiet	0.986301	0.993103	0.972973	0.986301
+Democraten 66	Die Grünen - Die Grüne Alternative	0.983165	0.991511	0.996633	0.998314
+Democraten 66	Christen Democratisch Appel	0.983108	0.991482	0.993266	0.996622
+Democraten 66	Partit Nazzjonalista	0.983051	0.991453	0.983165	0.991511
+Die Grünen - Die Grüne Alternative	Die Grünen - Die Grüne Alternative	1.000000	1.000000	1.000000	1.000000
+Die Grünen - Die Grüne Alternative	Independent	0.996644	0.998319	0.996644	0.998319
+Die Grünen - Die Grüne Alternative	Les Républicains	0.996644	0.998319	0.996644	0.998319
+Die Grünen - Die Grüne Alternative	Partido Socialista Obrero Espanol	0.996644	0.998319	0.996644	0.998319
+Die Grünen - Die Grüne Alternative	Labour Party	0.996633	0.998314	0.993289	0.996633
+Die Grünen - Die Grüne Alternative	Partito Democratico	0.993289	0.996633	0.996644	0.998319
+Die Grünen - Die Grüne Alternative	Christen Democratisch Appel	0.993266	0.996622	0.996633	0.998314
+Die Grünen - Die Grüne Alternative	Sozialdemokratische Partei Deutschlands	0.993266	0.996622	0.996633	0.998314
+Die Grünen - Die Grüne Alternative	Conservative Party	0.989933	0.994941	0.989933	0.994941
+Die Grünen - Die Grüne Alternative	Bündnis 90/Die Grünen	0.989899	0.994924	0.996633	0.998314
+Die Grünen - Die Grüne Alternative	Parti socialiste	0.989899	0.994924	0.996633	0.998314
+Die Grünen - Die Grüne Alternative	Sinn Féin	0.989899	0.994924	0.993266	0.996622
+Die Grünen - Die Grüne Alternative	Green Party	0.989899	0.994924	0.989899	0.994924
+Die Grünen - Die Grüne Alternative	Movimento 5 Stelle	0.986622	0.993266	0.993311	0.996644
+Die Grünen - Die Grüne Alternative	Europe Écologie	0.986577	0.993243	0.993289	0.996633
+Die Grünen - Die Grüne Alternative	PODEMOS	0.986577	0.993243	0.986577	0.993243
+Die Grünen - Die Grüne Alternative	Partij van de Arbeid	0.986532	0.993220	0.989899	0.994924
+Die Grünen - Die Grüne Alternative	Sozialdemokratische Partei Österreichs	0.986532	0.993220	0.989899	0.994924
+Die Grünen - Die Grüne Alternative	Democraten 66	0.983165	0.991511	0.996633	0.998314
+Die Grünen - Die Grüne Alternative	Fine Gael Party	0.983165	0.991511	0.983165	0.991511
+Europe Écologie	Europe Écologie	1.000000	1.000000	1.000000	1.000000
+Europe Écologie	Independent	0.989933	0.994941	0.996644	0.998319
+Europe Écologie	Partido Socialista Obrero Espanol	0.989933	0.994941	0.996644	0.998319
+Europe Écologie	Labour Party	0.989899	0.994924	0.993289	0.996633
+Europe Écologie	Partito Democratico	0.986577	0.993243	0.996644	0.998319
+Europe Écologie	Movimento 5 Stelle	0.986577	0.993243	0.993311	0.996644
+Europe Écologie	Die Grünen - Die Grüne Alternative	0.986577	0.993243	0.993289	0.996633
+Europe Écologie	Sozialdemokratische Partei Deutschlands	0.986532	0.993220	0.989933	0.994941
+Europe Écologie	Front de Gauche	0.986532	0.993220	0.986577	0.993243
+Europe Écologie	PODEMOS	0.986532	0.993220	0.986577	0.993243
+Europe Écologie	Les Républicains	0.983278	0.991568	0.989967	0.994958
+Europe Écologie	Bündnis 90/Die Grünen	0.983165	0.991511	0.989933	0.994941
+Europe Écologie	Parti socialiste	0.983165	0.991511	0.989933	0.994941
+Europe Écologie	Sinn Féin	0.983165	0.991511	0.986577	0.993243
+Europe Écologie	Green Party	0.983165	0.991511	0.983221	0.991540
+Europe Écologie	Christen Democratisch Appel	0.979866	0.989831	0.989933	0.994941
+Europe Écologie	Partij van de Arbeid	0.979798	0.989796	0.983221	0.991540
+Europe Écologie	Sozialdemokratische Partei Österreichs	0.979798	0.989796	0.983221	0.991540
+Europe Écologie	Partit Nazzjonalista	0.979798	0.989796	0.979866	0.989831
+Europe Écologie	Conservative Party	0.976589	0.988156	0.983278	0.991568
+Fine Gael Party	Fine Gael Party	1.000000	1.000000	1.000000	1.000000
+Fine Gael Party	Christen Democratisch Appel	0.989831	0.994889	0.986486	0.993197
+Fine Gael Party	Sozialdemokratische Partei Deutschlands	0.989831	0.994889	0.986486	0.993197
+Fine Gael Party	Labour Party	0.986486	0.993197	0.983165	0.991511
+Fine Gael Party	Bündnis 90/Die Grünen	0.986441	0.993174	0.986486	0.993197
+Fine Gael Party	Die Grünen - Die Grüne Alternative	0.983165	0.991511	0.983165	0.991511
+Fine Gael Party	Sozialdemokratische Partei Österreichs	0.983051	0.991453	0.986441	0.993174
+Fine Gael Party	Independent	0.979866	0.989831	0.979866	0.989831
+Fine Gael Party	Les Républicains	0.979866	0.989831	0.979866	0.989831
+Fine Gael Party	Partido Socialista Obrero Espanol	0.979866	0.989831	0.979866	0.989831
+Fine Gael Party	Parti socialiste	0.979730	0.989761	0.986486	0.993197
+Fine Gael Party	Green Party	0.979730	0.989761	0.979730	0.989761
+Fine Gael Party	Sinn Féin	0.979730	0.989761	0.976431	0.988075
+Fine Gael Party	Democraten 66	0.979661	0.989726	0.986486	0.993197
+Fine Gael Party	Partido Popular	0.979592	0.989691	0.989831	0.994889
+Fine Gael Party	Partito Democratico	0.976510	0.988115	0.979866	0.989831
+Fine Gael Party	Europe Écologie	0.976431	0.988075	0.976510	0.988115
+Fine Gael Party	Partij van de Arbeid	0.976351	0.988034	0.979730	0.989761
+Fine Gael Party	Partit Nazzjonalista	0.976351	0.988034	0.976351	0.988034
+Fine Gael Party	Izquierda Unida	0.976271	0.987993	0.973064	0.986348
+Forza Italia	Forza Italia	1.000000	1.000000	0.996622	0.998308
+Forza Italia	Partito Democratico	0.986532	0.993220	0.993289	0.996633
+Forza Italia	Partij van de Arbeid	0.986441	0.993174	0.979866	0.989831
+Forza Italia	Independent	0.983221	0.991540	0.993289	0.996633
+Forza Italia	Partido Socialista Obrero Espanol	0.983221	0.991540	0.993289	0.996633
+Forza Italia	Movimento 5 Stelle	0.979866	0.989831	0.989967	0.994958
+Forza Italia	Die Grünen - Die Grüne Alternative	0.979866	0.989831	0.989933	0.994941
+Forza Italia	Partit Nazzjonalista	0.979730	0.989761	0.983165	0.991511
+Forza Italia	Christlich Demokratische Union Deutschlands	0.979661	0.989726	0.986532	0.993220
+Forza Italia	-1	0.979592	0.989691	0.986577	0.993243
+Forza Italia	Moderaterna	0.979592	0.989691	0.979730	0.989761
+Forza Italia	Österreichische Volkspartei	0.979592	0.989691	0.979730	0.989761
+Forza Italia	Les Républicains	0.976589	0.988156	0.986622	0.993266
+Forza Italia	Labour Party	0.976510	0.988115	0.989933	0.994941
+Forza Italia	Conservative Party	0.976510	0.988115	0.986577	0.993243
+Forza Italia	Bündnis 90/Die Grünen	0.976431	0.988075	0.986577	0.993243
+Forza Italia	Parti socialiste	0.976431	0.988075	0.986577	0.993243
+Forza Italia	Sinn Féin	0.976431	0.988075	0.983221	0.991540
+Forza Italia	Green Party	0.976431	0.988075	0.979866	0.989831
+Forza Italia	Platforma Obywatelska	0.976271	0.987993	0.983165	0.991511
+Freie Demokratische Partei	Freie Demokratische Partei	1.000000	1.000000	1.000000	1.000000
+Freie Demokratische Partei	Christlich-Soziale Union in Bayern e.V.	0.989655	0.994801	0.993127	0.996552
+Freie Demokratische Partei	Partija 'VIENOTIBA'	0.989655	0.994801	0.993127	0.996552
+Freie Demokratische Partei	Platforma Obywatelska	0.989655	0.994801	0.989761	0.994854
+Freie Demokratische Partei	Moderaterna	0.986207	0.993056	0.993127	0.996552
+Freie Demokratische Partei	Österreichische Volkspartei	0.986207	0.993056	0.993127	0.996552
+Freie Demokratische Partei	Kansallinen Kokoomus	0.986207	0.993056	0.989691	0.994819
+Freie Demokratische Partei	-1	0.986207	0.993056	0.979730	0.989761
+Freie Demokratische Partei	Democraten 66	0.982877	0.991364	0.979730	0.989761
+Freie Demokratische Partei	Mouvement Démocrate	0.982818	0.991334	0.996564	0.998279
+Freie Demokratische Partei	Arbetarepartiet- Socialdemokraterna	0.982818	0.991334	0.989726	0.994836
+Freie Demokratische Partei	Partido Popular	0.982818	0.991334	0.976351	0.988034
+Freie Demokratische Partei	Citizens for European Development of Bulgaria	0.982759	0.991304	0.986254	0.993080
+Freie Demokratische Partei	Socialdemokratiet	0.982759	0.991304	0.986254	0.993080
+Freie Demokratische Partei	Partit Nazzjonalista	0.979522	0.989655	0.982993	0.991424
+Freie Demokratische Partei	Christlich Demokratische Union Deutschlands	0.979452	0.989619	0.986395	0.993151
+Freie Demokratische Partei	Sozialdemokratische Partei Deutschlands	0.972881	0.986254	0.979730	0.989761
+Freie Demokratische Partei	Sozialdemokratische Partei Österreichs	0.972789	0.986207	0.986395	0.993151
+Freie Demokratische Partei	Conservative Party	0.969595	0.984563	0.979730	0.989761
+Freie Demokratische Partei	Labour Party	0.969595	0.984563	0.976431	0.988075
+Front de Gauche	Front de Gauche	1.000000	1.000000	0.986622	0.993266
+Front de Gauche	Movimento 5 Stelle	0.993266	0.996622	1.000000	1.000000
+Front de Gauche	Europe Écologie	0.986532	0.993220	0.993311	0.996644
+Front de Gauche	Independent	0.983278	0.991568	0.996656	0.998325
+Front de Gauche	Les Républicains	0.983278	0.991568	0.996656	0.998325
+Front de Gauche	Partido Socialista Obrero Espanol	0.983278	0.991568	0.996656	0.998325
+Front de Gauche	Partito Democratico	0.979933	0.989865	0.996656	0.998325
+Front de Gauche	Die Grünen - Die Grüne Alternative	0.979933	0.989865	0.993311	0.996644
+Front de Gauche	PODEMOS	0.979866	0.989831	0.986622	0.993266
+Front de Gauche	Labour Party	0.976589	0.988156	0.993311	0.996644
+Front de Gauche	Conservative Party	0.976589	0.988156	0.989967	0.994958
+Front de Gauche	Parti socialiste	0.976510	0.988115	0.989967	0.994958
+Front de Gauche	Sinn Féin	0.976510	0.988115	0.986622	0.993266
+Front de Gauche	Christen Democratisch Appel	0.973244	0.986441	0.989967	0.994958
+Front de Gauche	Sozialdemokratische Partei Deutschlands	0.973244	0.986441	0.989967	0.994958
+Front de Gauche	Forza Italia	0.973154	0.986395	0.986622	0.993266
+Front de Gauche	Partij van de Arbeid	0.973154	0.986395	0.983278	0.991568
+Front de Gauche	Lega Nord	0.972973	0.986301	0.969900	0.984720
+Front de Gauche	DIE LINKE.	0.972973	0.986301	0.966555	0.982993
+Front de Gauche	Bündnis 90/Die Grünen	0.969900	0.984720	0.989967	0.994958
+Front national	Front national	1.000000	1.000000	1.000000	1.000000
+Front national	Movimento 5 Stelle	0.956229	0.977625	0.949833	0.974271
+Front national	Front de Gauche	0.949495	0.974093	0.949495	0.974093
+Front national	Independent	0.946488	0.972509	0.946488	0.972509
+Front national	Les Républicains	0.946488	0.972509	0.946488	0.972509
+Front national	Partido Socialista Obrero Espanol	0.946488	0.972509	0.946488	0.972509
+Front national	Partito Democratico	0.943144	0.970740	0.946488	0.972509
+Front national	Die Grünen - Die Grüne Alternative	0.943144	0.970740	0.943144	0.970740
+Front national	Europe Écologie	0.942953	0.970639	0.949664	0.974182
+Front national	Christen Democratisch Appel	0.942953	0.970639	0.946309	0.972414
+Front national	Labour Party	0.939799	0.968966	0.943144	0.970740
+Front national	Conservative Party	0.939799	0.968966	0.939799	0.968966
+Front national	Parti socialiste	0.939597	0.968858	0.939799	0.968966
+Front national	United Kingdom Independence Party	0.939394	0.968750	0.943144	0.970740
+Front national	Sozialdemokratische Partei Deutschlands	0.936455	0.967185	0.939799	0.968966
+Front national	PODEMOS	0.936455	0.967185	0.936455	0.967185
+Front national	Partij van de Arbeid	0.936242	0.967071	0.939597	0.968858
+Front national	Forza Italia	0.936242	0.967071	0.936455	0.967185
+Front national	Lega Nord	0.935811	0.966841	0.939189	0.968641
+Front national	Bündnis 90/Die Grünen	0.933110	0.965398	0.939799	0.968966
+Green Party	Green Party	1.000000	1.000000	0.993243	0.996610
+Green Party	Labour Party	0.993243	0.996610	0.996633	0.998314
+Green Party	Die Grünen - Die Grüne Alternative	0.989899	0.994924	0.996633	0.998314
+Green Party	Sozialdemokratische Partei Deutschlands	0.989865	0.994907	1.000000	1.000000
+Green Party	Partij van de Arbeid	0.989831	0.994889	0.993243	0.996610
+Green Party	Independent	0.986577	0.993243	0.993289	0.996633
+Green Party	Les Républicains	0.986577	0.993243	0.993289	0.996633
+Green Party	Partido Socialista Obrero Espanol	0.986577	0.993243	0.993289	0.996633
+Green Party	Bündnis 90/Die Grünen	0.986486	0.993197	1.000000	1.000000
+Green Party	Partito Democratico	0.983221	0.991540	0.993289	0.996633
+Green Party	Christen Democratisch Appel	0.983165	0.991511	0.993266	0.996622
+Green Party	Europe Écologie	0.983165	0.991511	0.989933	0.994941
+Green Party	PODEMOS	0.983165	0.991511	0.983221	0.991540
+Green Party	Sozialdemokratische Partei Österreichs	0.983108	0.991482	0.993243	0.996610
+Green Party	Partit Nazzjonalista	0.983108	0.991482	0.983165	0.991511
+Green Party	Conservative Party	0.979866	0.989831	0.986577	0.993243
+Green Party	Parti socialiste	0.979798	0.989796	0.993266	0.996622
+Green Party	Sinn Féin	0.979798	0.989796	0.989899	0.994924
+Green Party	Democraten 66	0.979730	0.989761	1.000000	1.000000
+Green Party	Fine Gael Party	0.979730	0.989761	0.986486	0.993197
+Independent	Independent	1.000000	1.000000	1.000000	1.000000
+Independent	Partido Socialista Obrero Espanol	1.000000	1.000000	1.000000	1.000000
+Independent	Partito Democratico	0.996644	0.998319	1.000000	1.000000
+Independent	Die Grünen - Die Grüne Alternative	0.996644	0.998319	0.996644	0.998319
+Independent	Les Républicains	0.993311	0.996644	0.993311	0.996644
+Independent	Labour Party	0.993289	0.996633	0.996644	0.998319
+Independent	Movimento 5 Stelle	0.989967	0.994958	0.996656	0.998325
+Independent	Europe Écologie	0.989933	0.994941	0.996644	0.998319
+Independent	Christen Democratisch Appel	0.989933	0.994941	0.993289	0.996633
+Independent	Sozialdemokratische Partei Deutschlands	0.989933	0.994941	0.993289	0.996633
+Independent	PODEMOS	0.989933	0.994941	0.989933	0.994941
+Independent	Conservative Party	0.986622	0.993266	0.986622	0.993266
+Independent	Bündnis 90/Die Grünen	0.986577	0.993243	0.993289	0.996633
+Independent	Parti socialiste	0.986577	0.993243	0.993289	0.996633
+Independent	Sinn Féin	0.986577	0.993243	0.989933	0.994941
+Independent	Green Party	0.986577	0.993243	0.986577	0.993243
+Independent	Front de Gauche	0.983278	0.991568	0.983278	0.991568
+Independent	Forza Italia	0.983221	0.991540	0.989933	0.994941
+Independent	Partij van de Arbeid	0.983221	0.991540	0.986577	0.993243
+Independent	Sozialdemokratische Partei Österreichs	0.983221	0.991540	0.986577	0.993243
+Izquierda Unida	Izquierda Unida	1.000000	1.000000	0.996610	0.998302
+Izquierda Unida	Sinn Féin	0.989796	0.994872	0.993243	0.996610
+Izquierda Unida	PODEMOS	0.986441	0.993174	0.993243	0.996610
+Izquierda Unida	Christen Democratisch Appel	0.986441	0.993174	0.989899	0.994924
+Izquierda Unida	DIE LINKE.	0.986301	0.993103	0.979661	0.989726
+Izquierda Unida	Bündnis 90/Die Grünen	0.983051	0.991453	0.989899	0.994924
+Izquierda Unida	Parti socialiste	0.983051	0.991453	0.989899	0.994924
+Izquierda Unida	Die Grünen - Die Grüne Alternative	0.979798	0.989796	0.993266	0.996622
+Izquierda Unida	Sozialdemokratische Partei Deutschlands	0.979730	0.989761	0.989899	0.994924
+Izquierda Unida	Sozialdemokratische Partei Österreichs	0.979661	0.989726	0.983165	0.991511
+Izquierda Unida	Independent	0.976510	0.988115	0.989933	0.994941
+Izquierda Unida	Les Républicains	0.976510	0.988115	0.989933	0.994941
+Izquierda Unida	Partido Socialista Obrero Espanol	0.976510	0.988115	0.989933	0.994941
+Izquierda Unida	Labour Party	0.976431	0.988075	0.986577	0.993243
+Izquierda Unida	Green Party	0.976351	0.988034	0.983165	0.991511
+Izquierda Unida	Fine Gael Party	0.976271	0.987993	0.976431	0.988075
+Izquierda Unida	Partito Democratico	0.973154	0.986395	0.989933	0.994941
+Izquierda Unida	Europe Écologie	0.973064	0.986348	0.986577	0.993243
+Izquierda Unida	Partij van de Arbeid	0.972973	0.986301	0.983165	0.991511
+Izquierda Unida	Conservative Party	0.969799	0.984668	0.983221	0.991540
+Kansallinen Kokoomus	Kansallinen Kokoomus	1.000000	1.000000	1.000000	1.000000
+Kansallinen Kokoomus	Christlich-Soziale Union in Bayern e.V.	0.996552	0.998273	0.996552	0.998273
+Kansallinen Kokoomus	Partija 'VIENOTIBA'	0.996552	0.998273	0.996552	0.998273
+Kansallinen Kokoomus	Platforma Obywatelska	0.996552	0.998273	0.986348	0.993127
+Kansallinen Kokoomus	Christlich Demokratische Union Deutschlands	0.993127	0.996552	0.982993	0.991424
+Kansallinen Kokoomus	Moderaterna	0.993103	0.996540	0.996552	0.998273
+Kansallinen Kokoomus	Österreichische Volkspartei	0.993103	0.996540	0.996552	0.998273
+Kansallinen Kokoomus	-1	0.993103	0.996540	0.976351	0.988034
+Kansallinen Kokoomus	Democraten 66	0.989726	0.994836	0.976351	0.988034
+Kansallinen Kokoomus	Mouvement Démocrate	0.989691	0.994819	0.993127	0.996552
+Kansallinen Kokoomus	Arbetarepartiet- Socialdemokraterna	0.989691	0.994819	0.986301	0.993103
+Kansallinen Kokoomus	Partido Popular	0.989691	0.994819	0.972973	0.986301
+Kansallinen Kokoomus	Citizens for European Development of Bulgaria	0.989655	0.994801	0.989655	0.994801
+Kansallinen Kokoomus	Socialdemokratiet	0.989655	0.994801	0.989655	0.994801
+Kansallinen Kokoomus	Partit Nazzjonalista	0.986348	0.993127	0.986348	0.993127
+Kansallinen Kokoomus	Freie Demokratische Partei	0.986207	0.993056	0.989691	0.994819
+Kansallinen Kokoomus	Sozialdemokratische Partei Deutschlands	0.979661	0.989726	0.976351	0.988034
+Kansallinen Kokoomus	Sozialdemokratische Partei Österreichs	0.979592	0.989691	0.982993	0.991424
+Kansallinen Kokoomus	Conservative Party	0.976351	0.988034	0.976351	0.988034
+Kansallinen Kokoomus	Labour Party	0.976351	0.988034	0.973064	0.986348
+Labour Party	Labour Party	1.000000	1.000000	0.996644	0.998319
+Labour Party	Die Grünen - Die Grüne Alternative	0.996633	0.998314	0.989967	0.994958
+Labour Party	Sozialdemokratische Partei Deutschlands	0.996622	0.998308	0.993289	0.996633
+Labour Party	Independent	0.993289	0.996633	0.993311	0.996644
+Labour Party	Les Républicains	0.993289	0.996633	0.993311	0.996644
+Labour Party	Partido Socialista Obrero Espanol	0.993289	0.996633	0.993311	0.996644
+Labour Party	Bündnis 90/Die Grünen	0.993243	0.996610	0.993289	0.996633
+Labour Party	Green Party	0.993243	0.996610	0.986577	0.993243
+Labour Party	Partito Democratico	0.989933	0.994941	0.993311	0.996644
+Labour Party	Europe Écologie	0.989899	0.994924	0.989967	0.994958
+Labour Party	Christen Democratisch Appel	0.989899	0.994924	0.986622	0.993266
+Labour Party	Partij van de Arbeid	0.989865	0.994907	0.986577	0.993243
+Labour Party	Sozialdemokratische Partei Österreichs	0.989865	0.994907	0.986577	0.993243
+Labour Party	Conservative Party	0.986577	0.993243	0.986622	0.993266
+Labour Party	Parti socialiste	0.986532	0.993220	0.986622	0.993266
+Labour Party	Sinn Féin	0.986532	0.993220	0.983278	0.991568
+Labour Party	Democraten 66	0.986486	0.993197	0.993289	0.996633
+Labour Party	Fine Gael Party	0.986486	0.993197	0.979866	0.989831
+Labour Party	Movimento 5 Stelle	0.983278	0.991568	0.996656	0.998325
+Labour Party	PODEMOS	0.983221	0.991540	0.983278	0.991568
+Lega Nord	Lega Nord	1.000000	1.000000	1.000000	1.000000
+Lega Nord	United Kingdom Independence Party	0.989726	0.994836	0.976431	0.988075
+Lega Nord	Conservative Party	0.976351	0.988034	0.979730	0.989761
+Lega Nord	Movimento 5 Stelle	0.973064	0.986348	0.969900	0.984720
+Lega Nord	Front de Gauche	0.972973	0.986301	0.976351	0.988034
+Lega Nord	Les Républicains	0.969799	0.984668	0.973154	0.986395
+Lega Nord	Die Grünen - Die Grüne Alternative	0.966443	0.982935	0.969799	0.984668
+Lega Nord	Partito Democratico	0.966443	0.982935	0.966555	0.982993
+Lega Nord	Christen Democratisch Appel	0.966330	0.982877	0.973064	0.986348
+Lega Nord	Independent	0.963211	0.981261	0.966555	0.982993
+Lega Nord	Partido Socialista Obrero Espanol	0.963211	0.981261	0.966555	0.982993
+Lega Nord	Labour Party	0.963087	0.981197	0.963211	0.981261
+Lega Nord	Parti socialiste	0.962963	0.981132	0.966443	0.982935
+Lega Nord	Europe Écologie	0.959732	0.979452	0.969799	0.984668
+Lega Nord	Sozialdemokratische Partei Deutschlands	0.959732	0.979452	0.966443	0.982935
+Lega Nord	Partij van de Arbeid	0.959596	0.979381	0.966330	0.982877
+Lega Nord	Sozialdemokratische Partei Österreichs	0.959596	0.979381	0.966330	0.982877
+Lega Nord	Forza Italia	0.959596	0.979381	0.963087	0.981197
+Lega Nord	Partit Nazzjonalista	0.959596	0.979381	0.962963	0.981132
+Lega Nord	Christlich Demokratische Union Deutschlands	0.959459	0.979310	0.966330	0.982877
+Les Républicains	Les Républicains	1.000000	1.000000	1.000000	1.000000
+Les Républicains	Die Grünen - Die Grüne Alternative	0.996644	0.998319	0.996644	0.998319
+Les Républicains	Independent	0.993311	0.996644	0.993311	0.996644
+Les Républicains	Partido Socialista Obrero Espanol	0.993311	0.996644	0.993311	0.996644
+Les Républicains	Conservative Party	0.993289	0.996633	0.993289	0.996633
+Les Républicains	Labour Party	0.993289	0.996633	0.989967	0.994958
+Les Républicains	Movimento 5 Stelle	0.989967	0.994958	0.996656	0.998325
+Les Républicains	Partito Democratico	0.989967	0.994958	0.993311	0.996644
+Les Républicains	Christen Democratisch Appel	0.989933	0.994941	0.993289	0.996633
+Les Républicains	Sozialdemokratische Partei Deutschlands	0.989933	0.994941	0.993289	0.996633
+Les Républicains	Bündnis 90/Die Grünen	0.986577	0.993243	0.993289	0.996633
+Les Républicains	Parti socialiste	0.986577	0.993243	0.993289	0.996633
+Les Républicains	Sinn Féin	0.986577	0.993243	0.989933	0.994941
+Les Républicains	Green Party	0.986577	0.993243	0.986577	0.993243
+Les Républicains	Europe Écologie	0.983278	0.991568	0.989967	0.994958
+Les Républicains	Front de Gauche	0.983278	0.991568	0.983278	0.991568
+Les Républicains	PODEMOS	0.983278	0.991568	0.983278	0.991568
+Les Républicains	Partij van de Arbeid	0.983221	0.991540	0.986577	0.993243
+Les Républicains	Sozialdemokratische Partei Österreichs	0.983221	0.991540	0.986577	0.993243
+Les Républicains	Democraten 66	0.979866	0.989831	0.993289	0.996633
+Moderaterna	Moderaterna	1.000000	1.000000	0.996564	0.998279
+Moderaterna	Christlich-Soziale Union in Bayern e.V.	0.996552	0.998273	0.996564	0.998279
+Moderaterna	Partija 'VIENOTIBA'	0.996552	0.998273	0.996564	0.998279
+Moderaterna	Platforma Obywatelska	0.996552	0.998273	0.993174	0.996575
+Moderaterna	Österreichische Volkspartei	0.993103	0.996540	0.996564	0.998279
+Moderaterna	Kansallinen Kokoomus	0.993103	0.996540	0.993127	0.996552
+Moderaterna	-1	0.993103	0.996540	0.983108	0.991482
+Moderaterna	Democraten 66	0.989726	0.994836	0.983108	0.991482
+Moderaterna	Mouvement Démocrate	0.989691	0.994819	1.000000	1.000000
+Moderaterna	Arbetarepartiet- Socialdemokraterna	0.989691	0.994819	0.993151	0.996564
+Moderaterna	Partido Popular	0.989691	0.994819	0.979730	0.989761
+Moderaterna	Citizens for European Development of Bulgaria	0.989655	0.994801	0.989691	0.994819
+Moderaterna	Socialdemokratiet	0.989655	0.994801	0.989691	0.994819
+Moderaterna	Partit Nazzjonalista	0.986348	0.993127	0.986395	0.993151
+Moderaterna	Christlich Demokratische Union Deutschlands	0.986301	0.993103	0.989796	0.994872
+Moderaterna	Freie Demokratische Partei	0.986207	0.993056	0.996564	0.998279
+Moderaterna	Sozialdemokratische Partei Deutschlands	0.979661	0.989726	0.983108	0.991482
+Moderaterna	Sozialdemokratische Partei Österreichs	0.979592	0.989691	0.989796	0.994872
+Moderaterna	Forza Italia	0.979592	0.989691	0.979730	0.989761
+Moderaterna	Partij van de Arbeid	0.979592	0.989691	0.976351	0.988034
+Mouvement Démocrate	Mouvement Démocrate	1.000000	1.000000	1.000000	1.000000
+Mouvement Démocrate	Democraten 66	0.993151	0.996564	0.983108	0.991482
+Mouvement Démocrate	Christlich-Soziale Union in Bayern e.V.	0.993127	0.996552	0.996564	0.998279
+Mouvement Démocrate	Partija 'VIENOTIBA'	0.993127	0.996552	0.996564	0.998279
+Mouvement Démocrate	Platforma Obywatelska	0.993127	0.996552	0.993174	0.996575
+Mouvement Démocrate	Socialdemokratiet	0.993103	0.996540	0.989691	0.994819
+Mouvement Démocrate	Moderaterna	0.989691	0.994819	0.996564	0.998279
+Mouvement Démocrate	Österreichische Volkspartei	0.989691	0.994819	0.996564	0.998279
+Mouvement Démocrate	Kansallinen Kokoomus	0.989691	0.994819	0.993127	0.996552
+Mouvement Démocrate	-1	0.989691	0.994819	0.983108	0.991482
+Mouvement Démocrate	Arbetarepartiet- Socialdemokraterna	0.986301	0.993103	0.993151	0.996564
+Mouvement Démocrate	Partido Popular	0.986301	0.993103	0.979730	0.989761
+Mouvement Démocrate	Citizens for European Development of Bulgaria	0.986254	0.993080	0.989691	0.994819
+Mouvement Démocrate	Sozialdemokratische Partei Deutschlands	0.983051	0.991453	0.983108	0.991482
+Mouvement Démocrate	Sozialdemokratische Partei Österreichs	0.982993	0.991424	0.989796	0.994872
+Mouvement Démocrate	Partit Nazzjonalista	0.982993	0.991424	0.986395	0.993151
+Mouvement Démocrate	Christlich Demokratische Union Deutschlands	0.982935	0.991394	0.989796	0.994872
+Mouvement Démocrate	Freie Demokratische Partei	0.982818	0.991334	0.996564	0.998279
+Mouvement Démocrate	Conservative Party	0.979730	0.989761	0.983108	0.991482
+Mouvement Démocrate	Labour Party	0.979730	0.989761	0.979798	0.989796
+Movimento 5 Stelle	Movimento 5 Stelle	1.000000	1.000000	1.000000	1.000000
+Movimento 5 Stelle	Front de Gauche	0.993266	0.996622	0.986622	0.993266
+Movimento 5 Stelle	Independent	0.989967	0.994958	0.996656	0.998325
+Movimento 5 Stelle	Les Républicains	0.989967	0.994958	0.996656	0.998325
+Movimento 5 Stelle	Partido Socialista Obrero Espanol	0.989967	0.994958	0.996656	0.998325
+Movimento 5 Stelle	Partito Democratico	0.986622	0.993266	0.996656	0.998325
+Movimento 5 Stelle	Die Grünen - Die Grüne Alternative	0.986622	0.993266	0.993311	0.996644
+Movimento 5 Stelle	Europe Écologie	0.986577	0.993243	0.993311	0.996644
+Movimento 5 Stelle	Labour Party	0.983278	0.991568	0.993311	0.996644
+Movimento 5 Stelle	Conservative Party	0.983278	0.991568	0.989967	0.994958
+Movimento 5 Stelle	Parti socialiste	0.983221	0.991540	0.989967	0.994958
+Movimento 5 Stelle	Christen Democratisch Appel	0.979933	0.989865	0.989967	0.994958
+Movimento 5 Stelle	Sozialdemokratische Partei Deutschlands	0.979933	0.989865	0.989967	0.994958
+Movimento 5 Stelle	PODEMOS	0.979933	0.989865	0.986622	0.993266
+Movimento 5 Stelle	Forza Italia	0.979866	0.989831	0.986622	0.993266
+Movimento 5 Stelle	Partij van de Arbeid	0.979866	0.989831	0.983278	0.991568
+Movimento 5 Stelle	Bündnis 90/Die Grünen	0.976589	0.988156	0.989967	0.994958
+Movimento 5 Stelle	Sinn Féin	0.976589	0.988156	0.986622	0.993266
+Movimento 5 Stelle	Green Party	0.976589	0.988156	0.983278	0.991568
+Movimento 5 Stelle	United Kingdom Independence Party	0.976510	0.988115	0.993311	0.996644
+Nea Demokratia	Nea Demokratia	1.000000	1.000000	1.000000	1.000000
+Nea Demokratia	Česká strana sociálně demokratická	0.985663	0.992780	0.982270	0.991055
+Nea Demokratia	Slovenska demokratska stranka	0.963899	0.981618	0.967509	0.983486
+Nea Demokratia	Partidul Naţional Liberal	0.960145	0.979667	0.960289	0.979742
+Nea Demokratia	Citizens for European Development of Bulgaria	0.958333	0.978723	0.961806	0.980531
+Nea Demokratia	Kansallinen Kokoomus	0.955017	0.976991	0.958478	0.978799
+Nea Demokratia	Österreichische Volkspartei	0.955017	0.976991	0.955172	0.977072
+Nea Demokratia	-1	0.955017	0.976991	0.935811	0.966841
+Nea Demokratia	Freie Demokratische Partei	0.954861	0.976909	0.955172	0.977072
+Nea Demokratia	Christlich-Soziale Union in Bayern e.V.	0.951724	0.975265	0.955172	0.977072
+Nea Demokratia	Partija 'VIENOTIBA'	0.951724	0.975265	0.955172	0.977072
+Nea Demokratia	Platforma Obywatelska	0.951724	0.975265	0.945392	0.971930
+Nea Demokratia	Partido Popular	0.951724	0.975265	0.938983	0.968531
+Nea Demokratia	Prawo i Sprawiedliwość	0.950000	0.974359	0.950355	0.974545
+Nea Demokratia	Christlich Demokratische Union Deutschlands	0.948454	0.973545	0.942177	0.970228
+Nea Demokratia	Moderaterna	0.948276	0.973451	0.955172	0.977072
+Nea Demokratia	Fine Gael Party	0.945205	0.971831	0.948630	0.973638
+Nea Demokratia	Democraten 66	0.945205	0.971831	0.935811	0.966841
+Nea Demokratia	Mouvement Démocrate	0.945017	0.971731	0.951890	0.975352
+Nea Demokratia	Arbetarepartiet- Socialdemokraterna	0.945017	0.971731	0.945205	0.971831
+PODEMOS	PODEMOS	1.000000	1.000000	1.000000	1.000000
+PODEMOS	Independent	0.989933	0.994941	0.989933	0.994941
+PODEMOS	Partido Socialista Obrero Espanol	0.989933	0.994941	0.989933	0.994941
+PODEMOS	Partito Democratico	0.986577	0.993243	0.989933	0.994941
+PODEMOS	Die Grünen - Die Grüne Alternative	0.986577	0.993243	0.986577	0.993243
+PODEMOS	Europe Écologie	0.986532	0.993220	0.986577	0.993243
+PODEMOS	Izquierda Unida	0.986441	0.993174	0.989865	0.994907
+PODEMOS	Les Républicains	0.983278	0.991568	0.983278	0.991568
+PODEMOS	Labour Party	0.983221	0.991540	0.986577	0.993243
+PODEMOS	Sinn Féin	0.983165	0.991511	0.986532	0.993220
+PODEMOS	Green Party	0.983165	0.991511	0.983165	0.991511
+PODEMOS	Movimento 5 Stelle	0.979933	0.989865	0.986622	0.993266
+PODEMOS	Christen Democratisch Appel	0.979866	0.989831	0.983221	0.991540
+PODEMOS	Sozialdemokratische Partei Deutschlands	0.979866	0.989831	0.983221	0.991540
+PODEMOS	Front de Gauche	0.979866	0.989831	0.979866	0.989831
+PODEMOS	DIE LINKE.	0.979661	0.989726	0.979661	0.989726
+PODEMOS	Conservative Party	0.976589	0.988156	0.976589	0.988156
+PODEMOS	Bündnis 90/Die Grünen	0.976510	0.988115	0.983221	0.991540
+PODEMOS	Parti socialiste	0.976510	0.988115	0.983221	0.991540
+PODEMOS	Forza Italia	0.973154	0.986395	0.979866	0.989831
+Parti socialiste	Parti socialiste	1.000000	1.000000	1.000000	1.000000
+Parti socialiste	Bündnis 90/Die Grünen	0.993220	0.996599	0.993266	0.996622
+Parti socialiste	Sinn Féin	0.993220	0.996599	0.989899	0.994924
+Parti socialiste	Die Grünen - Die Grüne Alternative	0.989899	0.994924	0.996633	0.998314
+Parti socialiste	Christen Democratisch Appel	0.989865	0.994907	0.993266	0.996622
+Parti socialiste	Sozialdemokratische Partei Deutschlands	0.989865	0.994907	0.993266	0.996622
+Parti socialiste	Sozialdemokratische Partei Österreichs	0.989831	0.994889	0.993243	0.996610
+Parti socialiste	Independent	0.986577	0.993243	0.993289	0.996633
+Parti socialiste	Les Républicains	0.986577	0.993243	0.993289	0.996633
+Parti socialiste	Partido Socialista Obrero Espanol	0.986577	0.993243	0.993289	0.996633
+Parti socialiste	Labour Party	0.986532	0.993220	0.989933	0.994941
+Parti socialiste	Partito Democratico	0.983221	0.991540	0.993289	0.996633
+Parti socialiste	Movimento 5 Stelle	0.983221	0.991540	0.989967	0.994958
+Parti socialiste	Europe Écologie	0.983165	0.991511	0.989933	0.994941
+Parti socialiste	Partij van de Arbeid	0.983108	0.991482	0.986532	0.993220
+Parti socialiste	Izquierda Unida	0.983051	0.991453	0.986532	0.993220
+Parti socialiste	DIE LINKE.	0.982993	0.991424	0.976351	0.988034
+Parti socialiste	Conservative Party	0.979866	0.989831	0.986577	0.993243
+Parti socialiste	Green Party	0.979798	0.989796	0.986532	0.993220
+Parti socialiste	Democraten 66	0.979730	0.989761	0.993266	0.996622
+Partido Popular	Partido Popular	1.000000	1.000000	1.000000	1.000000
+Partido Popular	Democraten 66	0.993151	0.996564	0.989899	0.994924
+Partido Popular	Platforma Obywatelska	0.993127	0.996552	0.979798	0.989796
+Partido Popular	Arbetarepartiet- Socialdemokraterna	0.993127	0.996552	0.979730	0.989761
+Partido Popular	Christlich-Soziale Union in Bayern e.V.	0.993127	0.996552	0.976351	0.988034
+Partido Popular	Partija 'VIENOTIBA'	0.993127	0.996552	0.976351	0.988034
+Partido Popular	Citizens for European Development of Bulgaria	0.993103	0.996540	0.976271	0.987993
+Partido Popular	-1	0.989691	0.994819	0.989899	0.994924
+Partido Popular	Moderaterna	0.989691	0.994819	0.976351	0.988034
+Partido Popular	Österreichische Volkspartei	0.989691	0.994819	0.976351	0.988034
+Partido Popular	Kansallinen Kokoomus	0.989691	0.994819	0.972973	0.986301
+Partido Popular	Mouvement Démocrate	0.986301	0.993103	0.979730	0.989761
+Partido Popular	Socialdemokratiet	0.986254	0.993080	0.969595	0.984563
+Partido Popular	Christen Democratisch Appel	0.983051	0.991453	0.996622	0.998308
+Partido Popular	Sozialdemokratische Partei Deutschlands	0.983051	0.991453	0.989899	0.994924
+Partido Popular	Sozialdemokratische Partei Österreichs	0.982993	0.991424	0.989865	0.994907
+Partido Popular	Partit Nazzjonalista	0.982993	0.991424	0.979798	0.989796
+Partido Popular	Christlich Demokratische Union Deutschlands	0.982935	0.991394	0.989865	0.994907
+Partido Popular	Freie Demokratische Partei	0.982818	0.991334	0.976351	0.988034
+Partido Popular	Labour Party	0.979730	0.989761	0.986577	0.993243
+Partido Socialista Obrero Espanol	Independent	1.000000	1.000000	1.000000	1.000000
+Partido Socialista Obrero Espanol	Partido Socialista Obrero Espanol	1.000000	1.000000	1.000000	1.000000
+Partido Socialista Obrero Espanol	Partito Democratico	0.996644	0.998319	1.000000	1.000000
+Partido Socialista Obrero Espanol	Die Grünen - Die Grüne Alternative	0.996644	0.998319	0.996644	0.998319
+Partido Socialista Obrero Espanol	Les Républicains	0.993311	0.996644	0.993311	0.996644
+Partido Socialista Obrero Espanol	Labour Party	0.993289	0.996633	0.996644	0.998319
+Partido Socialista Obrero Espanol	Movimento 5 Stelle	0.989967	0.994958	0.996656	0.998325
+Partido Socialista Obrero Espanol	Europe Écologie	0.989933	0.994941	0.996644	0.998319
+Partido Socialista Obrero Espanol	Christen Democratisch Appel	0.989933	0.994941	0.993289	0.996633
+Partido Socialista Obrero Espanol	Sozialdemokratische Partei Deutschlands	0.989933	0.994941	0.993289	0.996633
+Partido Socialista Obrero Espanol	PODEMOS	0.989933	0.994941	0.989933	0.994941
+Partido Socialista Obrero Espanol	Conservative Party	0.986622	0.993266	0.986622	0.993266
+Partido Socialista Obrero Espanol	Bündnis 90/Die Grünen	0.986577	0.993243	0.993289	0.996633
+Partido Socialista Obrero Espanol	Parti socialiste	0.986577	0.993243	0.993289	0.996633
+Partido Socialista Obrero Espanol	Sinn Féin	0.986577	0.993243	0.989933	0.994941
+Partido Socialista Obrero Espanol	Green Party	0.986577	0.993243	0.986577	0.993243
+Partido Socialista Obrero Espanol	Front de Gauche	0.983278	0.991568	0.983278	0.991568
+Partido Socialista Obrero Espanol	Forza Italia	0.983221	0.991540	0.989933	0.994941
+Partido Socialista Obrero Espanol	Partij van de Arbeid	0.983221	0.991540	0.986577	0.993243
+Partido Socialista Obrero Espanol	Sozialdemokratische Partei Österreichs	0.983221	0.991540	0.986577	0.993243
+Partidul Naţional Liberal	Partidul Naţional Liberal	1.000000	1.000000	1.000000	1.000000
+Partidul Naţional Liberal	Slovenska demokratska stranka	0.988806	0.994371	0.985130	0.992509
+Partidul Naţional Liberal	Nea Demokratia	0.960145	0.979667	0.960289	0.979742
+Partidul Naţional Liberal	Prawo i Sprawiedliwość	0.959707	0.979439	0.960000	0.979592
+Partidul Naţional Liberal	Česká strana sociálně demokratická	0.953237	0.976059	0.943262	0.970803
+Partidul Naţional Liberal	Freie Demokratische Partei	0.923345	0.960145	0.917241	0.956835
+Partidul Naţional Liberal	Citizens for European Development of Bulgaria	0.920139	0.958409	0.923611	0.960289
+Partidul Naţional Liberal	Kansallinen Kokoomus	0.916955	0.956679	0.920415	0.958559
+Partidul Naţional Liberal	Moderaterna	0.916955	0.956679	0.917241	0.956835
+Partidul Naţional Liberal	Österreichische Volkspartei	0.916955	0.956679	0.917241	0.956835
+Partidul Naţional Liberal	-1	0.916955	0.956679	0.898649	0.946619
+Partidul Naţional Liberal	Christlich-Soziale Union in Bayern e.V.	0.913793	0.954955	0.917241	0.956835
+Partidul Naţional Liberal	Partija 'VIENOTIBA'	0.913793	0.954955	0.917241	0.956835
+Partidul Naţional Liberal	Platforma Obywatelska	0.913793	0.954955	0.907850	0.951699
+Partidul Naţional Liberal	Partido Popular	0.913793	0.954955	0.901695	0.948307
+Partidul Naţional Liberal	Christlich Demokratische Union Deutschlands	0.910653	0.953237	0.904762	0.950000
+Partidul Naţional Liberal	Fine Gael Party	0.907534	0.951526	0.910959	0.953405
+Partidul Naţional Liberal	Democraten 66	0.907534	0.951526	0.898649	0.946619
+Partidul Naţional Liberal	United Kingdom Independence Party	0.907534	0.951526	0.895623	0.944938
+Partidul Naţional Liberal	Mouvement Démocrate	0.907216	0.951351	0.914089	0.955117
+Partij van de Arbeid	Partij van de Arbeid	1.000000	1.000000	0.993243	0.996610
+Partij van de Arbeid	Labour Party	0.989865	0.994907	0.996633	0.998314
+Partij van de Arbeid	Bündnis 90/Die Grünen	0.989831	0.994889	1.000000	1.000000
+Partij van de Arbeid	Green Party	0.989831	0.994889	0.993243	0.996610
+Partij van de Arbeid	Die Grünen - Die Grüne Alternative	0.986532	0.993220	0.996633	0.998314
+Partij van de Arbeid	Sozialdemokratische Partei Deutschlands	0.986486	0.993197	1.000000	1.000000
+Partij van de Arbeid	Sozialdemokratische Partei Österreichs	0.986441	0.993174	0.993243	0.996610
+Partij van de Arbeid	Forza Italia	0.986441	0.993174	0.983221	0.991540
+Partij van de Arbeid	Independent	0.983221	0.991540	0.993289	0.996633
+Partij van de Arbeid	Les Républicains	0.983221	0.991540	0.993289	0.996633
+Partij van de Arbeid	Partido Socialista Obrero Espanol	0.983221	0.991540	0.993289	0.996633
+Partij van de Arbeid	Parti socialiste	0.983108	0.991482	0.993266	0.996622
+Partij van de Arbeid	Sinn Féin	0.983108	0.991482	0.989899	0.994924
+Partij van de Arbeid	Partito Democratico	0.979866	0.989831	0.993289	0.996633
+Partij van de Arbeid	Movimento 5 Stelle	0.979866	0.989831	0.989967	0.994958
+Partij van de Arbeid	Christen Democratisch Appel	0.979798	0.989796	0.993266	0.996622
+Partij van de Arbeid	Europe Écologie	0.979798	0.989796	0.989933	0.994941
+Partij van de Arbeid	Partit Nazzjonalista	0.979730	0.989761	0.983165	0.991511
+Partij van de Arbeid	-1	0.979592	0.989691	0.993266	0.996622
+Partij van de Arbeid	Moderaterna	0.979592	0.989691	0.979730	0.989761
+Partija 'VIENOTIBA'	Christlich-Soziale Union in Bayern e.V.	1.000000	1.000000	1.000000	1.000000
+Partija 'VIENOTIBA'	Partija 'VIENOTIBA'	1.000000	1.000000	1.000000	1.000000
+Partija 'VIENOTIBA'	Platforma Obywatelska	1.000000	1.000000	0.989761	0.994854
+Partija 'VIENOTIBA'	Moderaterna	0.996552	0.998273	1.000000	1.000000
+Partija 'VIENOTIBA'	Österreichische Volkspartei	0.996552	0.998273	1.000000	1.000000
+Partija 'VIENOTIBA'	Kansallinen Kokoomus	0.996552	0.998273	0.996552	0.998273
+Partija 'VIENOTIBA'	-1	0.996552	0.998273	0.979730	0.989761
+Partija 'VIENOTIBA'	Democraten 66	0.993151	0.996564	0.979730	0.989761
+Partija 'VIENOTIBA'	Mouvement Démocrate	0.993127	0.996552	0.996564	0.998279
+Partija 'VIENOTIBA'	Arbetarepartiet- Socialdemokraterna	0.993127	0.996552	0.989726	0.994836
+Partija 'VIENOTIBA'	Partido Popular	0.993127	0.996552	0.976351	0.988034
+Partija 'VIENOTIBA'	Citizens for European Development of Bulgaria	0.993103	0.996540	0.993103	0.996540
+Partija 'VIENOTIBA'	Socialdemokratiet	0.993103	0.996540	0.993103	0.996540
+Partija 'VIENOTIBA'	Partit Nazzjonalista	0.989761	0.994854	0.989761	0.994854
+Partija 'VIENOTIBA'	Christlich Demokratische Union Deutschlands	0.989726	0.994836	0.986395	0.993151
+Partija 'VIENOTIBA'	Freie Demokratische Partei	0.989655	0.994801	0.993127	0.996552
+Partija 'VIENOTIBA'	Sozialdemokratische Partei Deutschlands	0.983051	0.991453	0.979730	0.989761
+Partija 'VIENOTIBA'	Sozialdemokratische Partei Österreichs	0.982993	0.991424	0.986395	0.993151
+Partija 'VIENOTIBA'	Conservative Party	0.979730	0.989761	0.979730	0.989761
+Partija 'VIENOTIBA'	Labour Party	0.979730	0.989761	0.976431	0.988075
+Partit Nazzjonalista	Partit Nazzjonalista	1.000000	1.000000	0.996599	0.998296
+Partit Nazzjonalista	Christlich-Soziale Union in Bayern e.V.	0.989761	0.994854	0.986395	0.993151
+Partit Nazzjonalista	Partija 'VIENOTIBA'	0.989761	0.994854	0.986395	0.993151
+Partit Nazzjonalista	Platforma Obywatelska	0.989761	0.994854	0.983108	0.991482
+Partit Nazzjonalista	Partito Democratico	0.986532	0.993220	0.986577	0.993243
+Partit Nazzjonalista	Sozialdemokratische Partei Deutschlands	0.986486	0.993197	0.986532	0.993220
+Partit Nazzjonalista	Sozialdemokratische Partei Österreichs	0.986441	0.993174	0.986486	0.993197
+Partit Nazzjonalista	Christlich Demokratische Union Deutschlands	0.986395	0.993151	0.979798	0.989796
+Partit Nazzjonalista	-1	0.986348	0.993127	0.986532	0.993220
+Partit Nazzjonalista	Moderaterna	0.986348	0.993127	0.986395	0.993151
+Partit Nazzjonalista	Österreichische Volkspartei	0.986348	0.993127	0.986395	0.993151
+Partit Nazzjonalista	Kansallinen Kokoomus	0.986348	0.993127	0.982993	0.991424
+Partit Nazzjonalista	Independent	0.983221	0.991540	0.986577	0.993243
+Partit Nazzjonalista	Partido Socialista Obrero Espanol	0.983221	0.991540	0.986577	0.993243
+Partit Nazzjonalista	Labour Party	0.983165	0.991511	0.989899	0.994924
+Partit Nazzjonalista	Conservative Party	0.983165	0.991511	0.986532	0.993220
+Partit Nazzjonalista	Bündnis 90/Die Grünen	0.983108	0.991482	0.986532	0.993220
+Partit Nazzjonalista	Green Party	0.983108	0.991482	0.986486	0.993197
+Partit Nazzjonalista	Democraten 66	0.983051	0.991453	0.986532	0.993220
+Partit Nazzjonalista	Mouvement Démocrate	0.982993	0.991424	0.983051	0.991453
+Partito Democratico	Partito Democratico	1.000000	1.000000	1.000000	1.000000
+Partito Democratico	Independent	0.996644	0.998319	1.000000	1.000000
+Partito Democratico	Partido Socialista Obrero Espanol	0.996644	0.998319	1.000000	1.000000
+Partito Democratico	Die Grünen - Die Grüne Alternative	0.993289	0.996633	0.996644	0.998319
+Partito Democratico	Les Républicains	0.989967	0.994958	0.993311	0.996644
+Partito Democratico	Labour Party	0.989933	0.994941	0.996644	0.998319
+Partito Democratico	Conservative Party	0.989933	0.994941	0.986622	0.993266
+Partito Democratico	Movimento 5 Stelle	0.986622	0.993266	0.996656	0.998325
+Partito Democratico	Europe Écologie	0.986577	0.993243	0.996644	0.998319
+Partito Democratico	Christen Democratisch Appel	0.986577	0.993243	0.993289	0.996633
+Partito Democratico	Sozialdemokratische Partei Deutschlands	0.986577	0.993243	0.993289	0.996633
+Partito Democratico	PODEMOS	0.986577	0.993243	0.989933	0.994941
+Partito Democratico	Forza Italia	0.986532	0.993220	0.989933	0.994941
+Partito Democratico	Partit Nazzjonalista	0.986532	0.993220	0.983221	0.991540
+Partito Democratico	Bündnis 90/Die Grünen	0.983221	0.991540	0.993289	0.996633
+Partito Democratico	Parti socialiste	0.983221	0.991540	0.993289	0.996633
+Partito Democratico	Sinn Féin	0.983221	0.991540	0.989933	0.994941
+Partito Democratico	Green Party	0.983221	0.991540	0.986577	0.993243
+Partito Democratico	Front de Gauche	0.979933	0.989865	0.983278	0.991568
+Partito Democratico	Partij van de Arbeid	0.979866	0.989831	0.986577	0.993243
+Platforma Obywatelska	Platforma Obywatelska	1.000000	1.000000	1.000000	1.000000
+Platforma Obywatelska	Christlich-Soziale Union in Bayern e.V.	1.000000	1.000000	0.989761	0.994854
+Platforma Obywatelska	Partija 'VIENOTIBA'	1.000000	1.000000	0.989761	0.994854
+Platforma Obywatelska	Moderaterna	0.996552	0.998273	0.989761	0.994854
+Platforma Obywatelska	Österreichische Volkspartei	0.996552	0.998273	0.989761	0.994854
+Platforma Obywatelska	Kansallinen Kokoomus	0.996552	0.998273	0.986348	0.993127
+Platforma Obywatelska	-1	0.996552	0.998273	0.983165	0.991511
+Platforma Obywatelska	Democraten 66	0.993151	0.996564	0.989865	0.994907
+Platforma Obywatelska	Arbetarepartiet- Socialdemokraterna	0.993127	0.996552	0.993174	0.996575
+Platforma Obywatelska	Mouvement Démocrate	0.993127	0.996552	0.993174	0.996575
+Platforma Obywatelska	Partido Popular	0.993127	0.996552	0.979798	0.989796
+Platforma Obywatelska	Citizens for European Development of Bulgaria	0.993103	0.996540	0.982935	0.991394
+Platforma Obywatelska	Socialdemokratiet	0.993103	0.996540	0.982935	0.991394
+Platforma Obywatelska	Partit Nazzjonalista	0.989761	0.994854	0.979730	0.989761
+Platforma Obywatelska	Christlich Demokratische Union Deutschlands	0.989726	0.994836	0.989831	0.994889
+Platforma Obywatelska	Freie Demokratische Partei	0.989655	0.994801	0.989761	0.994854
+Platforma Obywatelska	Sozialdemokratische Partei Deutschlands	0.983051	0.991453	0.989865	0.994907
+Platforma Obywatelska	Sozialdemokratische Partei Österreichs	0.982993	0.991424	0.989831	0.994889
+Platforma Obywatelska	Labour Party	0.979730	0.989761	0.986532	0.993220
+Platforma Obywatelska	Conservative Party	0.979730	0.989761	0.983165	0.991511
+Prawo i Sprawiedliwość	Prawo i Sprawiedliwość	1.000000	1.000000	1.000000	1.000000
+Prawo i Sprawiedliwość	Partidul Naţional Liberal	0.959707	0.979439	0.960000	0.979592
+Prawo i Sprawiedliwość	Slovenska demokratska stranka	0.956364	0.977695	0.960145	0.979667
+Prawo i Sprawiedliwość	Nea Demokratia	0.950000	0.974359	0.950355	0.974545
+Prawo i Sprawiedliwość	Česká strana sociálně demokratická	0.943262	0.970803	0.947368	0.972973
+Prawo i Sprawiedliwość	Freie Demokratische Partei	0.934028	0.965889	0.928082	0.962700
+Prawo i Sprawiedliwość	Kansallinen Kokoomus	0.927586	0.962433	0.937931	0.967972
+Prawo i Sprawiedliwość	Moderaterna	0.927586	0.962433	0.934708	0.966252
+Prawo i Sprawiedliwość	United Kingdom Independence Party	0.924658	0.960854	0.919192	0.957895
+Prawo i Sprawiedliwość	Christlich-Soziale Union in Bayern e.V.	0.924399	0.960714	0.934708	0.966252
+Prawo i Sprawiedliwość	Partija 'VIENOTIBA'	0.924399	0.960714	0.934708	0.966252
+Prawo i Sprawiedliwość	Platforma Obywatelska	0.924399	0.960714	0.931741	0.964664
+Prawo i Sprawiedliwość	Partido Popular	0.924399	0.960714	0.918919	0.957746
+Prawo i Sprawiedliwość	Citizens for European Development of Bulgaria	0.924138	0.960573	0.934483	0.966132
+Prawo i Sprawiedliwość	Christlich Demokratische Union Deutschlands	0.921233	0.959002	0.922034	0.959436
+Prawo i Sprawiedliwość	Österreichische Volkspartei	0.920962	0.958855	0.934708	0.966252
+Prawo i Sprawiedliwość	Lega Nord	0.920962	0.958855	0.921502	0.959147
+Prawo i Sprawiedliwość	-1	0.920962	0.958855	0.915825	0.956063
+Prawo i Sprawiedliwość	Democraten 66	0.918089	0.957295	0.922297	0.959578
+Prawo i Sprawiedliwość	Mouvement Démocrate	0.917808	0.957143	0.931507	0.964539
+Sinn Féin	Sinn Féin	1.000000	1.000000	1.000000	1.000000
+Sinn Féin	Bündnis 90/Die Grünen	0.993220	0.996599	0.989899	0.994924
+Sinn Féin	Parti socialiste	0.993220	0.996599	0.989899	0.994924
+Sinn Féin	Die Grünen - Die Grüne Alternative	0.989899	0.994924	0.993266	0.996622
+Sinn Féin	Christen Democratisch Appel	0.989865	0.994907	0.989899	0.994924
+Sinn Féin	Sozialdemokratische Partei Deutschlands	0.989865	0.994907	0.989899	0.994924
+Sinn Féin	Sozialdemokratische Partei Österreichs	0.989831	0.994889	0.983165	0.991511
+Sinn Féin	Izquierda Unida	0.989796	0.994872	0.996610	0.998302
+Sinn Féin	Independent	0.986577	0.993243	0.989933	0.994941
+Sinn Féin	Les Républicains	0.986577	0.993243	0.989933	0.994941
+Sinn Féin	Partido Socialista Obrero Espanol	0.986577	0.993243	0.989933	0.994941
+Sinn Féin	Labour Party	0.986532	0.993220	0.986577	0.993243
+Sinn Féin	Partito Democratico	0.983221	0.991540	0.989933	0.994941
+Sinn Féin	Europe Écologie	0.983165	0.991511	0.986577	0.993243
+Sinn Féin	PODEMOS	0.983165	0.991511	0.986532	0.993220
+Sinn Féin	Partij van de Arbeid	0.983108	0.991482	0.989865	0.994907
+Sinn Féin	DIE LINKE.	0.982993	0.991424	0.979661	0.989726
+Sinn Féin	Conservative Party	0.979866	0.989831	0.983221	0.991540
+Sinn Féin	Green Party	0.979798	0.989796	0.983165	0.991511
+Sinn Féin	Democraten 66	0.979730	0.989761	0.989899	0.994924
+Slovenska demokratska stranka	Slovenska demokratska stranka	1.000000	1.000000	1.000000	1.000000
+Slovenska demokratska stranka	Partidul Naţional Liberal	0.988806	0.994371	0.985130	0.992509
+Slovenska demokratska stranka	Nea Demokratia	0.963899	0.981618	0.967509	0.983486
+Slovenska demokratska stranka	Česká strana sociálně demokratická	0.956989	0.978022	0.950355	0.974545
+Slovenska demokratska stranka	Prawo i Sprawiedliwość	0.956364	0.977695	0.960145	0.979667
+Slovenska demokratska stranka	Freie Demokratische Partei	0.933798	0.965766	0.924138	0.960573
+Slovenska demokratska stranka	Citizens for European Development of Bulgaria	0.930556	0.964029	0.930556	0.964029
+Slovenska demokratska stranka	Kansallinen Kokoomus	0.927336	0.962298	0.927336	0.962298
+Slovenska demokratska stranka	Moderaterna	0.927336	0.962298	0.924138	0.960573
+Slovenska demokratska stranka	Österreichische Volkspartei	0.927336	0.962298	0.924138	0.960573
+Slovenska demokratska stranka	-1	0.927336	0.962298	0.905405	0.950355
+Slovenska demokratska stranka	Christlich-Soziale Union in Bayern e.V.	0.924138	0.960573	0.924138	0.960573
+Slovenska demokratska stranka	Partija 'VIENOTIBA'	0.924138	0.960573	0.924138	0.960573
+Slovenska demokratska stranka	Platforma Obywatelska	0.924138	0.960573	0.914676	0.955437
+Slovenska demokratska stranka	Partido Popular	0.924138	0.960573	0.908475	0.952043
+Slovenska demokratska stranka	Christlich Demokratische Union Deutschlands	0.920962	0.958855	0.911565	0.953737
+Slovenska demokratska stranka	Fine Gael Party	0.917808	0.957143	0.917808	0.957143
+Slovenska demokratska stranka	Democraten 66	0.917808	0.957143	0.905405	0.950355
+Slovenska demokratska stranka	United Kingdom Independence Party	0.917808	0.957143	0.902357	0.948673
+Slovenska demokratska stranka	Mouvement Démocrate	0.917526	0.956989	0.920962	0.958855
+Socialdemokratiet	Socialdemokratiet	1.000000	1.000000	1.000000	1.000000
+Socialdemokratiet	Christlich-Soziale Union in Bayern e.V.	0.993103	0.996540	0.993103	0.996540
+Socialdemokratiet	Partija 'VIENOTIBA'	0.993103	0.996540	0.993103	0.996540
+Socialdemokratiet	Mouvement Démocrate	0.993103	0.996540	0.989691	0.994819
+Socialdemokratiet	Platforma Obywatelska	0.993103	0.996540	0.982935	0.991394
+Socialdemokratiet	Moderaterna	0.989655	0.994801	0.993103	0.996540
+Socialdemokratiet	Österreichische Volkspartei	0.989655	0.994801	0.993103	0.996540
+Socialdemokratiet	Kansallinen Kokoomus	0.989655	0.994801	0.989655	0.994801
+Socialdemokratiet	-1	0.989655	0.994801	0.972973	0.986301
+Socialdemokratiet	Democraten 66	0.986301	0.993103	0.972973	0.986301
+Socialdemokratiet	Arbetarepartiet- Socialdemokraterna	0.986254	0.993080	0.982877	0.991364
+Socialdemokratiet	Partido Popular	0.986254	0.993080	0.969595	0.984563
+Socialdemokratiet	Citizens for European Development of Bulgaria	0.986207	0.993056	0.986207	0.993056
+Socialdemokratiet	Partit Nazzjonalista	0.982935	0.991394	0.982935	0.991394
+Socialdemokratiet	Christlich Demokratische Union Deutschlands	0.982877	0.991364	0.979592	0.989691
+Socialdemokratiet	Freie Demokratische Partei	0.982759	0.991304	0.986254	0.993080
+Socialdemokratiet	Green Party	0.979592	0.989691	0.979592	0.989691
+Socialdemokratiet	Sozialdemokratische Partei Deutschlands	0.976271	0.987993	0.972973	0.986301
+Socialdemokratiet	Sozialdemokratische Partei Österreichs	0.976190	0.987952	0.979592	0.989691
+Socialdemokratiet	Conservative Party	0.972973	0.986301	0.972973	0.986301
+Sozialdemokratische Partei Deutschlands	Sozialdemokratische Partei Deutschlands	1.000000	1.000000	1.000000	1.000000
+Sozialdemokratische Partei Deutschlands	Labour Party	0.996622	0.998308	0.996633	0.998314
+Sozialdemokratische Partei Deutschlands	Bündnis 90/Die Grünen	0.996610	0.998302	1.000000	1.000000
+Sozialdemokratische Partei Deutschlands	Die Grünen - Die Grüne Alternative	0.993266	0.996622	0.996633	0.998314
+Sozialdemokratische Partei Deutschlands	Christen Democratisch Appel	0.993243	0.996610	0.993266	0.996622
+Sozialdemokratische Partei Deutschlands	Sozialdemokratische Partei Österreichs	0.993220	0.996599	0.993243	0.996610
+Sozialdemokratische Partei Deutschlands	Independent	0.989933	0.994941	0.993289	0.996633
+Sozialdemokratische Partei Deutschlands	Les Républicains	0.989933	0.994941	0.993289	0.996633
+Sozialdemokratische Partei Deutschlands	Partido Socialista Obrero Espanol	0.989933	0.994941	0.993289	0.996633
+Sozialdemokratische Partei Deutschlands	Parti socialiste	0.989865	0.994907	0.993266	0.996622
+Sozialdemokratische Partei Deutschlands	Green Party	0.989865	0.994907	0.993243	0.996610
+Sozialdemokratische Partei Deutschlands	Sinn Féin	0.989865	0.994907	0.989899	0.994924
+Sozialdemokratische Partei Deutschlands	Democraten 66	0.989831	0.994889	1.000000	1.000000
+Sozialdemokratische Partei Deutschlands	Fine Gael Party	0.989831	0.994889	0.986486	0.993197
+Sozialdemokratische Partei Deutschlands	Partito Democratico	0.986577	0.993243	0.993289	0.996633
+Sozialdemokratische Partei Deutschlands	Europe Écologie	0.986532	0.993220	0.989933	0.994941
+Sozialdemokratische Partei Deutschlands	Partij van de Arbeid	0.986486	0.993197	0.993243	0.996610
+Sozialdemokratische Partei Deutschlands	Partit Nazzjonalista	0.986486	0.993197	0.983165	0.991511
+Sozialdemokratische Partei Deutschlands	Conservative Party	0.983221	0.991540	0.986577	0.993243
+Sozialdemokratische Partei Deutschlands	Partido Popular	0.983051	0.991453	0.989899	0.994924
+Sozialdemokratische Partei Österreichs	Sozialdemokratische Partei Österreichs	1.000000	1.000000	1.000000	1.000000
+Sozialdemokratische Partei Österreichs	Bündnis 90/Die Grünen	0.996599	0.998296	0.993243	0.996610
+Sozialdemokratische Partei Österreichs	Sozialdemokratische Partei Deutschlands	0.993220	0.996599	0.993243	0.996610
+Sozialdemokratische Partei Österreichs	Labour Party	0.989865	0.994907	0.989899	0.994924
+Sozialdemokratische Partei Österreichs	Parti socialiste	0.989831	0.994889	0.993243	0.996610
+Sozialdemokratische Partei Österreichs	Sinn Féin	0.989831	0.994889	0.983165	0.991511
+Sozialdemokratische Partei Österreichs	Democraten 66	0.989796	0.994872	0.993243	0.996610
+Sozialdemokratische Partei Österreichs	Die Grünen - Die Grüne Alternative	0.986532	0.993220	0.989899	0.994924
+Sozialdemokratische Partei Österreichs	Christen Democratisch Appel	0.986486	0.993197	0.986532	0.993220
+Sozialdemokratische Partei Österreichs	Partit Nazzjonalista	0.986441	0.993174	0.989831	0.994889
+Sozialdemokratische Partei Österreichs	Partij van de Arbeid	0.986441	0.993174	0.986486	0.993197
+Sozialdemokratische Partei Österreichs	-1	0.986348	0.993127	0.993243	0.996610
+Sozialdemokratische Partei Österreichs	Österreichische Volkspartei	0.986348	0.993127	0.986395	0.993151
+Sozialdemokratische Partei Österreichs	Independent	0.983221	0.991540	0.986577	0.993243
+Sozialdemokratische Partei Österreichs	Les Républicains	0.983221	0.991540	0.986577	0.993243
+Sozialdemokratische Partei Österreichs	Partido Socialista Obrero Espanol	0.983221	0.991540	0.986577	0.993243
+Sozialdemokratische Partei Österreichs	Conservative Party	0.983165	0.991511	0.986532	0.993220
+Sozialdemokratische Partei Österreichs	Green Party	0.983108	0.991482	0.986486	0.993197
+Sozialdemokratische Partei Österreichs	Fine Gael Party	0.983051	0.991453	0.986441	0.993174
+Sozialdemokratische Partei Österreichs	Partido Popular	0.982993	0.991424	0.989865	0.994907
+United Kingdom Independence Party	United Kingdom Independence Party	1.000000	1.000000	1.000000	1.000000
+United Kingdom Independence Party	Lega Nord	0.989726	0.994836	0.976431	0.988075
+United Kingdom Independence Party	Conservative Party	0.979798	0.989796	0.996633	0.998314
+United Kingdom Independence Party	Movimento 5 Stelle	0.976510	0.988115	0.993311	0.996644
+United Kingdom Independence Party	Partito Democratico	0.976510	0.988115	0.989967	0.994958
+United Kingdom Independence Party	Independent	0.973244	0.986441	0.989967	0.994958
+United Kingdom Independence Party	Les Républicains	0.973244	0.986441	0.989967	0.994958
+United Kingdom Independence Party	Partido Socialista Obrero Espanol	0.973244	0.986441	0.989967	0.994958
+United Kingdom Independence Party	Die Grünen - Die Grüne Alternative	0.969900	0.984720	0.986622	0.993266
+United Kingdom Independence Party	Christen Democratisch Appel	0.969799	0.984668	0.983278	0.991568
+United Kingdom Independence Party	Front de Gauche	0.969799	0.984668	0.979933	0.989865
+United Kingdom Independence Party	Forza Italia	0.969697	0.984615	0.986577	0.993243
+United Kingdom Independence Party	Partit Nazzjonalista	0.969697	0.984615	0.986532	0.993220
+United Kingdom Independence Party	Labour Party	0.966555	0.982993	0.986622	0.993266
+United Kingdom Independence Party	Europe Écologie	0.963211	0.981261	0.986622	0.993266
+United Kingdom Independence Party	Sozialdemokratische Partei Deutschlands	0.963211	0.981261	0.983278	0.991568
+United Kingdom Independence Party	PODEMOS	0.963211	0.981261	0.979933	0.989865
+United Kingdom Independence Party	Sozialdemokratische Partei Österreichs	0.963087	0.981197	0.983221	0.991540
+United Kingdom Independence Party	Partij van de Arbeid	0.963087	0.981197	0.976589	0.988156
+United Kingdom Independence Party	Christlich Demokratische Union Deutschlands	0.962963	0.981132	0.983221	0.991540
+Österreichische Volkspartei	-1	1.000000	1.000000	0.983221	0.991540
+Österreichische Volkspartei	Österreichische Volkspartei	1.000000	1.000000	0.983051	0.991453
+Österreichische Volkspartei	Platforma Obywatelska	0.996552	0.998273	0.986486	0.993197
+Österreichische Volkspartei	Christlich-Soziale Union in Bayern e.V.	0.996552	0.998273	0.983051	0.991453
+Österreichische Volkspartei	Partija 'VIENOTIBA'	0.996552	0.998273	0.983051	0.991453
+Österreichische Volkspartei	Citizens for European Development of Bulgaria	0.996540	0.998267	0.976271	0.987993
+Österreichische Volkspartei	Moderaterna	0.993103	0.996540	0.983051	0.991453
+Österreichische Volkspartei	Kansallinen Kokoomus	0.993103	0.996540	0.979661	0.989726
+Österreichische Volkspartei	Democraten 66	0.989726	0.994836	0.989899	0.994924
+Österreichische Volkspartei	Partido Popular	0.989691	0.994819	0.986532	0.993220
+Österreichische Volkspartei	Mouvement Démocrate	0.989691	0.994819	0.986441	0.993174
+Österreichische Volkspartei	Arbetarepartiet- Socialdemokraterna	0.989691	0.994819	0.979730	0.989761
+Österreichische Volkspartei	Socialdemokratiet	0.989655	0.994801	0.976271	0.987993
+Österreichische Volkspartei	Sozialdemokratische Partei Österreichs	0.986348	0.993127	0.989865	0.994907
+Österreichische Volkspartei	Partit Nazzjonalista	0.986348	0.993127	0.986486	0.993197
+Österreichische Volkspartei	Christlich Demokratische Union Deutschlands	0.986301	0.993103	0.989865	0.994907
+Österreichische Volkspartei	Freie Demokratische Partei	0.986207	0.993056	0.983051	0.991453
+Österreichische Volkspartei	Bündnis 90/Die Grünen	0.982993	0.991424	0.989899	0.994924
+Österreichische Volkspartei	Sozialdemokratische Partei Deutschlands	0.979661	0.989726	0.989899	0.994924
+Österreichische Volkspartei	Forza Italia	0.979592	0.989691	0.986532	0.993220
+Česká strana sociálně demokratická	Česká strana sociálně demokratická	1.000000	1.000000	1.000000	1.000000
+Česká strana sociálně demokratická	Nea Demokratia	0.985663	0.992780	0.982270	0.991055
+Česká strana sociálně demokratická	Citizens for European Development of Bulgaria	0.965278	0.982332	0.972318	0.985965
+Česká strana sociálně demokratická	Österreichische Volkspartei	0.961938	0.980600	0.972414	0.986014
+Česká strana sociálně demokratická	-1	0.961938	0.980600	0.952703	0.975779
+Česká strana sociálně demokratická	Freie Demokratische Partei	0.961806	0.980531	0.972414	0.986014
+Česká strana sociálně demokratická	Christlich-Soziale Union in Bayern e.V.	0.958621	0.978873	0.972414	0.986014
+Česká strana sociálně demokratická	Partija 'VIENOTIBA'	0.958621	0.978873	0.972414	0.986014
+Česká strana sociálně demokratická	Platforma Obywatelska	0.958621	0.978873	0.962457	0.980870
+Česká strana sociálně demokratická	Partido Popular	0.958621	0.978873	0.955932	0.977470
+Česká strana sociálně demokratická	Slovenska demokratska stranka	0.956989	0.978022	0.950355	0.974545
+Česká strana sociálně demokratická	Moderaterna	0.955172	0.977072	0.972414	0.986014
+Česká strana sociálně demokratická	Kansallinen Kokoomus	0.955172	0.977072	0.968966	0.984238
+Česká strana sociálně demokratická	Partidul Naţional Liberal	0.953237	0.976059	0.943262	0.970803
+Česká strana sociálně demokratická	Fine Gael Party	0.952055	0.975439	0.965753	0.982578
+Česká strana sociálně demokratická	Democraten 66	0.952055	0.975439	0.952703	0.975779
+Česká strana sociálně demokratická	Mouvement Démocrate	0.951890	0.975352	0.969072	0.984293
+Česká strana sociálně demokratická	Arbetarepartiet- Socialdemokraterna	0.951890	0.975352	0.962329	0.980803
+Česká strana sociálně demokratická	Socialdemokratiet	0.951724	0.975265	0.965517	0.982456
+Česká strana sociálně demokratická	Partit Nazzjonalista	0.948805	0.973730	0.962457	0.980870

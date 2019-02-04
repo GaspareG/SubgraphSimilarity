@@ -15,7 +15,7 @@ typedef struct bloom_filter
 {
   bf_t data;
 
-	bloom_filter(){ data = 0; }
+  bloom_filter(){ data = 0; }
   bloom_filter(const bf_t d){ data = d; }
   bloom_filter(const struct bloom_filter &d){ data = d.data; }
   bloom_filter(const int z, const int h, std::mt19937& rng)
@@ -54,6 +54,8 @@ typedef struct graph
   std::vector<char> label;
   std::vector<bloom_filter> filter;
   std::vector<std::vector<int>> edges;
+  std::vector<std::multiset<int>> attributes;
+  std::vector<std::string> attnames;
 
   graph(int n)
   {
@@ -61,6 +63,7 @@ typedef struct graph
     label.resize(N, 0);
     filter.resize(N, bloom_filter());
     edges.resize(N, std::vector<int>());
+    attributes.resize(N, std::multiset<int>());
   };
 
   void addEdge(int i, int j)
@@ -96,6 +99,7 @@ int Nthreads = -1;
 
 bool first = true;
 bool sort = true;
+bool multi = false;
 
 size_t Q = 4;
 int A = -1;
@@ -181,38 +185,58 @@ std::vector<path> bfs(int source)
   return out;
 }
 
-std::tuple<double, double> bruteforce()
+std::multiset<int> multiUnion(const std::multiset<int> &m1, const std::multiset<int> &m2)
 {
-  double fj = 0.;
-  double bc = 0.;
+  std::multiset<int> ret;
+  for(auto v = m1.begin(); v != m1.end(); v=m1.upper_bound(*v))
+  {
+    int c = multi ? m1.count(*v) : 1;
+    while(c--) ret.insert(*v);
+  }
+  for(auto v = m2.begin(); v != m2.end(); v=m2.upper_bound(*v))
+  {
+    if(ret.count(*v) > 0) continue;
+    int c = multi ? m2.count(*v) : 1;
+    if(multi && ret.count(*v) > 0) c=0;
+    while(c--) ret.insert(*v);
+  }
+  return ret;
+}
 
-  fdict_t freqA, freqB;
-  dict_t W;
+std::multiset<int> multiIntersect(const std::multiset<int> &m1, const std::multiset<int> &m2)
+{
+  std::multiset<int> ret;
+  for(auto v = m1.begin(); v != m1.end(); v=m1.upper_bound(*v))
+  {
+    int c = std::min(m1.count(*v), m2.count(*v));
+    if(multi) c = c > 0 ? 1 : 0;
+    while(c--) ret.insert(*v);
+  }
+  return ret;
+}
 
-  auto start = timer_start();
+std::multiset<int> fingerprint(const std::vector<path> &paths)
+{
+  auto pathToAttr = [](const path& p){
+    if(p.size() == 1) return std::multiset<int>();
+    std::multiset<int> attr = G.attributes[p[1]];
+    for(size_t i=2; i<p.size(); i++) attr = multiIntersect(attr, G.attributes[p[i]]);
+    return attr;
+  };
 
-  std::vector<path> pathA = bfs(A); // generate all paths from A
-  std::vector<path> pathB = bfs(B); // generate all paths from B
+  auto AttrToFinger = [](const std::vector<std::multiset<int>> &fingers){
+    if(fingers.size() == 0) return std::multiset<int>();
+    std::multiset<int> ret = fingers[0];
+    for(size_t i=1; i<fingers.size(); i++)
+    {
+      ret = multiUnion(ret, fingers[i]);
+    }
+    return ret;
+  };
 
-  std::cerr << "Found " << pathA.size() << " " << Q << "-paths from " << A << std::endl;
-  std::cerr << "Found " << pathB.size() << " " << Q << "-paths from " << B << std::endl;
-
-  for(const path& w : pathA) freqA[L(w)]++; // compute qpaths frequencies in A
-  for(const path& w : pathB) freqB[L(w)]++; // compute qpaths frequencies in B
-
-  for(const auto& [w, v] : freqA) W.insert(w); // build dictionary W from qpaths in A
-  for(const auto& [w, v] : freqB) W.insert(w); // build dictionary W from qpaths in B
-
-  ll Rbruteforce = 0;
-  for(const auto& [w, v] : freqA) Rbruteforce += v;
-  for(const auto& [w, v] : freqB) Rbruteforce += v;
-
-  fj = fjw(W, freqA, freqB, Rbruteforce);
-  bc = bcw(W, freqA, freqB);
-
-  std::cerr << "Bruteforce similarity in " << timer_step(start) << "msec" << std::endl;
-
-  return std::make_tuple(fj, bc);
+  std::vector<std::multiset<int>> fingers;
+  for(auto &p : paths) fingers.push_back(pathToAttr(p));
+  return AttrToFinger(fingers);
 }
 
 // DP Preprocessing
@@ -282,7 +306,7 @@ bool isPrefix(dict_t& W, qpath& x) {
     }
 
     found = (r == x.size());
-   	if(found) break;
+     if(found) break;
   }
 
   return found;
@@ -308,170 +332,16 @@ path randomPathTo(int u)
 
     std::discrete_distribution<ll> distribution(freq.begin(), freq.end());
 
-    u = G.edges[u][distribution(rng)];
+    int next = 0;
+    #pragma omp critical
+    {
+      next = distribution(rng);
+    }
+    u = G.edges[u][next];
     cur = cur+G.filter[u];
     p.push_back(u);
   }
   return p;
-}
-
-dict_t randomSample()
-{
-  dict_t W;
-
-  ll fA = static_cast<ll>(dp[Q][A].size());
-  ll fB = static_cast<ll>(dp[Q][B].size());
-  std::vector<ll> fV = {fA, fB};
-
-  std::discrete_distribution<ll> distribution(fV.begin(), fV.end());
-  std::vector<int> X = {A,B};
-
-  std::set<path> R;
-  for(int i=0; i<5; i++)
-  {
-    int diff = Rsize - R.size();
-    for(int j=0; j<diff; j++)
-    {
-      int u= distribution(rng);
-      path toAdd = randomPathTo(X[u]);
-      if(toAdd.size() < Q) continue;
-      R.insert(toAdd);
-    }
-  }
-
-  for(const path& r : R) W.insert(L(r));
-
-  return W;
-}
-
-fdict_t processFrequency(dict_t& W, int X)
-{
-  fdict_t ret;
-
-  std::vector<std::tuple<int, path>> prec;
-
-  prec.emplace_back(X, path({X}));
-
-  for(size_t i=2; i<=Q; i++)
-  {
-    std::vector<std::tuple<int, path>> cur;
-
-    for(auto &[u, p] : prec)
-    {
-      for(int v : G.edges[u])
-      {
-        bloom_filter pref = G.filter[v];
-        bool valid = true;
-        for(int j=p.size()-1; j>=0; j--)
-        {
-          if(pref == (pref+G.filter[p[j]]))
-          {
-            valid = false;
-            break;
-          }
-          pref = (pref+G.filter[p[j]]);
-        }
-
-        if(!valid) continue;
-
-        p.push_back(v);
-
-        auto qp = L(p);
-        if (isPrefix(W, qp)) cur.emplace_back(v, p);
-
-        p.pop_back();
-
-      }
-    }
-    prec = cur;
-  }
-
-  for(auto &[u,p] : prec) ret[L(p)]++;
-
-  return ret;
-}
-
-std::tuple<double, double> fcount()
-{
-  double fj = 0.;
-  double bc = 0.;
-
-  dict_t W = randomSample();
-
-  fdict_t freqA = processFrequency(W, A);
-  fdict_t freqB = processFrequency(W, B);
-
-  ll Rcount = 0;
-  for(const auto& [w, v] : freqA) Rcount += v;
-  for(const auto& [w, v] : freqB) Rcount += v;
-
-  fj = fjw(W, freqA, freqB, Rcount);
-  bc = bcw(W, freqA, freqB);
-
-  return std::make_tuple(fj, bc);
-}
-
-// Fsample
-std::tuple<dict_t, fdict_t, fdict_t> randomSamplePlus()
-{
-  dict_t W;
-  fdict_t freqA;
-  fdict_t freqB;
-
-  ll fA = 0ll;
-  ll fB = 0ll;
-
-  for(auto &[m, f] : dp[Q][A]) fA += f;
-  for(auto &[m, f] : dp[Q][B]) fB += f;
-
-  std::vector<ll> fV = {fA, fB};
-  std::discrete_distribution<ll> distribution(fV.begin(), fV.end());
-  std::vector<int> X = {A,B};
-
-  std::set<path> R;
-  for(int i=0; i<5; i++)    // TODO Parametrize
-  {
-    int diff = Rsize-R.size();
-    for(int j=0; j<diff; j++)
-    {
-      int u = distribution(rng);
-      path toAdd = randomPathTo(X[u]);
-      if(toAdd.size() < Q) continue;
-      R.insert(toAdd);
-    }
-  }
-
-  for(const path& p : R)
-  {
-    qpath q = L(p);
-    W.insert(q);
-    if(p[0] == A) freqA[q]++;
-    else freqB[q]++;
-  }
-
-  return std::make_tuple(W, freqA, freqB);
-}
-
-std::tuple<double, double> fsample()
-{
-  double fj = 0.;
-  double bc = 0.;
-
-  std::tuple<dict_t, fdict_t, fdict_t> sample = randomSamplePlus();
-
-  dict_t W = std::get<0>(sample);
-
-  fdict_t freqA = std::get<1>(sample);
-  fdict_t freqB = std::get<2>(sample);
-
-  ll Rsample = 0;
-  for(const auto& [w, v] : freqA) Rsample += v;
-  for(const auto& [w, v] : freqB) Rsample += v;
-
-  fj = fjw(W, freqA, freqB, Rsample);
-  bc = bcw(W, freqA, freqB);
-
-  return std::make_tuple(fj, bc);
 }
 
 // Baseline
@@ -503,10 +373,10 @@ std::tuple<double, double> baseline()
   double fj = 0.;
   double bc = 0.;
 
-  fdict_t freqA;
-  fdict_t freqB;
   dict_t W;
   std::set<path> r;
+
+  std::vector<path> pathA, pathB;
 
   while(r.size() < Rsize)
   {
@@ -517,22 +387,45 @@ std::tuple<double, double> baseline()
     if(r.find(randomPath) != r.end()) continue;
     r.insert(randomPath);
 
-    if(fromA) freqA[L(randomPath)]++;
-    else freqB[L(randomPath)]++;
+    if(fromA) pathA.push_back(randomPath);
+    else pathA.push_back(randomPath);
   }
 
-  for(const auto& [w, v] : freqA) W.insert(w);
-  for(const auto& [w, v] : freqB) W.insert(w);
+  std::multiset<int> fingerprintA = fingerprint(pathA);
+  std::multiset<int> fingerprintB = fingerprint(pathB);
 
-  ll Rbaseline= 0;
-  for(const auto& [w, v] : freqA) Rbaseline += v;
-  for(const auto& [w, v] : freqB) Rbaseline += v;
+  std::multiset<int> intersect = multiIntersect(fingerprintA, fingerprintB);
+  std::multiset<int> unions = multiUnion(fingerprintA, fingerprintB);
 
-  fj = fjw(W, freqA, freqB, Rsize);
-  bc = bcw(W, freqA, freqB);
+  fj = static_cast<double>(intersect.size()) / static_cast<double>(unions.size());
+  bc = 2.*static_cast<double>(intersect.size()) / static_cast<double>(fingerprintA.size() + fingerprintB.size());
 
   return std::make_tuple(fj, bc);
 }
+
+  auto avg = [](const std::vector<double> &V)
+  {
+    if(V.size() == 0) return 0.;
+    return std::accumulate(V.begin(), V.end(), 0.) / V.size();
+  };
+
+  auto var = [](const std::vector<double> &V, double avg)
+  {
+    if(V.size() == 0) return 0.;
+    return std::accumulate(V.begin(), V.end(), 0., [avg](const double sum, const double x)
+    {
+      return sum + (x-avg)*(x-avg);
+    }) / V.size();
+  };
+
+  auto sse = [](const std::vector<double> &V, double real)
+  {
+    if(V.size() == 0) return 0.;
+    return std::accumulate(V.begin(), V.end(), 0., [real](const double sum, const double x)
+    {
+      return sum + (x-real)*(x-real);
+    }) / V.size();
+  };
 
 int main(int argc, char** argv) {
 
@@ -607,10 +500,9 @@ int main(int argc, char** argv) {
   }
 
   // Redirect cin buffer
-  if (input.size() != 0) {
-    std::ifstream fin(input);
-    std::cin.rdbuf(fin.rdbuf());
-  }
+  input = "dataset/dblp.graph";
+  std::ifstream fin(input);
+  std::cin.rdbuf(fin.rdbuf());
 
   // Redirect cout buffer
   if (output.size() != 0) {
@@ -629,6 +521,7 @@ int main(int argc, char** argv) {
   std::cin >> N >> M;
   std::cerr << "Read graph N = " << N << " M = " << M << std::endl;
 
+  N++;
   G = graph(N);
 
   // Check starting node
@@ -637,12 +530,6 @@ int main(int argc, char** argv) {
 
   if(A == -1) while(A == B) A = rng()%N;
   if(B == -1) while(A == B) B = rng()%N;
-
-  // Reading labels
-  std::cerr << "Reading labels..." << std::endl;
-  for (int i = 0; i < N; i++) std::cin >> G.label[i];
-  for (int i = 0; i < N; i++) G.label[i] += 33; // make printable, maybe change?
-  std::cerr << "end" << std::endl;
 
   // Reading nodes
   std::cerr << "Reading edges..." << std::endl;
@@ -659,200 +546,121 @@ int main(int argc, char** argv) {
   std::cerr << "end" << std::endl;
 
 
-  // Time
-  long long int bruteforce_time = 0;
-  long long int     fcount_time = 0;
-  long long int    fsample_time = 0;
-  long long int   baseline_time = 0;
-
-  // Bruteforce similarity
-  double real_fj = 0.;
-  double real_bc = 0.;
-
-  if(bruteforce_f)
+  std::cerr << "Read attributes..." << std::endl;
+  input = "dataset/dblp.att";
+  fin = std::ifstream(input);
+  std::cin.rdbuf(fin.rdbuf());
+  for(int i=1; i<N; i++)
   {
-    std::cerr << "Bruteforce..." << std::endl;
-    auto t  = timer_start();
-    auto bf = bruteforce();
-    bruteforce_time = timer_step(t);
-    real_fj = std::get<0>(bf);
-    real_bc = std::get<1>(bf);
-    std::cerr << "End bruteforce" << std::endl;
-    std::cerr << "Real FJ(A,B) = " << real_fj << std::endl;
-    std::cerr << "Real BC(A,B) = " << real_bc << std::endl;
+    std::string line;
+    std::getline(std::cin, line);
+    std::istringstream is(line);
+    int id, att;
+    is >> id;
+    while(is >> att) G.attributes[id].insert(att);
   }
+  std::cerr << "end" << std::endl;
+  
+  std::vector<std::multiset<int>> realFingerprint(N);
+  std::vector<std::multiset<int>> sampledFingerprint(N);
 
   // Process DP only if fcount or fsample are enabled
-  if(fcount_f || fsample_f)
+  std::cerr << "Start processing DP Table..." << std::endl;
+  processDP();
+  std::cerr << "end" << std::endl;
+
+  std::cerr << "Start BFS" << std::endl;
+  #pragma omp parallel for
+  for(int i=1; i<N; i++)
   {
-    std::cerr << "Start processing DP Table..." << std::endl;
-    processDP();
-    std::cerr << "end" << std::endl;
-  }
-
-  // Print CSV headers
-  if(bruteforce_f)
-  {
-    std::cerr << "bruteforce_FJ" << ",";
-    std::cerr << "bruteforce_BC" << ",";
-  }
-
-  if(fcount_f)
-  {
-    std::cerr << "fcount_FJ" << ",";
-    std::cerr << "fcount_BC" << ",";
-  }
-
-  if(fsample_f)
-  {
-    std::cerr << "fsample_FJ" << ",";
-    std::cerr << "fsample_BC" << ",";
-  }
-
-  if(baseline_f)
-  {
-    std::cerr << "baseline_FJ" << ",";
-    std::cerr << "baseline_BC" << ",";
-  }
-
-  std::cerr << std::endl;
-
-  // Average values for statistics
-  std::vector<double>   fcount_fj;
-  std::vector<double>  fsample_fj;
-  std::vector<double> baseline_fj;
-
-  std::vector<double>   fcount_bc;
-  std::vector<double>  fsample_bc;
-  std::vector<double> baseline_bc;
-
-  // Start experiments
-  for(int i=0; i<experiments; i++)
-  {
-    std::cout << "Experiment: " << (i+1) << "/" << experiments << "\r";
-    std::cout.flush();
-
-    if(bruteforce_f)
+    std::vector<path> pathI = bfs(i); // generate all paths from I
+    realFingerprint[i] = fingerprint(pathI);
+    
+    // size_t limit = realFingerprint[i].size() / 10; // 10% threshold
+    size_t limit = 0;
+    for(auto &[k, v] : dp[Q][i]) limit += v;
+    limit /= 10;
+    
+    std::set<path> R;
+    for(size_t t=0; t<10*limit; t++)
     {
-      std::cerr << real_fj << ",";
-      std::cerr << real_bc << ",";
+      path toAdd = randomPathTo(i);
+      if(toAdd.size() < Q) continue;
+      R.insert(toAdd);
+      if(R.size() == limit) break;
     }
-
-    if(fcount_f)
-    {
-      auto t = timer_start();
-      auto fc = fcount();
-      fcount_time += timer_step(t);
-
-      std::cerr << std::get<0>(fc) << ",";
-      std::cerr << std::get<1>(fc) << ",";
-      fcount_fj.push_back(static_cast<double>(std::get<0>(fc)));
-      fcount_bc.push_back(static_cast<double>(std::get<1>(fc)));
-    }
-
-    if(fsample_f)
-    {
-      auto t = timer_start();
-      auto fs = fsample();
-      fsample_time += timer_step(t);
-
-      std::cerr << std::get<0>(fs) << ",";
-      std::cerr << std::get<1>(fs) << ",";
-      fsample_fj.push_back(static_cast<double>(std::get<0>(fs)));
-      fsample_bc.push_back(static_cast<double>(std::get<1>(fs)));
-    }
-
-    if(baseline_f)
-    {
-      auto t = timer_start();
-      auto bl = baseline();
-      baseline_time += timer_step(t);
-
-      std::cerr << std::get<0>(bl) << ",";
-      std::cerr << std::get<1>(bl) << ",";
-      baseline_fj.push_back(static_cast<double>(std::get<0>(bl)));
-      baseline_bc.push_back(static_cast<double>(std::get<1>(bl)));
-    }
-    std::cerr << "\r";
+    
+    sampledFingerprint[i] = fingerprint(std::vector<path>(R.begin(), R.end()));
   }
 
-  auto avg = [](const std::vector<double> &V)
+  auto get_sim = [](const std::multiset<int> &fingerprintA, const std::multiset<int> &fingerprintB)
   {
-    if(V.size() == 0) return 0.;
-    return std::accumulate(V.begin(), V.end(), 0.) / V.size();
+    std::multiset<int> intersect = multiIntersect(fingerprintA, fingerprintB);
+    std::multiset<int> unions = multiUnion(fingerprintA, fingerprintB);
+
+    double fj = static_cast<double>(intersect.size()) / static_cast<double>(unions.size());
+    double bc = 2.*static_cast<double>(intersect.size()) / static_cast<double>(fingerprintA.size() + fingerprintB.size());
+
+    return std::array<double,2>{fj, bc};
   };
-
-  auto var = [](const std::vector<double> &V, double avg)
+  
+  std::vector<int> authors{103478, 58835, 65229, 90255, 1471, 4384, 102389, 6195, 40631, 71896, 16453, 16380, 78337, 8205, 81154, 1615, 77017, 64335, 1352, 18263, 6072, 77742};
+  
+  for(int author : authors)
   {
-    if(V.size() == 0) return 0.;
-    return std::accumulate(V.begin(), V.end(), 0., [avg](const double sum, const double x)
+    std::vector<std::tuple<double, double, double, double, int>> similar;
+    for(int i=1; i<N; i++)
     {
-      return sum + (x-avg)*(x-avg);
-    }) / V.size();
-  };
 
-  auto sse = [](const std::vector<double> &V, double real)
-  {
-    if(V.size() == 0) return 0.;
-    return std::accumulate(V.begin(), V.end(), 0., [real](const double sum, const double x)
+      auto sim_A_B = get_sim(sampledFingerprint[author], sampledFingerprint[i]);
+      auto sim_A_B_real = get_sim(realFingerprint[author], realFingerprint[i]);
+
+      similar.emplace_back(-sim_A_B[0], -sim_A_B[1], -sim_A_B_real[0], -sim_A_B_real[1], i);
+
+    }
+    
+    std::sort(similar.begin(), similar.end());
+    for(int i=0; i<5; i++)
     {
-      return sum + (x-real)*(x-real);
-    }) / V.size();
-  };
-
-  double   fcount_fj_avg = avg(fcount_fj);
-  double   fcount_bc_avg = avg(fcount_bc);
-  double  fsample_fj_avg = avg(fsample_fj);
-  double  fsample_bc_avg = avg(fsample_bc);
-  double baseline_fj_avg = avg(baseline_fj);
-  double baseline_bc_avg = avg(baseline_bc);
-
-  double   fcount_fj_var = var(fcount_fj, fcount_fj_avg);
-  double   fcount_bc_var = var(fcount_bc, fcount_bc_avg);
-  double  fsample_fj_var = var(fsample_fj, fsample_fj_avg);
-  double  fsample_bc_var = var(fsample_bc, fsample_bc_avg);
-  double baseline_fj_var = var(baseline_fj, baseline_fj_avg);
-  double baseline_bc_var = var(baseline_bc, baseline_bc_avg);
-
-    fcount_time /= experiments;
-   fsample_time /= experiments;
-  baseline_time /= experiments;
-
-                   std::cout << " algorithm,   fj_avg,   fj_var,   bc_avg,   bc_var"                                                               << std::endl;
-  if(bruteforce_f) std::cout << "bruteforce, " <<     real_fj     << ", " <<      "0.000000" << ", " <<     real_bc     << ", " <<      "0.000000" << std::endl;
-  if(    fcount_f) std::cout << "    fcount, " <<   fcount_fj_avg << ", " <<   fcount_fj_var << ", " <<   fcount_bc_avg << ", " <<   fcount_bc_var << std::endl;
-  if(   fsample_f) std::cout << "   fsample, " <<  fsample_fj_avg << ", " <<  fsample_fj_var << ", " <<  fsample_bc_avg << ", " <<  fsample_bc_var << std::endl;
-  if(  baseline_f) std::cout << "  baseline, " << baseline_fj_avg << ", " << baseline_fj_var << ", " << baseline_bc_avg << ", " << baseline_bc_var << std::endl;
-
-  std::cout << std::endl;
-
-                   std::cout << " algorithm, time"                  << std::endl;
-  if(bruteforce_f) std::cout << "bruteforce, " <<   bruteforce_time << std::endl;
-  if(    fcount_f) std::cout << "    fcount, " <<       fcount_time << std::endl;
-  if(   fsample_f) std::cout << "   fsample, " <<      fsample_time << std::endl;
-  if(  baseline_f) std::cout << "  baseline, " <<     baseline_time << std::endl;
-
-  if(bruteforce_f)
-  {
-
-    double   fcount_fj_sse = sse(  fcount_fj, real_fj);
-    double   fcount_bc_sse = sse(  fcount_bc, real_bc);
-
-    double  fsample_fj_sse = sse( fsample_fj, real_fj);
-    double  fsample_bc_sse = sse( fsample_bc, real_bc);
-
-    double baseline_fj_sse = sse(baseline_fj, real_fj);
-    double baseline_bc_sse = sse(baseline_bc, real_bc);
-
+      std::cout <<                   author << "\t";
+      std::cout <<  std::get<4>(similar[i]) << "\t";
+      std::cout << -std::get<0>(similar[i]) << "\t";
+      std::cout << -std::get<1>(similar[i]) << "\t";
+      std::cout << -std::get<2>(similar[i]) << "\t";
+      std::cout << -std::get<3>(similar[i]) << std::endl;
+    }
+  
     std::cout << std::endl;
-
-                     std::cout << " algorithm, fj_SSE, bc_SSE"                                  << std::endl;
-    if(    fcount_f) std::cout << "    fcount, " <<     fcount_fj_sse << ", " <<   fcount_bc_sse << std::endl;
-    if(   fsample_f) std::cout << "   fsample, " <<    fsample_fj_sse << ", " <<  fsample_bc_sse << std::endl;
-    if(  baseline_f) std::cout << "  baseline, " <<   baseline_fj_sse << ", " << baseline_bc_sse << std::endl;
   }
 
+  /*
+  103478	Zohar--Manna
+  58835	|	Mart&iacute;n--Abadi (np)
+  65229	|	Nachum--Dershowitz 
+  90255	|	Thomas--A.--Henzinger 
+  1471	|	Adi--Shamir (np)
+  4384	|	|	Amos--Fiat (np)
+  102389	|	|	|	Yuval--Rabani (np)
+  6195	|	|	|	|	Anna--Moss
+  40631	|	Jean--Vuillemin (np)
+  71896	|	|	Philippe--Flajolet (np)
+  16453	|	|	|	Claude--Puech
+  16380 |	Claire--Mathieu
 
+  78337	Ronald--L.--Rivest
+  8205	|	Avrim--Blum
+  81154	|	|	Santosh--Vempala
+  1615	|	|	|	Adrian--Vetta
+
+  77017	Robert--Endre--Tarjan
+  64335	|	Monika--Rauch--Henzinger (np)
+  1352	|	Adam--L.--Buchsbaum
+  18263	|	Daniel--Dominic--Sleator
+  6072	|	|	Anja--Feldmann (np)
+  77742	|	|	|	Robin--Sommer
+
+  */
+  
   // Flush output buffers
   std::cout.flush();
   std::cerr.flush();

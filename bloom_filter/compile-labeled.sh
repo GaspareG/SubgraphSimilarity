@@ -1,30 +1,66 @@
 #!/bin/bash
 
 echo "Compiling..."
-g++ -O3 -Wall -Wextra -pedantic -fopenmp -fconcepts --std=c++17 -march=native -o nSimGram-BloomFilter nSimGram-BloomFilter.cpp
+g++ -O3 -Wall -Wextra -pedantic -fopenmp -fconcepts --std=c++17 -march=native -o nSimGram-BloomFilter-multilabeled nSimGram-BloomFilter-multilabeled.cpp
 echo "Done!"
 
-echo "Testing. Z=64 H=32"
-cat NetInf.txt | ./nSimGram-BloomFilter --bruteforce --baseline --fsample --fcount -e 10 -r 50000 -A 0 -B 1 -t 4 -Q 6 -Z 64 -H 32 --verbose
-echo "Testing. Z=64 H=32"
-cat NetInf.txt | ./nSimGram-BloomFilter --bruteforce --baseline --fsample -e 10 -r 50000 -A 0 -B 1 -t 4 -Q 6 -Z 64 -H 24 --verbose
-echo "Testing. Z=64 H=8"
-cat NetInf.txt | ./nSimGram-BloomFilter --bruteforce --baseline --fsample -e 10 -r 50000 -A 0 -B 1 -t 4 -Q 6 -Z 64 -H 8 --verbose
-echo "Testing. Z=64 H=1"
-cat NetInf.txt | ./nSimGram-BloomFilter --bruteforce --baseline --fsample -e 10 -r 50000 -A 0 -B 1 -t 4 -Q 6 -Z 64 -H 1 --verbose
+echo
+echo
+echo "30322 - 38063"
+./nSimGram-BloomFilter-multilabeled --bruteforce -e 10 -r 10000 -A 30322 -B 38063 -t 4 -Q 3 -Z 64 -H 24 --verbose
 
-#echo "Testing. H=1 Z=64"
-#cat NetInf.txt | ./nSimGram-BloomFilter --bruteforce --baseline --fsample -e 10 -r 50000 -A 0 -B 1 -t 4 -Q 6 -Z 64 -H 1 #--verbose
-#echo "Testing. H=2 Z=64"
-#cat NetInf.txt | ./nSimGram-BloomFilter --bruteforce --baseline --fsample -e 10 -r 50000 -A 0 -B 1 -t 4 -Q 6 -Z 64 -H 2 #--verbose
-#echo "Testing. H=4 Z=64"
-#cat NetInf.txt | ./nSimGram-BloomFilter --bruteforce --baseline --fsample -e 10 -r 50000 -A 0 -B 1 -t 4 -Q 6 -Z 64 -H 4 #--verbose
-#echo "Testing. H=8 Z=64"
-#cat NetInf.txt | ./nSimGram-BloomFilter --bruteforce --baseline --fsample -e 10 -r 50000 -A 0 -B 1 -t 4 -Q 6 -Z 64 -H 8 #--verbose
-#echo "Testing. H=16 Z=64"
-#cat NetInf.txt | ./nSimGram-BloomFilter --bruteforce --baseline --fsample -e 10 -r 50000 -A 0 -B 1 -t 4 -Q 6 -Z 64 -H 16 #--verbose
-#echo "Testing. H=32 Z=64"
-#cat NetInf.txt | ./nSimGram-BloomFilter --bruteforce --baseline --fsample -e 10 -r 50000 -A 0 -B 1 -t 4 -Q 6 -Z 64 -H 32 #--verbose
-#cat NetInf.txt | ./nSimGram-BloomFilter --bruteforce --baseline --fsample -e 10 -r 5000 -A 0 -B 1 -t 1 --verbose
-#cat NetInf.txt | ./nSimGram-BloomFilter --bruteforce --baseline --fsample -e 10 -r 5000 -A 0 -B 1 -t 1 --verbose
-#cat NetInf.txt | ./nSimGram-BloomFilter --bruteforce --baseline --fsample -e 10 -r 5000 -A 0 -B 1 -t 1 --first --verbose
+echo
+echo
+echo "30322 - 41249"
+./nSimGram-BloomFilter-multilabeled --bruteforce -e 10 -r 10000 -A 30322 -B 41249 -t 4 -Q 3 -Z 64 -H 24 --verbose
+
+echo
+echo
+echo "30322 - 60611"
+./nSimGram-BloomFilter-multilabeled --bruteforce -e 10 -r 10000 -A 30322 -B 60611 -t 4 -Q 3 -Z 64 -H 24 --verbose
+
+echo
+echo
+echo "30322 - 77017"
+./nSimGram-BloomFilter-multilabeled --bruteforce -e 10 -r 10000 -A 30322 -B 77017 -t 4 -Q 3 -Z 64 -H 24 --verbose
+
+echo
+echo
+echo "30322 - 77637"
+./nSimGram-BloomFilter-multilabeled --bruteforce -e 10 -r 10000 -A 30322 -B 77637 -t 4 -Q 3 -Z 64 -H 24 --verbose
+
+########################################
+
+echo
+echo
+echo "41249 - 30322"
+./nSimGram-BloomFilter-multilabeled --bruteforce -e 10 -r 10000 -A 41249 -B 30322 -t 4 -Q 3 -Z 64 -H 24 --verbose
+
+echo
+echo
+echo "41249 - 38063"
+./nSimGram-BloomFilter-multilabeled --bruteforce -e 10 -r 10000 -A 41249 -B 38063 -t 4 -Q 3 -Z 64 -H 24 --verbose
+
+echo
+echo
+echo "41249 - 60611"
+./nSimGram-BloomFilter-multilabeled --bruteforce -e 10 -r 10000 -A 41249 -B 60611 -t 4 -Q 3 -Z 64 -H 24 --verbose
+
+echo
+echo
+echo "41249 - 77017"
+./nSimGram-BloomFilter-multilabeled --bruteforce -e 10 -r 10000 -A 41249 -B 77017 -t 4 -Q 3 -Z 64 -H 24 --verbose
+
+echo
+echo
+echo "41249 - 77637"
+./nSimGram-BloomFilter-multilabeled --bruteforce -e 10 -r 10000 -A 41249 -B 77637 -t 4 -Q 3 -Z 64 -H 24 --verbose
+
+
+#30322 Giuseppe--Di--Battista
+#38063 J.--Ian--Munro
+#41249 Jeffrey--Scott--Vitter
+#60611 Maurizio--Patrignani
+#77017 Robert--Endre--Tarjan
+#77637 Roberto--Grossi
+
